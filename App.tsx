@@ -55,17 +55,48 @@ const App: React.FC = () => {
 
   const handleSignupSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('isRegistered', 'true');
-    setIsRegistered(true);
-    setView('login');
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    if (!email || !password) return;
+
+    // Store user credentials (MOCK ONLY - Insecure for production)
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    if (users[email]) {
+      alert('User already exists. Please login.');
+      setView('login');
+      return;
+    }
+
+    users[email] = password;
+    localStorage.setItem('registeredUsers', JSON.stringify(users));
+
+    // Auto login
+    localStorage.setItem('currentUser', email);
+    localStorage.setItem('isLoggedIn', 'true');
+    setIsLoggedIn(true);
+    setView('canvas'); // Direct to canvas after signup
+    if (nodes.length === 0) addInitialNode();
   };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
-    setView('canvas');
-    if (nodes.length === 0) addInitialNode();
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+
+    if (users[email] && users[email] === password) {
+      localStorage.setItem('currentUser', email);
+      localStorage.setItem('isLoggedIn', 'true');
+      setIsLoggedIn(true);
+      setView('canvas');
+      if (nodes.length === 0) addInitialNode();
+    } else {
+      alert('Invalid email or password.');
+    }
   };
 
   const handleLogout = () => {

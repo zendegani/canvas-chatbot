@@ -40,6 +40,7 @@ export const fetchModels = async (apiKey: string): Promise<OpenRouterModel[]> =>
     });
 
     if (!response.ok) {
+      console.error(`OpenRouter API Error: ${response.status} ${response.statusText}`);
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
 
@@ -47,7 +48,21 @@ export const fetchModels = async (apiKey: string): Promise<OpenRouterModel[]> =>
     return data.data;
   } catch (error) {
     console.error('Error fetching models:', error);
-    return [];
+    // Fallback to a static list if fetch fails, so the app remains usable
+    return [
+      {
+        id: 'google/gemini-pro',
+        name: 'Google: Gemini Pro (Fallback)',
+        context_length: 32000,
+        pricing: { prompt: '0.00025', completion: '0.0005' }
+      },
+      {
+        id: 'openai/gpt-3.5-turbo',
+        name: 'OpenAI: GPT-3.5 Turbo (Fallback)',
+        context_length: 16385,
+        pricing: { prompt: '0.0005', completion: '0.0015' }
+      },
+    ];
   }
 };
 
