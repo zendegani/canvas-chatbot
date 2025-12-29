@@ -79,6 +79,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
                         </p>
                     </div>
 
+                    <button
+                        onClick={handleSave}
+                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors"
+                    >
+                        Save Changes
+                    </button>
+
+
                     <div>
                         <label className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4 block text-red-400">Danger Zone</label>
                         <button onClick={handleClearData} className="w-full py-4 border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
