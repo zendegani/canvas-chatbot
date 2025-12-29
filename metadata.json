@@ -1,0 +1,8 @@
+{
+  "name": "Canvas AI",
+  "description": "A multi-model AI orchestration tool using a canvas metaphor to manage parallel conversations via draggable nodes on a 2D grid.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
