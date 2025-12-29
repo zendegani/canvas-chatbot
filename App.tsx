@@ -1,39 +1,38 @@
 
 import React, { useState, useEffect } from 'react';
-import { ViewState, ChatNode, OpenRouterModel, Message } from './types';
-import { fetchModels, chatCompletion } from './services/openRouterService';
 import { LandingPage } from './components/LandingPage';
 import { Auth } from './components/Auth';
 import { Canvas } from './components/Canvas';
 import { SettingsModal } from './components/SettingsModal';
-
-const INITIAL_POS = { x: 100, y: 100 };
+import { useAuth } from './hooks/useAuth';
+import { useCanvas } from './hooks/useCanvas';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<ViewState>(() => {
-    return localStorage.getItem('isLoggedIn') === 'true' ? 'canvas' : 'landing';
-  });
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(localStorage.getItem('isLoggedIn') === 'true');
-  const [isRegistered, setIsRegistered] = useState<boolean>(localStorage.getItem('isRegistered') === 'true');
-  const [currentUser, setCurrentUser] = useState<string>(localStorage.getItem('currentUser') || '');
-  const [nodes, setNodes] = useState<ChatNode[]>([]);
-  // Load nodes when currentUser changes
-  useEffect(() => {
-    if (currentUser) {
-      const storedNodes = localStorage.getItem(`canvasNodes_${currentUser}`);
-      if (storedNodes) {
-        setNodes(JSON.parse(storedNodes));
-      } else {
-        setNodes([]);
-      }
-    } else {
-      setNodes([]);
-    }
-  }, [currentUser]);
+  const {
+    isLoggedIn,
+    currentUser,
+    view,
+    setView,
+    handleSignupSubmit,
+    handleLoginSubmit,
+    handleLogout,
+    setIsLoggedIn,
+    setIsRegistered
+  } = useAuth();
 
-  const [models, setModels] = useState<OpenRouterModel[]>([]);
+  const {
+    nodes,
+    setNodes,
+    models,
+    isSettingsOpen,
+    setIsSettingsOpen,
+    addInitialNode,
+    handleBranch,
+    handleSendMessage,
+    clearData
+  } = useCanvas(currentUser);
+
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -43,167 +42,13 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem(`canvasNodes_${currentUser}`, JSON.stringify(nodes));
-    }
-  }, [nodes, currentUser]);
-
-  useEffect(() => {
-    if (currentUser) {
-      const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`) || '';
-      fetchModels(apiKey).then(setModels);
-    } else {
-      setModels([]);
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
     if (view === 'canvas') {
       document.body.style.overflow = 'hidden';
+      if (nodes.length === 0) addInitialNode();
     } else {
       document.body.style.overflow = 'auto';
     }
-  }, [view]);
-
-  // ... (existing code)
-
-  const handleGetStarted = () => {
-    if (isLoggedIn) {
-      setView('canvas');
-      if (nodes.length === 0) addInitialNode();
-    } else if (isRegistered) {
-      setView('login');
-    } else {
-      setView('signup');
-    }
-  };
-
-  const handleSignupSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    if (!email || !password) return;
-
-    // Store user credentials (MOCK ONLY - Insecure for production)
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-    if (users[email]) {
-      alert('User already exists. Please login.');
-      setView('login');
-      return;
-    }
-
-    users[email] = password;
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
-
-    // Auto login
-    localStorage.setItem('currentUser', email);
-    setCurrentUser(email);
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
-    setView('canvas'); // Direct to canvas after signup
-    if (nodes.length === 0) addInitialNode();
-  };
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-
-    if (users[email] && users[email] === password) {
-      localStorage.setItem('currentUser', email);
-      setCurrentUser(email);
-      localStorage.setItem('isLoggedIn', 'true');
-      setIsLoggedIn(true);
-      setView('canvas');
-      if (nodes.length === 0) addInitialNode();
-    } else {
-      alert('Invalid email or password.');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUser');
-    setCurrentUser('');
-    setIsLoggedIn(false);
-    setView('landing');
-  };
-
-  const clearData = () => {
-    if (window.confirm('Are you sure you want to clear all data and reset the canvas?')) {
-      localStorage.removeItem('canvasNodes');
-      localStorage.removeItem('isRegistered');
-      localStorage.removeItem('isLoggedIn');
-      setNodes([]);
-      setIsLoggedIn(false);
-      setIsRegistered(false);
-      setView('landing');
-    }
-  };
-
-  const addInitialNode = () => {
-    const newNode: ChatNode = {
-      id: Math.random().toString(36).substr(2, 9),
-      parentId: null,
-      x: INITIAL_POS.x,
-      y: INITIAL_POS.y,
-      model: 'google/gemini-pro',
-      messages: [],
-    };
-    setNodes([newNode]);
-  };
-
-  const handleBranch = (parentId: string) => {
-    if (nodes.length >= 10) {
-      alert('Maximum of 10 nodes reached.');
-      return;
-    }
-    const parent = nodes.find(n => n.id === parentId);
-    if (!parent) return;
-
-    const newNode: ChatNode = {
-      id: Math.random().toString(36).substr(2, 9),
-      parentId: parentId,
-      x: parent.x + 420,
-      y: parent.y + 100,
-      model: parent.model,
-      messages: [...parent.messages],
-    };
-    setNodes([...nodes, newNode]);
-  };
-
-  const handleSendMessage = async (nodeId: string, text: string) => {
-    const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`);
-    if (!apiKey) {
-      alert('Please set your OpenRouter API Key in Settings first.');
-      setIsSettingsOpen(true);
-      return;
-    }
-
-    const userMsg: Message = { role: 'user', content: text };
-    setNodes(prev => prev.map(n =>
-      n.id === nodeId ? { ...n, messages: [...n.messages, userMsg], isThinking: true } : n
-    ));
-
-    try {
-      const node = nodes.find(n => n.id === nodeId);
-      const history = [...(node?.messages || []), userMsg];
-      const reply = await chatCompletion(apiKey, node?.model || 'google/gemini-pro', history);
-
-      const assistantMsg: Message = { role: 'assistant', content: reply };
-      setNodes(prev => prev.map(n =>
-        n.id === nodeId ? { ...n, messages: [...n.messages, assistantMsg], isThinking: false } : n
-      ));
-    } catch (error: any) {
-      alert(`Error: ${error.message}`);
-      setNodes(prev => prev.map(n => n.id === nodeId ? { ...n, isThinking: false } : n));
-    }
-  };
+  }, [view, nodes.length, addInitialNode]);
 
   return (
     <>
@@ -211,7 +56,15 @@ const App: React.FC = () => {
         <LandingPage
           isDarkMode={isDarkMode}
           setIsDarkMode={setIsDarkMode}
-          onGetStarted={handleGetStarted}
+          onGetStarted={() => {
+            if (isLoggedIn) {
+              setView('canvas');
+            } else if (localStorage.getItem('isRegistered') === 'true') {
+              setView('login');
+            } else {
+              setView('signup');
+            }
+          }}
         />
       )}
 
@@ -231,7 +84,7 @@ const App: React.FC = () => {
             models={models}
             setNodes={setNodes}
             onAddInitialNode={addInitialNode}
-            onClearData={clearData}
+            onClearData={() => clearData(setView, setIsLoggedIn, setIsRegistered)}
             onLogout={handleLogout}
             onOpenSettings={() => setIsSettingsOpen(true)}
             onGoHome={() => setView('landing')}
