@@ -10,7 +10,9 @@ import { SettingsModal } from './components/SettingsModal';
 const INITIAL_POS = { x: 100, y: 100 };
 
 const App: React.FC = () => {
-  const [view, setView] = useState<ViewState>('landing');
+  const [view, setView] = useState<ViewState>(() => {
+    return localStorage.getItem('isLoggedIn') === 'true' ? 'canvas' : 'landing';
+  });
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(localStorage.getItem('isLoggedIn') === 'true');
   const [isRegistered, setIsRegistered] = useState<boolean>(localStorage.getItem('isRegistered') === 'true');
   const [currentUser, setCurrentUser] = useState<string>(localStorage.getItem('currentUser') || '');
