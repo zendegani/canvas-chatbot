@@ -12,18 +12,14 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      overflow: hidden;
+      margin: 0;
+      padding: 0;
+      background-color: #09090b; /* zinc-950 */
     }
     .grid-bg {
       background-image: 
         linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
         linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-    .grid-bg-light {
-      background-image: 
-        linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
       background-size: 40px 40px;
     }
     ::-webkit-scrollbar {
@@ -34,11 +30,15 @@
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(155, 155, 155, 0.3);
+      background: rgba(155, 155, 155, 0.2);
       border-radius: 10px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(155, 155, 155, 0.5);
+      background: rgba(155, 155, 155, 0.4);
+    }
+    /* Smooth scrolling for anchor links */
+    html {
+      scroll-behavior: smooth;
     }
   </style>
 <script type="importmap">

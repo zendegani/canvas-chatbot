@@ -1,19 +1,18 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-// Added Plus icon to the lucide-react imports to fix the error on line 522
-import { Settings, LogOut, Info, Trash2, Github, Moon, Sun, Monitor, Layers, Sparkles, MessageSquare, Zap, Target, Mail, Plus } from 'lucide-react';
+import { Settings, LogOut, Info, Trash2, Github, Moon, Sun, Monitor, Layers, Sparkles, MessageSquare, Zap, Target, Mail, Plus, Home as HomeIcon } from 'lucide-react';
 import { ViewState, ChatNode, OpenRouterModel, Message } from './types';
 import { Node } from './components/Node';
 import { ConnectionLine } from './components/ConnectionLine';
 import { fetchModels, chatCompletion } from './services/openRouterService';
 
 const INITIAL_POS = { x: 100, y: 100 };
-const NODE_WIDTH = 384; // 96 * 4
-const NODE_HEIGHT = 400; // approximation
+const NODE_WIDTH = 384; 
+const NODE_HEIGHT = 400; 
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('landing');
-  // API Key is now handled exclusively via process.env.API_KEY, removing UI-driven state
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(localStorage.getItem('isLoggedIn') === 'true');
   const [nodes, setNodes] = useState<ChatNode[]>(JSON.parse(localStorage.getItem('canvasNodes') || '[]'));
   const [models, setModels] = useState<OpenRouterModel[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -24,29 +23,54 @@ const App: React.FC = () => {
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Resize listener
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Sync state to local storage
   useEffect(() => {
     localStorage.setItem('canvasNodes', JSON.stringify(nodes));
   }, [nodes]);
 
   useEffect(() => {
-    // API Key is injected via process.env, so we can fetch models immediately
     fetchModels().then(setModels);
   }, []);
 
-  const handleLogin = () => {
-    // Auth view removed as per guidelines prohibiting API key UI prompts
+  // Prevent body scroll only when in canvas view
+  useEffect(() => {
+    if (view === 'canvas') {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+  }, [view]);
+
+  const handleGetStarted = () => {
+    if (isLoggedIn) {
+      setView('canvas');
+      if (nodes.length === 0) {
+        addInitialNode();
+      }
+    } else {
+      setView('auth');
+    }
+  };
+
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem('isLoggedIn', 'true');
+    setIsLoggedIn(true);
     setView('canvas');
     if (nodes.length === 0) {
       addInitialNode();
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    setIsLoggedIn(false);
+    setView('landing');
   };
 
   const clearData = () => {
@@ -63,7 +87,7 @@ const App: React.FC = () => {
       parentId: null,
       x: INITIAL_POS.x,
       y: INITIAL_POS.y,
-      model: 'gemini-3-pro-preview', // Default to Gemini 3 Pro
+      model: 'gemini-3-pro-preview', 
       messages: [],
     };
     setNodes([newNode]);
@@ -74,7 +98,6 @@ const App: React.FC = () => {
       alert('Maximum of 10 nodes reached for performance.');
       return;
     }
-
     const parent = nodes.find(n => n.id === parentId);
     if (!parent) return;
 
@@ -84,14 +107,13 @@ const App: React.FC = () => {
       x: parent.x + 420,
       y: parent.y + 100,
       model: parent.model,
-      messages: [...parent.messages], // Snapshot
+      messages: [...parent.messages], 
     };
     setNodes([...nodes, newNode]);
   };
 
   const handleSendMessage = async (nodeId: string, text: string) => {
     const userMsg: Message = { role: 'user', content: text };
-    
     setNodes(prev => prev.map(n => 
       n.id === nodeId 
         ? { ...n, messages: [...n.messages, userMsg], isThinking: true } 
@@ -101,7 +123,6 @@ const App: React.FC = () => {
     try {
       const node = nodes.find(n => n.id === nodeId);
       const history = [...(node?.messages || []), userMsg];
-      // chatCompletion now uses process.env.API_KEY internally
       const reply = await chatCompletion(node?.model || 'gemini-3-flash-preview', history);
       
       const assistantMsg: Message = { role: 'assistant', content: reply };
@@ -124,7 +145,6 @@ const App: React.FC = () => {
     setNodes(prev => prev.filter(n => n.id !== id));
   };
 
-  // Canvas Interactions
   const onMouseDown = (e: React.MouseEvent) => {
     if (e.button === 1 || (e.button === 0 && e.target === canvasRef.current)) {
       setIsPanning(true);
@@ -165,14 +185,15 @@ const App: React.FC = () => {
 
   if (view === 'landing') {
     return (
-      <div className={`min-h-screen ${isDarkMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-900'} overflow-y-auto scroll-smooth`}>
+      <div id="top" className={`min-h-screen ${isDarkMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-900'} scroll-smooth`}>
         {/* Navigation */}
         <nav className="flex items-center justify-between px-6 py-4 fixed top-0 w-full z-50 backdrop-blur-md border-b border-zinc-500/10">
-          <div className="flex items-center gap-2 font-bold text-xl">
+          <div className="flex items-center gap-2 font-bold text-xl cursor-pointer" onClick={() => window.scrollTo(0,0)}>
             <div className="p-1.5 bg-blue-600 rounded-lg"><Sparkles size={20} className="text-white" /></div>
             <span>Canvas AI</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium opacity-70">
+            <a href="#top" className="hover:opacity-100 transition-opacity flex items-center gap-1.5"><HomeIcon size={14} /> Home</a>
             <a href="#overview" className="hover:opacity-100 transition-opacity">Overview</a>
             <a href="#product" className="hover:opacity-100 transition-opacity">Product</a>
             <a href="#pricing" className="hover:opacity-100 transition-opacity">Pricing</a>
@@ -183,7 +204,7 @@ const App: React.FC = () => {
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             <button 
-              onClick={() => handleLogin()}
+              onClick={handleGetStarted}
               className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-sm font-semibold transition-all shadow-lg shadow-blue-600/20"
             >
               Get Started
@@ -192,7 +213,7 @@ const App: React.FC = () => {
         </nav>
 
         {/* Hero */}
-        <section className="pt-40 pb-20 px-6 text-center max-w-5xl mx-auto">
+        <section className="pt-48 pb-20 px-6 text-center max-w-5xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-b from-white to-zinc-500 bg-clip-text text-transparent">
             Orchestrate Your <br /> Intelligence
           </h1>
@@ -201,7 +222,7 @@ const App: React.FC = () => {
           </p>
           <div className="flex items-center justify-center gap-4">
             <button 
-              onClick={() => handleLogin()}
+              onClick={handleGetStarted}
               className="px-8 py-4 bg-white text-zinc-950 rounded-2xl font-bold flex items-center gap-2 hover:bg-zinc-200 transition-all active:scale-95"
             >
               Enter the Canvas <Zap size={18} fill="currentColor" />
@@ -213,8 +234,8 @@ const App: React.FC = () => {
           <div className="mt-20 relative px-4">
             <div className="absolute inset-0 bg-blue-600/10 blur-[120px] rounded-full"></div>
             <img 
-              src="https://picsum.photos/seed/canvas/1200/600" 
-              className="relative rounded-3xl border border-zinc-500/20 shadow-2xl opacity-90"
+              src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1200" 
+              className="relative rounded-3xl border border-zinc-500/20 shadow-2xl opacity-90 mx-auto"
               alt="Platform Preview"
             />
           </div>
@@ -243,7 +264,7 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="bg-zinc-900 rounded-3xl p-1 border border-zinc-500/10 overflow-hidden shadow-2xl">
-              <img src="https://picsum.photos/seed/overview/800/800" className="rounded-[22px]" alt="Feature" />
+              <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800" className="rounded-[22px] w-full" alt="Feature" />
             </div>
           </div>
         </section>
@@ -281,7 +302,7 @@ const App: React.FC = () => {
                 <li className="flex items-center gap-2">✓ Up to 10 nodes per canvas</li>
                 <li className="flex items-center gap-2">✓ Local storage persistence</li>
               </ul>
-              <button onClick={() => handleLogin()} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 rounded-2xl font-bold transition-all">Start Building</button>
+              <button onClick={handleGetStarted} className="w-full py-4 bg-zinc-800 hover:bg-zinc-700 rounded-2xl font-bold transition-all">Start Building</button>
             </div>
             <div className="p-10 rounded-3xl bg-blue-600 border border-blue-400/20 text-left relative overflow-hidden">
                <div className="absolute top-4 right-4 bg-white/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Enterprise</div>
@@ -319,11 +340,69 @@ const App: React.FC = () => {
     );
   }
 
-  // Auth view removed as per guidelines prohibiting API key UI prompts
+  if (view === 'auth') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-6">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-10">
+            <div className="inline-block p-4 bg-blue-600 rounded-2xl mb-6 shadow-2xl shadow-blue-600/30 cursor-pointer" onClick={() => setView('landing')}>
+              <Sparkles size={32} className="text-white" />
+            </div>
+            <h1 className="text-3xl font-bold">Welcome Back</h1>
+            <p className="opacity-60">Sign in or create an account to start orchestrating</p>
+          </div>
+          
+          <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 shadow-2xl">
+            <form onSubmit={handleAuthSubmit}>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2 opacity-70">Email Address</label>
+                  <input 
+                    name="email"
+                    type="email" 
+                    required
+                    placeholder="name@company.com"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 opacity-70">Password</label>
+                  <input 
+                    name="password"
+                    type="password" 
+                    required
+                    placeholder="••••••••"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-white"
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-xl shadow-blue-600/20 active:scale-95"
+                >
+                  Continue
+                </button>
+              </div>
+            </form>
+            <div className="mt-6 pt-6 border-t border-zinc-800 flex flex-col gap-3">
+              <button className="w-full py-3 bg-white text-zinc-950 rounded-xl font-bold text-sm hover:bg-zinc-200 transition-all flex items-center justify-center gap-2">
+                <Github size={18} /> Continue with GitHub
+              </button>
+            </div>
+          </div>
+          <button 
+            onClick={() => setView('landing')}
+            className="w-full mt-6 text-sm opacity-40 hover:opacity-100 transition-opacity"
+          >
+            ← Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Canvas Workspace
   return (
-    <div className="h-screen w-screen overflow-hidden bg-zinc-950 flex flex-col relative">
+    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-zinc-950 flex flex-col relative">
       {/* Background Grid */}
       <div 
         ref={canvasRef}
@@ -407,7 +486,7 @@ const App: React.FC = () => {
             </button>
             <div className="h-4 w-px bg-zinc-700"></div>
             <button 
-              onClick={() => setView('landing')}
+              onClick={handleLogout}
               className="p-2 hover:bg-zinc-800 rounded-xl transition-colors"
             >
               <LogOut size={18} />
@@ -437,9 +516,9 @@ const App: React.FC = () => {
              <div className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest opacity-40">
                <Info size={12} /> Keyboard
              </div>
-             <div className="flex gap-2 text-xs">
-               <span className="px-2 py-1 bg-zinc-800 rounded border border-zinc-700">Space + Drag</span>
-               <span className="px-2 py-1 bg-zinc-800 rounded border border-zinc-700">Scroll to Zoom</span>
+             <div className="flex gap-2 text-xs text-zinc-400">
+               <span className="px-2 py-1 bg-zinc-800 rounded border border-zinc-700">Middle Click/Drag to Pan</span>
+               <span className="px-2 py-1 bg-zinc-800 rounded border border-zinc-700">Drag headers to Move</span>
              </div>
           </div>
           
