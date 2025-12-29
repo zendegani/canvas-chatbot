@@ -47,9 +47,13 @@ const App: React.FC = () => {
   }, [nodes, currentUser]);
 
   useEffect(() => {
-    const apiKey = localStorage.getItem('openRouterApiKey') || '';
-    fetchModels(apiKey).then(setModels);
-  }, []);
+    if (currentUser) {
+      const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`) || '';
+      fetchModels(apiKey).then(setModels);
+    } else {
+      setModels([]);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (view === 'canvas') {
@@ -59,122 +63,10 @@ const App: React.FC = () => {
     }
   }, [view]);
 
-  const handleGetStarted = () => {
-    if (isLoggedIn) {
-      setView('canvas');
-      if (nodes.length === 0) addInitialNode();
-    } else if (isRegistered) {
-      setView('login');
-    } else {
-      setView('signup');
-    }
-  };
-
-  const handleSignupSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    if (!email || !password) return;
-
-    // Store user credentials (MOCK ONLY - Insecure for production)
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-    if (users[email]) {
-      alert('User already exists. Please login.');
-      setView('login');
-      return;
-    }
-
-    users[email] = password;
-    localStorage.setItem('registeredUsers', JSON.stringify(users));
-
-    // Auto login
-    localStorage.setItem('currentUser', email);
-    setCurrentUser(email);
-    localStorage.setItem('isLoggedIn', 'true');
-    setIsLoggedIn(true);
-    setView('canvas'); // Direct to canvas after signup
-    if (nodes.length === 0) addInitialNode();
-  };
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-
-    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-
-    if (users[email] && users[email] === password) {
-      localStorage.setItem('currentUser', email);
-      setCurrentUser(email);
-      localStorage.setItem('isLoggedIn', 'true');
-      setIsLoggedIn(true);
-      setView('canvas');
-      if (nodes.length === 0) addInitialNode();
-    } else {
-      alert('Invalid email or password.');
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUser');
-    setCurrentUser('');
-    setIsLoggedIn(false);
-    setView('landing');
-  };
-
-  const clearData = () => {
-    if (window.confirm('Are you sure you want to clear all data and reset the canvas?')) {
-      localStorage.removeItem('canvasNodes');
-      localStorage.removeItem('isRegistered');
-      localStorage.removeItem('isLoggedIn');
-      setNodes([]);
-      setIsLoggedIn(false);
-      setIsRegistered(false);
-      setView('landing');
-    }
-  };
-
-  // Add logic to clear openRouterApiKey if requested via settings modal... 
-  // Wait, the settings modal handles clearing the key itself from localstorage.
-  // We just need to handle clearing app data.
-
-  const addInitialNode = () => {
-    const newNode: ChatNode = {
-      id: Math.random().toString(36).substr(2, 9),
-      parentId: null,
-      x: INITIAL_POS.x,
-      y: INITIAL_POS.y,
-      model: 'google/gemini-pro',
-      messages: [],
-    };
-    setNodes([newNode]);
-  };
-
-  const handleBranch = (parentId: string) => {
-    if (nodes.length >= 10) {
-      alert('Maximum of 10 nodes reached.');
-      return;
-    }
-    const parent = nodes.find(n => n.id === parentId);
-    if (!parent) return;
-
-    const newNode: ChatNode = {
-      id: Math.random().toString(36).substr(2, 9),
-      parentId: parentId,
-      x: parent.x + 420,
-      y: parent.y + 100,
-      model: parent.model,
-      messages: [...parent.messages],
-    };
-    setNodes([...nodes, newNode]);
-  };
+  // ... (existing code)
 
   const handleSendMessage = async (nodeId: string, text: string) => {
-    const apiKey = localStorage.getItem('openRouterApiKey');
+    const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`);
     if (!apiKey) {
       alert('Please set your OpenRouter API Key in Settings first.');
       setIsSettingsOpen(true);
@@ -238,7 +130,7 @@ const App: React.FC = () => {
           <SettingsModal
             isOpen={isSettingsOpen}
             onClose={() => setIsSettingsOpen(false)}
-            onClearData={clearData}
+            currentUser={currentUser}
           />
         </>
       )}
