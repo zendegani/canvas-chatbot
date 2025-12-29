@@ -1,8 +1,14 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Plus, Send, Link as LinkIcon, Loader2, BrainCircuit } from 'lucide-react';
 import { ChatNode, OpenRouterModel } from '../types';
 import { ModelSelector } from './ModelSelector';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import 'katex/dist/katex.min.css';
 
 interface NodeProps {
   node: ChatNode;
@@ -44,28 +50,28 @@ export const Node: React.FC<NodeProps> = ({
   return (
     <div
       className="absolute w-80 md:w-96 flex flex-col bg-zinc-900/90 backdrop-blur-md border border-zinc-700/50 rounded-2xl shadow-2xl transition-all hover:border-zinc-500/50"
-      style={{ 
-        left: node.x, 
-        top: node.y, 
+      style={{
+        left: node.x,
+        top: node.y,
         zIndex: 10,
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
       }}
     >
       {/* Header */}
-      <div 
+      <div
         className="flex items-center justify-between p-3 border-b border-zinc-800 cursor-grab active:cursor-grabbing"
         onMouseDown={(e) => onDragStart(node.id, e)}
       >
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-          <ModelSelector 
-            models={models} 
-            selectedModel={node.model} 
+          <ModelSelector
+            models={models}
+            selectedModel={node.model}
             onSelect={(m) => onUpdateModel(node.id, m)}
             isLoading={models.length === 0}
           />
         </div>
-        <button 
+        <button
           onClick={() => onDelete(node.id)}
           className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-colors"
         >
@@ -74,7 +80,7 @@ export const Node: React.FC<NodeProps> = ({
       </div>
 
       {/* Messages */}
-      <div 
+      <div
         ref={scrollRef}
         className="flex-1 max-h-72 overflow-y-auto p-4 space-y-4 text-sm"
       >
@@ -86,12 +92,40 @@ export const Node: React.FC<NodeProps> = ({
         )}
         {node.messages.map((msg, i) => (
           <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-            <div className={`max-w-[85%] px-3 py-2 rounded-xl ${
-              msg.role === 'user' 
-                ? 'bg-blue-600 text-white rounded-tr-none' 
+            <div className={`max-w-[95%] px-3 py-2 rounded-xl ${msg.role === 'user'
+                ? 'bg-blue-600 text-white rounded-tr-none'
                 : 'bg-zinc-800 text-zinc-200 rounded-tl-none border border-zinc-700/50'
-            }`}>
-              <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              }`}>
+              {msg.role === 'user' ? (
+                <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+              ) : (
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm, remarkMath]}
+                  rehypePlugins={[rehypeKatex]}
+                  components={{
+                    code({ node, className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '')
+                      return match ? (
+                        <SyntaxHighlighter
+                          {...props}
+                          style={vscDarkPlus}
+                          language={match[1]}
+                          PreTag="div"
+                        >
+                          {String(children).replace(/\n$/, '')}
+                        </SyntaxHighlighter>
+                      ) : (
+                        <code {...props} className={className}>
+                          {children}
+                        </code>
+                      )
+                    }
+                  }}
+                  className="prose prose-invert prose-xs max-w-none"
+                >
+                  {msg.content}
+                </ReactMarkdown>
+              )}
             </div>
           </div>
         ))}
@@ -127,9 +161,10 @@ export const Node: React.FC<NodeProps> = ({
       {/* Input */}
       <div className="p-3 border-t border-zinc-800 bg-zinc-900/50 rounded-b-2xl">
         <form onSubmit={handleSubmit} className="flex gap-2">
-          <button 
+          <button
             type="button"
             className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+            title="Attach file (Not implemented yet)"
           >
             <LinkIcon size={18} />
           </button>

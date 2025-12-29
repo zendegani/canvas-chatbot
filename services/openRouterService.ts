@@ -1,48 +1,90 @@
-
-import { GoogleGenAI } from "@google/genai";
 import { Message, OpenRouterModel } from '../types';
 
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1';
+
 /**
- * Returns available Gemini models for selection in the UI.
+ * Returns available models from OpenRouter.
  */
-export const fetchModels = async (_apiKey: string): Promise<OpenRouterModel[]> => {
-  // Static list of recommended Gemini models as per guidelines
-  return [
-    { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash', context_length: 1000000, pricing: { prompt: '0', completion: '0' } },
-    { id: 'gemini-3-pro-preview', name: 'Gemini 3 Pro', context_length: 2000000, pricing: { prompt: '0', completion: '0' } },
-    { id: 'gemini-2.5-flash-lite-latest', name: 'Gemini Flash Lite', context_length: 1000000, pricing: { prompt: '0', completion: '0' } },
-  ];
+export const fetchModels = async (apiKey: string): Promise<OpenRouterModel[]> => {
+  if (!apiKey) {
+    // Return a default list if no API key is provided, or throw error depending on UX choice
+    // For now, let's return a sensible default list so the UI doesn't break
+    return [
+      {
+        id: 'google/gemini-pro',
+        name: 'Google: Gemini Pro',
+        context_length: 32000,
+        pricing: { prompt: '0.00025', completion: '0.0005' }
+      },
+      {
+        id: 'openai/gpt-3.5-turbo',
+        name: 'OpenAI: GPT-3.5 Turbo',
+        context_length: 16385,
+        pricing: { prompt: '0.0005', completion: '0.0015' }
+      },
+      {
+        id: 'mistralai/mistral-7b-instruct',
+        name: 'Mistral: Mistral 7B Instruct',
+        context_length: 32768,
+        pricing: { prompt: '0', completion: '0' }
+      }
+    ];
+  }
+
+  try {
+    const response = await fetch(`${OPENROUTER_API_URL}/models`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching models:', error);
+    return [];
+  }
 };
 
 /**
- * Handles chat completions using the @google/genai library.
+ * Handles chat completions using OpenRouter API.
  */
 export const chatCompletion = async (
-  _apiKey: string, // Ignored, using process.env.API_KEY per guidelines
+  apiKey: string,
   modelId: string,
   messages: Message[]
 ): Promise<string> => {
-  // Initialize AI with the environment variable API key
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
-  // Separate system instruction and convert messages to Gemini format
-  const systemInstruction = messages.find(m => m.role === 'system')?.content;
-  const conversation = messages
-    .filter(m => m.role !== 'system')
-    .map(m => ({
-      role: m.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: m.content }]
-    }));
+  if (!apiKey) {
+    throw new Error('API Key is missing. Please add your OpenRouter API Key in settings.');
+  }
 
-  // Call generateContent with the specified model and formatted contents
-  const response = await ai.models.generateContent({
-    model: modelId || 'gemini-3-flash-preview',
-    contents: conversation,
-    config: {
-      systemInstruction: systemInstruction,
+  const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': `${window.location.origin}`, // Required by OpenRouter
+      'X-Title': 'Canvas AI', // Optional
     },
+    body: JSON.stringify({
+      model: modelId,
+      messages: messages.map(m => ({
+        role: m.role,
+        content: m.content
+      }))
+    })
   });
 
-  // Extract text from response using the .text property
-  return response.text || '';
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error?.message || `API Error: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || '';
 };
