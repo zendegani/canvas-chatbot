@@ -24,4 +24,4 @@ export interface OpenRouterModel {
   };
 }
 
-export type ViewState = 'landing' | 'auth' | 'canvas';
+export type ViewState = 'landing' | 'login' | 'signup' | 'canvas';
