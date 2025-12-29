@@ -13,7 +13,22 @@ const App: React.FC = () => {
   const [view, setView] = useState<ViewState>('landing');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(localStorage.getItem('isLoggedIn') === 'true');
   const [isRegistered, setIsRegistered] = useState<boolean>(localStorage.getItem('isRegistered') === 'true');
-  const [nodes, setNodes] = useState<ChatNode[]>(JSON.parse(localStorage.getItem('canvasNodes') || '[]'));
+  const [currentUser, setCurrentUser] = useState<string>(localStorage.getItem('currentUser') || '');
+  const [nodes, setNodes] = useState<ChatNode[]>([]);
+  // Load nodes when currentUser changes
+  useEffect(() => {
+    if (currentUser) {
+      const storedNodes = localStorage.getItem(`canvasNodes_${currentUser}`);
+      if (storedNodes) {
+        setNodes(JSON.parse(storedNodes));
+      } else {
+        setNodes([]);
+      }
+    } else {
+      setNodes([]);
+    }
+  }, [currentUser]);
+
   const [models, setModels] = useState<OpenRouterModel[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -26,8 +41,10 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('canvasNodes', JSON.stringify(nodes));
-  }, [nodes]);
+    if (currentUser) {
+      localStorage.setItem(`canvasNodes_${currentUser}`, JSON.stringify(nodes));
+    }
+  }, [nodes, currentUser]);
 
   useEffect(() => {
     const apiKey = localStorage.getItem('openRouterApiKey') || '';
@@ -74,6 +91,7 @@ const App: React.FC = () => {
 
     // Auto login
     localStorage.setItem('currentUser', email);
+    setCurrentUser(email);
     localStorage.setItem('isLoggedIn', 'true');
     setIsLoggedIn(true);
     setView('canvas'); // Direct to canvas after signup
@@ -90,6 +108,7 @@ const App: React.FC = () => {
 
     if (users[email] && users[email] === password) {
       localStorage.setItem('currentUser', email);
+      setCurrentUser(email);
       localStorage.setItem('isLoggedIn', 'true');
       setIsLoggedIn(true);
       setView('canvas');
@@ -101,6 +120,8 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('currentUser');
+    setCurrentUser('');
     setIsLoggedIn(false);
     setView('landing');
   };

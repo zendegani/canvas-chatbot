@@ -9,6 +9,7 @@ import rehypeKatex from 'rehype-katex';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'katex/dist/katex.min.css';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface NodeProps {
   node: ChatNode;
@@ -93,38 +94,41 @@ export const Node: React.FC<NodeProps> = ({
         {node.messages.map((msg, i) => (
           <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div className={`max-w-[95%] px-3 py-2 rounded-xl ${msg.role === 'user'
-                ? 'bg-blue-600 text-white rounded-tr-none'
-                : 'bg-zinc-800 text-zinc-200 rounded-tl-none border border-zinc-700/50'
+              ? 'bg-blue-600 text-white rounded-tr-none'
+              : 'bg-zinc-800 text-zinc-200 rounded-tl-none border border-zinc-700/50'
               }`}>
               {msg.role === 'user' ? (
                 <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
               ) : (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm, remarkMath]}
-                  rehypePlugins={[rehypeKatex]}
-                  components={{
-                    code({ node, className, children, ...props }) {
-                      const match = /language-(\w+)/.exec(className || '')
-                      return match ? (
-                        <SyntaxHighlighter
-                          {...props}
-                          style={vscDarkPlus}
-                          language={match[1]}
-                          PreTag="div"
-                        >
-                          {String(children).replace(/\n$/, '')}
-                        </SyntaxHighlighter>
-                      ) : (
-                        <code {...props} className={className}>
-                          {children}
-                        </code>
-                      )
-                    }
-                  }}
-                  className="prose prose-invert prose-xs max-w-none"
-                >
-                  {msg.content}
-                </ReactMarkdown>
+                <ErrorBoundary>
+                  <div className="prose prose-invert prose-xs max-w-none">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm, remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      components={{
+                        code({ node, className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || '')
+                          return match ? (
+                            <SyntaxHighlighter
+                              {...props}
+                              style={vscDarkPlus}
+                              language={match[1]}
+                              PreTag="div"
+                            >
+                              {String(children).replace(/\n$/, '')}
+                            </SyntaxHighlighter>
+                          ) : (
+                            <code {...props} className={className}>
+                              {children}
+                            </code>
+                          )
+                        }
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                </ErrorBoundary>
               )}
             </div>
           </div>
