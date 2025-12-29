@@ -13,7 +13,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
 
     useEffect(() => {
         if (isOpen && currentUser) {
-            const storedKey = localStorage.getItem(`openRouterApiKey_${currentUser} `);
+            const storedKey = localStorage.getItem(`openRouterApiKey_${currentUser}`);
             if (storedKey) setApiKey(storedKey);
             else setApiKey('');
         }
@@ -21,7 +21,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
 
     const handleSave = () => {
         if (!currentUser) return;
-        localStorage.setItem(`openRouterApiKey_${currentUser} `, apiKey);
+        localStorage.setItem(`openRouterApiKey_${currentUser}`, apiKey);
         onClose();
         // Force reload to refresh models with new key
         window.location.reload();
@@ -29,8 +29,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
 
     const handleClearData = () => {
         if (confirm('Are you sure you want to clear all your data? This cannot be undone.')) {
-            localStorage.removeItem(`canvasNodes_${currentUser} `);
-            localStorage.removeItem(`openRouterApiKey_${currentUser} `);
+            localStorage.removeItem(`canvasNodes_${currentUser}`);
+            localStorage.removeItem(`openRouterApiKey_${currentUser}`);
             window.location.reload();
         }
     };
@@ -81,7 +81,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
 
                     <div>
                         <label className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4 block text-red-400">Danger Zone</label>
-                        <button onClick={onClearData} className="w-full py-4 border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
+                        <button onClick={handleClearData} className="w-full py-4 border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
                             <Trash2 size={18} /> Clear All App Data
                         </button>
                     </div>
