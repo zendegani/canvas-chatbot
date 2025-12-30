@@ -51,13 +51,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button
                         onClick={onGetStarted}
-                        className="w-full sm:w-auto px-10 py-5 bg-white text-zinc-950 rounded-2xl font-black text-lg flex items-center justify-center gap-2 hover:bg-zinc-200 transition-all active:scale-95 shadow-2xl shadow-white/10"
+                        className={`w-full sm:w-auto px-10 py-5 ${isDarkMode ? 'bg-white text-zinc-950 hover:bg-zinc-200' : 'bg-zinc-900 text-white hover:bg-zinc-800'} rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-2xl`}
                     >
                         Enter the Canvas <Zap size={20} fill="currentColor" />
                     </button>
                     <a
                         href="#overview"
-                        className="w-full sm:w-auto px-10 py-5 border border-zinc-500/20 rounded-2xl font-bold text-lg hover:bg-zinc-500/5 transition-all text-center"
+                        className={`w-full sm:w-auto px-10 py-5 border ${isDarkMode ? 'border-zinc-500/20 hover:bg-white/5' : 'border-zinc-900/10 hover:bg-zinc-900/5'} rounded-2xl font-bold text-lg transition-all text-center`}
                     >
                         See How it Works
                     </a>
@@ -80,7 +80,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                 </div>
                 <div className="grid md:grid-cols-2 gap-20 items-center">
                     <div className="space-y-8">
-                        <div className="p-8 rounded-3xl bg-zinc-900/50 border border-zinc-500/10 hover:border-blue-500/30 transition-all">
+                        <div className={`p-8 rounded-3xl ${isDarkMode ? 'bg-zinc-900/50 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border hover:border-blue-500/30 transition-all`}>
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Layers className="text-blue-500" /> Dynamic Branching
                             </h3>
@@ -88,7 +88,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 Fork any conversation at any point to test different prompts, parameters, or models. Never lose your creative flow again.
                             </p>
                         </div>
-                        <div className="p-8 rounded-3xl bg-zinc-900/50 border border-zinc-500/10 hover:border-blue-500/30 transition-all">
+                        <div className={`p-8 rounded-3xl ${isDarkMode ? 'bg-zinc-900/50 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border hover:border-blue-500/30 transition-all`}>
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Monitor className="text-indigo-500" /> Spatial Intelligence
                             </h3>
@@ -109,7 +109,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
             </section>
 
             {/* Product / Features Section */}
-            <section id="product" className="py-32 bg-zinc-900/30 border-y border-zinc-500/10">
+            <section id="product" className={`py-32 ${isDarkMode ? 'bg-zinc-900/30 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border-y`}>
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-20">
                         <h2 className="text-4xl md:text-5xl font-bold mb-6">Unrivaled Power</h2>
@@ -148,8 +148,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 icon: <MessageSquare className="text-orange-500" />
                             }
                         ].map((f, i) => (
-                            <div key={i} className="group p-10 rounded-[40px] bg-zinc-950 border border-zinc-500/10 hover:border-blue-500/40 transition-all duration-500">
-                                <div className="mb-6 p-4 bg-zinc-900 rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500">{f.icon}</div>
+                            <div key={i} className={`group p-10 rounded-[40px] ${isDarkMode ? 'bg-zinc-950 border-zinc-500/10' : 'bg-white border-zinc-900/10'} border hover:border-blue-500/40 transition-all duration-500`}>
+                                <div className={`mb-6 p-4 ${isDarkMode ? 'bg-zinc-900' : 'bg-zinc-100'} rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500`}>{f.icon}</div>
                                 <h3 className="text-2xl font-bold mb-4">{f.title}</h3>
                                 <p className="opacity-50 leading-relaxed text-lg">{f.desc}</p>
                             </div>
@@ -162,7 +162,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
             <section id="pricing" className="py-32 px-6 max-w-6xl mx-auto text-center">
                 <h2 className="text-4xl md:text-5xl font-bold mb-16">Simple. Transparent. Built for You.</h2>
                 <div className="grid md:grid-cols-2 gap-12">
-                    <div className="p-12 rounded-[50px] bg-zinc-900/50 border border-zinc-500/10 text-left hover:scale-[1.02] transition-transform duration-500">
+                    <div className={`p-12 rounded-[50px] ${isDarkMode ? 'bg-zinc-900/50 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border text-left hover:scale-[1.02] transition-transform duration-500`}>
                         <h3 className="text-2xl font-bold mb-2">Individual</h3>
                         <p className="opacity-50 mb-8">For personal use and exploration.</p>
                         <div className="text-6xl font-black mb-8">$0 <span className="text-sm font-normal opacity-30">/ forever</span></div>
@@ -173,7 +173,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 </li>
                             ))}
                         </ul>
-                        <button onClick={onGetStarted} className="w-full py-5 bg-zinc-800 hover:bg-zinc-700 rounded-2xl font-black transition-all">Start Now</button>
+                        <button onClick={onGetStarted} className={`w-full py-5 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-900 text-white hover:bg-zinc-800'} rounded-2xl font-black transition-all`}>Start Now</button>
                     </div>
                     <div className="p-12 rounded-[50px] bg-blue-600 border border-blue-400/20 text-left relative overflow-hidden shadow-2xl shadow-blue-600/20 hover:scale-[1.02] transition-transform duration-500">
                         <div className="absolute top-8 right-8 bg-white/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md">Popular</div>
@@ -194,16 +194,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
 
             {/* Contact Section */}
             <section id="contact" className="py-32 px-6 max-w-5xl mx-auto text-center">
-                <div className="p-20 rounded-[60px] bg-zinc-900 border border-zinc-500/10 relative overflow-hidden group">
+                <div className={`p-20 rounded-[60px] ${isDarkMode ? 'bg-zinc-900 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border relative overflow-hidden group`}>
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px]"></div>
                     <h2 className="text-4xl md:text-5xl font-black mb-10">Get in Touch</h2>
                     <p className="text-xl opacity-60 mb-12 max-w-xl mx-auto">Have questions or feedback? We'd love to hear from you as we build the future of AI orchestration.</p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <a href="mailto:hello@canvasai.io" className="flex items-center gap-3 px-8 py-4 bg-zinc-800 rounded-2xl hover:bg-zinc-700 transition-all font-bold text-lg group-hover:scale-105 duration-300">
+                        <a href="mailto:hello@canvasai.io" className={`flex items-center gap-3 px-8 py-4 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-100 hover:bg-zinc-200'} rounded-2xl transition-all font-bold text-lg group-hover:scale-105 duration-300`}>
                             <Mail size={24} className="text-blue-500" /> hello@canvasai.io
                         </a>
-                        <a href="https://github.com" target="_blank" className="flex items-center gap-3 px-8 py-4 bg-zinc-800 rounded-2xl hover:bg-zinc-700 transition-all font-bold text-lg group-hover:scale-105 duration-300">
-                            <Github size={24} className="text-white" /> Source Code
+                        <a href="https://github.com" target="_blank" className={`flex items-center gap-3 px-8 py-4 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-100 hover:bg-zinc-200'} rounded-2xl transition-all font-bold text-lg group-hover:scale-105 duration-300`}>
+                            <Github size={24} className={isDarkMode ? 'text-white' : 'text-zinc-900'} /> Source Code
                         </a>
                     </div>
                 </div>
