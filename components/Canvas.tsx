@@ -113,20 +113,24 @@ export const Canvas: React.FC<CanvasProps> = ({
                         if (!parent) return null;
                         return <ConnectionLine key={`${parent.id}-${node.id}`} startX={parent.x + NODE_WIDTH} startY={parent.y + NODE_HEIGHT / 4} endX={node.x} endY={node.y + NODE_HEIGHT / 4} />;
                     })}
-                    {nodes.map(node => (
-                        <div key={node.id} className="pointer-events-auto">
-                            <Node
-                                node={node}
-                                models={models}
-                                onDelete={deleteNode}
-                                onBranch={handleBranch}
-                                onSendMessage={handleSendMessage}
-                                onUpdateModel={(id, m) => setNodes(prev => prev.map(n => n.id === id ? { ...n, model: m } : n))}
-                                onDragStart={handleNodeDragStart}
-                                isMobile={isMobile}
-                            />
-                        </div>
-                    ))}
+                    {nodes.map(node => {
+                        const hasChildren = nodes.some(n => n.parentId === node.id);
+                        return (
+                            <div key={node.id} className="pointer-events-auto">
+                                <Node
+                                    node={node}
+                                    models={models}
+                                    hasChildren={hasChildren}
+                                    onDelete={deleteNode}
+                                    onBranch={handleBranch}
+                                    onSendMessage={handleSendMessage}
+                                    onUpdateModel={(id, m) => setNodes(prev => prev.map(n => n.id === id ? { ...n, model: m } : n))}
+                                    onDragStart={handleNodeDragStart}
+                                    isMobile={isMobile}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
