@@ -37,6 +37,7 @@ interface NodeProps {
   onUpdateModel: (id: string, model: string) => void;
   onDragStart: (id: string, e: React.MouseEvent) => void;
   isMobile: boolean;
+  hasChildren: boolean;
 }
 
 export const Node: React.FC<NodeProps> = ({
@@ -47,7 +48,8 @@ export const Node: React.FC<NodeProps> = ({
   onSendMessage,
   onUpdateModel,
   onDragStart,
-  isMobile
+  isMobile,
+  hasChildren
 }) => {
   const [inputText, setInputText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -89,12 +91,15 @@ export const Node: React.FC<NodeProps> = ({
             isLoading={models.length === 0}
           />
         </div>
-        <button
-          onClick={() => onDelete(node.id)}
-          className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-colors"
-        >
-          <X size={16} />
-        </button>
+        {!hasChildren && (
+          <button
+            onClick={() => onDelete(node.id)}
+            className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-colors"
+            title="Delete this node"
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
 
       {/* Messages */}
