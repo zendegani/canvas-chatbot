@@ -70,7 +70,13 @@ Canvas AI is an infinite-canvas based chat interface that allows users to have b
 -   **Add Node**: Start a new conversation thread.
 -   **Chat**: Type a message and receive a streaming response.
 -   **Branch**: Click "Branch" on any node to create a child node linked visually to its parent.
+    -   **Positioning**: Branched nodes must appear in an empty space relative to the parent, ensuring no overlap with existing nodes (Resolution for Issue #1).
+    -   **Context Display**: The visual chat interface of the child node shows *only* new messages starting from the branch point, while the underlying AI context retains the full parent history (Resolution for Issue #5).
+    -   **Orphan Prevention**: Nodes that have active child nodes cannot be closed or deleted to prevent orphaning children (Resolution for Issue #4).
 -   **Error Handling**: Specific feedback for invalid API keys or model errors. Error patterns are caught by an `ErrorBoundary` to prevent app crashing.
+
+### 4.4 Theming
+-   **Landing Page**: Text elements (Product, Contact, etc.) must maintain strict contrast ratios in both Light and Dark modes to ensure readability (Resolution for Issue #3).
 
 ## 5. Performance Requirements
 -   **Bundle Optimization**: Vendor chunk splitting (React, Utils) to ensure fast load times and avoid large bundle warnings.
