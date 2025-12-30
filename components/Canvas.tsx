@@ -96,6 +96,16 @@ export const Canvas: React.FC<CanvasProps> = ({
                 onMouseLeave={onMouseUp}
                 style={{ backgroundPosition: `${panOffset.x}px ${panOffset.y}px` }}
             >
+                {/* Global Defs */}
+                <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
+                    <defs>
+                        <linearGradient id="connection-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
+                            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.6" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+
                 <div className="relative w-full h-full pointer-events-none" style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px)` }}>
                     {nodes.map(node => {
                         if (!node.parentId) return null;
