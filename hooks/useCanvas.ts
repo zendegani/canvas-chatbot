@@ -103,6 +103,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                 y: newY,
                 model: parent.model,
                 messages: [...parent.messages],
+                startIndex: parent.messages.length, // Branch starts after parent's messages
             };
             return [...prevNodes, newNode];
         });
