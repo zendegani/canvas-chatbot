@@ -65,46 +65,47 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     };
 
     const handleBranch = (parentId: string) => {
-        if (nodes.length >= 10) {
-            alert('Maximum of 10 nodes reached.');
-            return;
-        }
-        const parent = nodes.find(n => n.id === parentId);
-        if (!parent) return;
-
-        const NODE_WIDTH = 384;
-        const NODE_HEIGHT = 400;
-        const GAP = 25;
-
-        let newX = parent.x + 450;
-        let newY = parent.y;
-
-        // Simple collision avoidance: vertical stacking
-        // Check if any existing node overlaps with the proposed position
-        let collision = true;
-        let attempts = 0;
-
-        while (collision && attempts < 10) {
-            collision = nodes.some(n =>
-                Math.abs(n.x - newX) < 100 && // Similar X column
-                Math.abs(n.y - newY) < NODE_HEIGHT // Check full height overlap
-            );
-
-            if (collision) {
-                newY += NODE_HEIGHT + GAP; // Move down by full height + gap
-                attempts++;
+        setNodes(prevNodes => {
+            if (prevNodes.length >= 10) {
+                alert('Maximum of 10 nodes reached.');
+                return prevNodes;
             }
-        }
+            const parent = prevNodes.find(n => n.id === parentId);
+            if (!parent) return prevNodes;
 
-        const newNode: ChatNode = {
-            id: Math.random().toString(36).substr(2, 9),
-            parentId: parentId,
-            x: newX,
-            y: newY,
-            model: parent.model,
-            messages: [...parent.messages],
-        };
-        setNodes([...nodes, newNode]);
+            const NODE_WIDTH = 384;
+            const NODE_HEIGHT = 400;
+            const GAP = 25;
+
+            let newX = parent.x + 450;
+            let newY = parent.y + 100; // Offset first child to ensure curved connection line
+
+            // Simple collision avoidance: vertical stacking
+            let collision = true;
+            let attempts = 0;
+
+            while (collision && attempts < 10) {
+                collision = prevNodes.some(n =>
+                    Math.abs(n.x - newX) < 100 &&
+                    Math.abs(n.y - newY) < NODE_HEIGHT
+                );
+
+                if (collision) {
+                    newY += NODE_HEIGHT + GAP;
+                    attempts++;
+                }
+            }
+
+            const newNode: ChatNode = {
+                id: Math.random().toString(36).substr(2, 9),
+                parentId: parentId,
+                x: newX,
+                y: newY,
+                model: parent.model,
+                messages: [...parent.messages],
+            };
+            return [...prevNodes, newNode];
+        });
     };
 
     const handleSendMessage = async (nodeId: string, text: string) => {

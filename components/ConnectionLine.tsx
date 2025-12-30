@@ -12,7 +12,7 @@ export const ConnectionLine: React.FC<ConnectionLineProps> = ({ startX, startY, 
   // Simple cubic bezier curve calculation
   const dx = Math.abs(endX - startX);
   const dy = Math.abs(endY - startY);
-  
+
   // Controls points for the curve
   const cp1x = startX + dx * 0.5;
   const cp1y = startY;
@@ -22,17 +22,11 @@ export const ConnectionLine: React.FC<ConnectionLineProps> = ({ startX, startY, 
   const path = `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`;
 
   return (
-    <svg className="absolute inset-0 pointer-events-none w-full h-full" style={{ zIndex: 0 }}>
-      <defs>
-        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#2563eb" stopOpacity="0.6" />
-        </linearGradient>
-      </defs>
+    <svg className="absolute inset-0 pointer-events-none w-full h-full overflow-visible" style={{ zIndex: 0 }}>
       <path
         d={path}
         fill="none"
-        stroke="url(#lineGradient)"
+        stroke="url(#connection-gradient)"
         strokeWidth="3"
         strokeLinecap="round"
         className="opacity-40 animate-pulse"
