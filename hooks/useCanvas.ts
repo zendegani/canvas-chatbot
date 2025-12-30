@@ -73,10 +73,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         if (!parent) return;
 
         const NODE_WIDTH = 384;
-        const NODE_HEIGHT = 450; // Increased safety margin for height
-        const GAP = 50;
+        const NODE_HEIGHT = 400;
+        const GAP = 25;
 
-        let newX = parent.x + 420;
+        let newX = parent.x + 450;
         let newY = parent.y;
 
         // Simple collision avoidance: vertical stacking
