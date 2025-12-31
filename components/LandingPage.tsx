@@ -74,12 +74,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
 
             {/* Overview Section */}
             <section id="overview" className="py-32 px-6 max-w-7xl mx-auto">
-                <div className="text-center mb-20">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6">Master Parallel Thought</h2>
-                    <div className="h-1.5 w-24 bg-blue-600 mx-auto rounded-full"></div>
-                </div>
+
                 <div className="grid md:grid-cols-2 gap-20 items-center">
                     <div className="space-y-8">
+                        <div>
+                            <span className="text-blue-500 font-bold tracking-widest text-sm uppercase mb-2 block">INNOVATION</span>
+                            <h3 className="text-3xl md:text-4xl font-bold mb-4">A New Way to Interact with AI</h3>
+                            <p className="opacity-60 text-lg leading-relaxed mb-8">
+                                Stop juggling tabs. Master parallel thought with the help of Canvas AI.
+                            </p>
+                        </div>
                         <div className={`p-8 rounded-3xl ${isDarkMode ? 'bg-zinc-900/50 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border hover:border-blue-500/30 transition-all`}>
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Layers className="text-blue-500" /> Dynamic Branching
