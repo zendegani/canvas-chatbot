@@ -53,12 +53,25 @@ Canvas AI is an infinite-canvas based chat interface that allows users to have b
 ### 3.3 Key Dependencies
 -   `react-markdown`, `remark-gfm`, `rehype-katex`: For rich text rendering.
 -   `react-syntax-highlighter`: For code blocks (Optimized build).
--   `framer-motion`: For smooth UI transitions (Landing page).
+
+### 3.4 Environment Variables
+-   **`VITE_WEB3FORMS_KEY`**: Access key for Web3Forms API integration.
+    -   Used for contact form and waitlist modal submissions.
+    -   Stored in `.env.local` (gitignored) for security.
+    -   Template provided in `.env.example`.
+    -   Optional for development (only needed to test form submissions).
 
 ## 4. User Flows
 
 ### 4.1 Onboarding
--   **Landing Page**: A modern "Home" page describing the product value with Overview, Product, and Pricing sections.
+-   **Landing Page**: A modern, responsive landing page with:
+    -   **Sections**: Home, Overview, Product (Features), Pricing, Contact
+    -   **Dark/Light Mode**: Toggle for user preference
+    -   **Pricing Tiers**:
+        -   **Individual** (Free): Up to 10 nodes, OpenRouter integration, local storage
+        -   **Cloud Pro** (€20/month, Coming Soon): Up to 50 nodes, flagship models, collaboration
+    -   **Waitlist Modal**: Users can join the waitlist for Cloud Pro features via Web3Forms
+    -   **Contact Form**: Direct contact via Web3Forms integration (name, email, message)
 -   **Auth**: Users must "Sign Up" or "Log In" to access the canvas.
 
 ### 4.2 Configuration

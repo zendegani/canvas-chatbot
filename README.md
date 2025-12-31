@@ -20,14 +20,29 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
     -   **Bring Your Own Key**: You typically use your own OpenRouter API Key.
     -   **Local Storage**: Your API keys and chat history are stored **only** in your browser's local storage. Nothing is sent to our servers.
     -   **Session Isolation**: Multiple users can share a device safely; data is scoped to your login.
+-   **🎨 Professional Landing Page**:
+    -   Modern, responsive design with dark/light mode toggle
+    -   Pricing tiers (Individual Free, Cloud Pro Coming Soon)
+    -   Waitlist signup modal for early access
+    -   Contact form powered by Web3Forms
 
 ## 🛠️ Tech Stack
 
 -   **Frontend**: React, TypeScript, Vite
--   **Styling**: Tailwind CSS
+-   **Styling**: Tailwind CSS (via CDN) + Custom CSS
 -   **Icons**: Lucide React
 -   **AI Integration**: OpenRouter API
+-   **Forms**: Web3Forms (for contact/waitlist)
 -   **Markdown**: `react-markdown`, `remark-gfm`, `rehype-katex`
+
+## 🔐 Environment Variables
+
+The application uses environment variables for optional features:
+
+-   **`VITE_WEB3FORMS_KEY`** (Optional): Access key for Web3Forms integration (contact form and waitlist)
+    -   Get your free key at [web3forms.com](https://web3forms.com/)
+    -   Only needed if you want to test the contact/waitlist forms locally
+    -   See `.env.example` for the template
 
 ## 🏁 Getting Started
 
@@ -50,7 +65,13 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
     npm install
     ```
 
-3.  **Run the development server**
+3.  **(Optional) Set up environment variables**
+    ```bash
+    cp .env.example .env.local
+    ```
+    Then edit `.env.local` and add your Web3Forms access key if you want to test the contact/waitlist forms.
+
+4.  **Run the development server**
     ```bash
     npm run dev
     ```
