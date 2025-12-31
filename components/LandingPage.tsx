@@ -123,16 +123,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                         {[
                             {
                                 title: "Instant Snapshots",
-                                desc: "Save the state of any conversation and return to it later. Perfect for A/B testing prompts.",
+                                desc: "Save any conversation state instantly and return to it later. Ideal for A/B testing prompts and paths.",
                                 icon: <Sparkles className="text-yellow-500" />
                             },
                             {
                                 title: "Multi-Model Hub",
-                                desc: "Access hundreds of models via OpenRouter to find the perfect balance of speed and logic.",
+                                desc: "Access hundreds of models via OpenRouter to balance speed, cost, and reasoning.",
                                 icon: <Zap className="text-blue-500" />
                             },
                             {
-                                title: "Local Privacy",
+                                title: "Privacy First",
                                 desc: "Your canvas data stays in your browser's local storage. We don't store your secrets.",
                                 icon: <Target className="text-red-500" />
                             },
@@ -147,8 +147,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 icon: <Monitor className="text-emerald-500" />
                             },
                             {
-                                title: "Unlimited Nodes",
-                                desc: "Scale your orchestration up to 10 nodes per canvas for complex multi-step reasoning tasks.",
+                                title: "Infinite 2D Canvas",
+                                desc: "Scale your orchestration on an endless spatial workspace for complex multi-step reasoning tasks.",
                                 icon: <MessageSquare className="text-orange-500" />
                             }
                         ].map((f, i) => (
@@ -169,29 +169,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     <div className={`p-12 rounded-[50px] ${isDarkMode ? 'bg-zinc-900/50 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border text-left hover:scale-[1.02] transition-transform duration-500`}>
                         <h3 className="text-2xl font-bold mb-2">Individual</h3>
                         <p className="opacity-50 mb-8">For personal use and exploration.</p>
-                        <div className="text-6xl font-black mb-8">$0 <span className="text-sm font-normal opacity-30">/ forever</span></div>
+                        <div className="text-6xl font-black mb-8">€0</div>
                         <ul className="space-y-6 mb-12">
-                            {["10 Draggable Nodes", "OpenRouter Integration", "Local Persistent Storage", "Visual Connections", "Lifetime Updates"].map((item, i) => (
+                            {["Up to 10 nodes per canvas", "OpenRouter Integration", "Local Persistent Storage"].map((item, i) => (
                                 <li key={i} className="flex items-center gap-3 font-medium opacity-80">
                                     <Check size={20} className="text-blue-500" /> {item}
                                 </li>
                             ))}
                         </ul>
-                        <button onClick={onGetStarted} className={`w-full py-5 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-900 text-white hover:bg-zinc-800'} rounded-2xl font-black transition-all`}>Start Now</button>
+                        <button onClick={onGetStarted} className={`w-full py-5 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-900 text-white hover:bg-zinc-800'} rounded-2xl font-black transition-all`}>Get started</button>
                     </div>
                     <div className="p-12 rounded-[50px] bg-blue-600 border border-blue-400/20 text-left relative overflow-hidden shadow-2xl shadow-blue-600/20 hover:scale-[1.02] transition-transform duration-500">
-                        <div className="absolute top-8 right-8 bg-white/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md">Popular</div>
+                        <div className="absolute top-8 right-8 bg-white/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md">Coming Soon</div>
                         <h3 className="text-2xl font-bold mb-2 text-white">Cloud Pro</h3>
                         <p className="opacity-80 mb-8 text-white">For professional teams and researchers.</p>
-                        <div className="text-6xl font-black mb-8 text-white">Custom <span className="text-sm font-normal opacity-60">/ project</span></div>
+                        <div className="text-6xl font-black mb-8 text-white">€20 <span className="text-sm font-normal opacity-60">/ month</span></div>
                         <ul className="space-y-6 mb-12 text-white">
-                            {["Unlimited Nodes", "Full Model Suite", "Cloud Synced Workspaces", "Collaborative Canvases", "API Integration Hub"].map((item, i) => (
+                            {["Up to 50 nodes per canvas", "Access to flagships models", "Collaborative Canvases"].map((item, i) => (
                                 <li key={i} className="flex items-center gap-3 font-medium">
                                     <Check size={20} className="text-white" /> {item}
                                 </li>
                             ))}
                         </ul>
-                        <button className="w-full py-5 bg-white text-blue-600 hover:bg-zinc-100 rounded-2xl font-black transition-all shadow-xl">Contact Sales</button>
+                        <button className="w-full py-5 bg-white text-blue-600 hover:bg-zinc-100 rounded-2xl font-black transition-all shadow-xl">Join Waitlist</button>
                     </div>
                 </div>
             </section>
