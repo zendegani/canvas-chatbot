@@ -74,7 +74,7 @@ const WaitlistModal = ({ isOpen, onClose, isDarkMode }: { isOpen: boolean; onClo
                             name="email"
                             required
                             className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`}
-                            placeholder="you@example.com"
+                            placeholder="Your Email"
                         />
                     </div>
                     <textarea name="message" className="hidden" defaultValue="Requesting access to Cloud Pro Waitlist"></textarea>
@@ -91,6 +91,85 @@ const WaitlistModal = ({ isOpen, onClose, isDarkMode }: { isOpen: boolean; onClo
                 </form>
             </div>
         </div>
+    );
+};
+
+const ContactForm = ({ isDarkMode }: { isDarkMode: boolean }) => {
+    const [result, setResult] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsSubmitting(true);
+        setResult("Sending...");
+
+        const formData = new FormData(event.target as HTMLFormElement);
+        formData.append("access_key", "f8921d8b-052c-406f-bc9a-08f8bcc9bba2");
+        formData.append("subject", "New Contact Form Submission from Canvas AI");
+
+        const response = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            setResult("Message sent! We'll get back to you soon.");
+            (event.target as HTMLFormElement).reset();
+        } else {
+            console.log("Error", data);
+            setResult(data.message || "Something went wrong. Please try again.");
+        }
+
+        setIsSubmitting(false);
+    };
+
+    const inputClasses = `w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`;
+
+    return (
+        <form onSubmit={onSubmit} className="space-y-5 text-left">
+            <div>
+                <label className="block text-sm font-medium mb-1.5 opacity-70">Name</label>
+                <input
+                    type="text"
+                    name="name"
+                    required
+                    className={inputClasses}
+                    placeholder="Your Name"
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium mb-1.5 opacity-70">Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    required
+                    className={inputClasses}
+                    placeholder="Your Email"
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium mb-1.5 opacity-70">Message</label>
+                <textarea
+                    name="message"
+                    required
+                    rows={4}
+                    className={inputClasses}
+                    placeholder="How can we help you?"
+                />
+            </div>
+
+            {result && <p className={`text-sm ${result.includes("sent") ? "text-green-500" : result === "Sending..." ? "opacity-70" : "text-red-500"} font-medium text-center`}>{result}</p>}
+
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+                {isSubmitting ? "Sending..." : "Send Message"}
+            </button>
+        </form>
     );
 };
 
@@ -291,19 +370,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
             </section>
 
             {/* Contact Section */}
-            <section id="contact" className="py-32 px-6 max-w-5xl mx-auto text-center">
-                <div className={`p-20 rounded-[60px] ${isDarkMode ? 'bg-zinc-900 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border relative overflow-hidden group`}>
+            <section id="contact" className="py-32 px-6 max-w-3xl mx-auto">
+                <div className={`p-12 md:p-16 rounded-[40px] ${isDarkMode ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-50 border-zinc-200'} border relative overflow-hidden`}>
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px]"></div>
-                    <h2 className="text-4xl md:text-5xl font-black mb-10">Get in Touch</h2>
-                    <p className="text-xl opacity-60 mb-12 max-w-xl mx-auto">Have questions or feedback? We'd love to hear from you as we build the future of AI orchestration.</p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <a href="mailto:hello@canvasai.io" className={`flex items-center gap-3 px-8 py-4 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-100 hover:bg-zinc-200'} rounded-2xl transition-all font-bold text-lg group-hover:scale-105 duration-300`}>
-                            <Mail size={24} className="text-blue-500" /> hello@canvasai.io
-                        </a>
-                        <a href="https://github.com" target="_blank" className={`flex items-center gap-3 px-8 py-4 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-100 hover:bg-zinc-200'} rounded-2xl transition-all font-bold text-lg group-hover:scale-105 duration-300`}>
-                            <Github size={24} className={isDarkMode ? 'text-white' : 'text-zinc-900'} /> Source Code
-                        </a>
+                    <div className="text-center mb-10">
+                        <h2 className="text-4xl md:text-5xl font-black mb-4">Get in Touch</h2>
+                        <p className="text-lg opacity-60 max-w-md mx-auto">Have questions or feedback? We'd love to hear from you.</p>
                     </div>
+                    <ContactForm isDarkMode={isDarkMode} />
                 </div>
             </section>
 
