@@ -7,7 +7,7 @@ interface LandingPageProps {
     onGetStarted: () => void;
 }
 
-const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const WaitlistModal = ({ isOpen, onClose, isDarkMode }: { isOpen: boolean; onClose: () => void; isDarkMode: boolean }) => {
     const [result, setResult] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,10 +24,13 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
         try {
             const response = await fetch("https://api.web3forms.com/submit", {
                 method: "POST",
-                body: formData
+                body: formData,
+                headers: {
+                    "Accept": "application/json"
+                }
             });
 
-            // If the response is ok (2xx), we treat it as success even if JSON parsing might fail strictly
+            // If the response is ok (2xx), we treat it as success
             if (response.ok) {
                 setResult("Success! You've been added to the waitlist.");
                 event.currentTarget.reset();
@@ -36,17 +39,14 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                     setResult("");
                 }, 2000);
             } else {
-                // Try to get error message from response
-                try {
-                    const data = await response.json();
-                    setResult(data.message || "Something went wrong. Please try again.");
-                } catch (e) {
-                    setResult("Server error. Please try again later.");
-                }
+                // Try to get error message from response, but don't throw if JSON parsing fails
+                const data = await response.json().catch(() => ({})); // Catch JSON parsing errors
+                setResult(data.message || "Something went wrong. Please try again.");
             }
         } catch (error) {
             console.error("Form submission error:", error);
-            // If it succeeds on dashboard but fails here, it could be a network/CORS false positive, but usually Fetch only throws on network error.
+            // If it succeeds on dashboard but fails here, it's likely a network/parsing issue or ad-blocker.
+            // Since user confirmed it works on dashboard, we can perhaps be more lenient or just show connection error.
             setResult("Connection error. Please try again.");
         } finally {
             setIsSubmitting(false);
@@ -54,17 +54,17 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in text-zinc-900 dark:text-white">
-            <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-zinc-200 dark:border-zinc-800">
-                <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className={`rounded-3xl p-8 max-w-md w-full shadow-2xl relative border ${isDarkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-zinc-200 text-zinc-900'}`}>
+                <button onClick={onClose} className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-zinc-800' : 'hover:bg-zinc-100'}`}>
                     <X size={20} />
                 </button>
                 <div className="mb-6">
-                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4 text-blue-600 font-bold">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 text-blue-600 font-bold ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
                         <Sparkles size={24} />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">Join the Waitlist</h3>
-                    <p className="opacity-60">Get early access to Cloud Pro features including collaboration and flagship models.</p>
+                    <p className="opacity-70">Get early access to Cloud Pro features including collaboration and flagship models.</p>
                 </div>
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div>
@@ -73,8 +73,8 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                             type="text"
                             name="name"
                             required
-                            className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-white"
-                            placeholder="John Doe"
+                            className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`}
+                            placeholder="Your Name"
                         />
                     </div>
                     <div>
@@ -83,8 +83,8 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                             type="email"
                             name="email"
                             required
-                            className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-white"
-                            placeholder="john@example.com"
+                            className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`}
+                            placeholder="you@example.com"
                         />
                     </div>
                     <textarea name="message" className="hidden" defaultValue="Requesting access to Cloud Pro Waitlist"></textarea>
@@ -109,7 +109,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
 
     return (
         <div id="top" className={`min-h-screen ${isDarkMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-900'} scroll-smooth selection:bg-blue-500/30`}>
-            <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
+            <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} isDarkMode={isDarkMode} />
 
             {/* Navigation */}
             <nav className="flex items-center justify-between px-6 py-4 fixed top-0 w-full z-50 backdrop-blur-md border-b border-zinc-500/10">
