@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Sparkles, Home as HomeIcon, Sun, Moon, Zap, Layers, Monitor, MessageSquare, Target, Check, Mail, Github, X } from 'lucide-react';
 
+const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
+
 interface LandingPageProps {
     isDarkMode: boolean;
     setIsDarkMode: (isDark: boolean) => void;
@@ -19,7 +21,7 @@ const WaitlistModal = ({ isOpen, onClose, isDarkMode }: { isOpen: boolean; onClo
         setResult("Sending...");
 
         const formData = new FormData(event.target as HTMLFormElement);
-        formData.append("access_key", "f8921d8b-052c-406f-bc9a-08f8bcc9bba2");
+        formData.append("access_key", WEB3FORMS_KEY);
 
         const response = await fetch("https://api.web3forms.com/submit", {
             method: "POST",
@@ -104,7 +106,7 @@ const ContactForm = ({ isDarkMode }: { isDarkMode: boolean }) => {
         setResult("Sending...");
 
         const formData = new FormData(event.target as HTMLFormElement);
-        formData.append("access_key", "f8921d8b-052c-406f-bc9a-08f8bcc9bba2");
+        formData.append("access_key", WEB3FORMS_KEY);
         formData.append("subject", "New Contact Form Submission from Canvas AI");
 
         const response = await fetch("https://api.web3forms.com/submit", {
