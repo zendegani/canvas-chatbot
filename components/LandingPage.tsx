@@ -27,8 +27,8 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 body: formData
             });
 
-            const data = await response.json();
-            if (data.success) {
+            // If the response is ok (2xx), we treat it as success even if JSON parsing might fail strictly
+            if (response.ok) {
                 setResult("Success! You've been added to the waitlist.");
                 event.currentTarget.reset();
                 setTimeout(() => {
@@ -36,17 +36,25 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                     setResult("");
                 }, 2000);
             } else {
-                setResult("Something went wrong. Please try again.");
+                // Try to get error message from response
+                try {
+                    const data = await response.json();
+                    setResult(data.message || "Something went wrong. Please try again.");
+                } catch (e) {
+                    setResult("Server error. Please try again later.");
+                }
             }
         } catch (error) {
-            setResult("Error submitting form. Please check your connection.");
+            console.error("Form submission error:", error);
+            // If it succeeds on dashboard but fails here, it could be a network/CORS false positive, but usually Fetch only throws on network error.
+            setResult("Connection error. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in text-zinc-900 dark:text-white">
             <div className="bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-md w-full shadow-2xl relative border border-zinc-200 dark:border-zinc-800">
                 <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
                     <X size={20} />
@@ -65,7 +73,7 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                             type="text"
                             name="name"
                             required
-                            className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-white"
                             placeholder="John Doe"
                         />
                     </div>
@@ -75,7 +83,7 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                             type="email"
                             name="email"
                             required
-                            className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-white"
                             placeholder="john@example.com"
                         />
                     </div>
