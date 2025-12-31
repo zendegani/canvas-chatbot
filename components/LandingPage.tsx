@@ -16,41 +16,31 @@ const WaitlistModal = ({ isOpen, onClose, isDarkMode }: { isOpen: boolean; onClo
     const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setIsSubmitting(true);
-        setResult("");
+        setResult("Sending...");
 
-        const formData = new FormData(event.currentTarget);
+        const formData = new FormData(event.target as HTMLFormElement);
         formData.append("access_key", "f8921d8b-052c-406f-bc9a-08f8bcc9bba2");
 
-        try {
-            const response = await fetch("https://api.web3forms.com/submit", {
-                method: "POST",
-                body: formData,
-                headers: {
-                    "Accept": "application/json"
-                }
-            });
+        const response = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData
+        });
 
-            // If the response is ok (2xx), we treat it as success
-            if (response.ok) {
-                setResult("Success! You've been added to the waitlist.");
-                event.currentTarget.reset();
-                setTimeout(() => {
-                    onClose();
-                    setResult("");
-                }, 2000);
-            } else {
-                // Try to get error message from response, but don't throw if JSON parsing fails
-                const data = await response.json().catch(() => ({})); // Catch JSON parsing errors
-                setResult(data.message || "Something went wrong. Please try again.");
-            }
-        } catch (error) {
-            console.error("Form submission error:", error);
-            // If it succeeds on dashboard but fails here, it's likely a network/parsing issue or ad-blocker.
-            // Since user confirmed it works on dashboard, we can perhaps be more lenient or just show connection error.
-            setResult("Connection error. Please try again.");
-        } finally {
-            setIsSubmitting(false);
+        const data = await response.json();
+
+        if (data.success) {
+            setResult("Success! You've been added to the waitlist.");
+            (event.target as HTMLFormElement).reset();
+            setTimeout(() => {
+                onClose();
+                setResult("");
+            }, 3000);
+        } else {
+            console.log("Error", data);
+            setResult(data.message || "Something went wrong. Please try again.");
         }
+
+        setIsSubmitting(false);
     };
 
     return (
