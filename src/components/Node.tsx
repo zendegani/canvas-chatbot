@@ -132,7 +132,7 @@ export const Node: React.FC<NodeProps> = ({
                         remarkPlugins={[remarkGfm, remarkMath]}
                         rehypePlugins={[rehypeKatex]}
                         components={{
-                          code({ node, className, children, ...props }) {
+                          code({ node, className, children, style, ref, ...props }) {
                             const match = /language-(\w+)/.exec(className || '')
                             return match ? (
                               <SyntaxHighlighter
