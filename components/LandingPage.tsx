@@ -1,5 +1,7 @@
-import React from 'react';
-import { Sparkles, Home as HomeIcon, Sun, Moon, Zap, Layers, Monitor, MessageSquare, Target, Check, Mail, Github } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Home as HomeIcon, Sun, Moon, Zap, Layers, Monitor, MessageSquare, Target, Check, Mail, Github, X } from 'lucide-react';
+
+const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
 
 interface LandingPageProps {
     isDarkMode: boolean;
@@ -7,9 +9,179 @@ interface LandingPageProps {
     onGetStarted: () => void;
 }
 
+const WaitlistModal = ({ isOpen, onClose, isDarkMode }: { isOpen: boolean; onClose: () => void; isDarkMode: boolean }) => {
+    const [result, setResult] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    if (!isOpen) return null;
+
+    const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsSubmitting(true);
+        setResult("Sending...");
+
+        const formData = new FormData(event.target as HTMLFormElement);
+        formData.append("access_key", WEB3FORMS_KEY);
+
+        const response = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            setResult("Success! You've been added to the waitlist.");
+            (event.target as HTMLFormElement).reset();
+            setTimeout(() => {
+                onClose();
+                setResult("");
+            }, 3000);
+        } else {
+            console.log("Error", data);
+            setResult(data.message || "Something went wrong. Please try again.");
+        }
+
+        setIsSubmitting(false);
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+            <div className={`rounded-3xl p-8 max-w-md w-full shadow-2xl relative border ${isDarkMode ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-white border-zinc-200 text-zinc-900'}`}>
+                <button onClick={onClose} className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-zinc-800' : 'hover:bg-zinc-100'}`}>
+                    <X size={20} />
+                </button>
+                <div className="mb-6">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 text-blue-600 font-bold ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
+                        <Sparkles size={24} />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">Join the Waitlist</h3>
+                    <p className="opacity-70">Get early access to Cloud Pro features including collaboration and flagship models.</p>
+                </div>
+                <form onSubmit={onSubmit} className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium mb-1.5 opacity-70">Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            required
+                            className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`}
+                            placeholder="Your Name"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium mb-1.5 opacity-70">Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            required
+                            className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`}
+                            placeholder="Your Email"
+                        />
+                    </div>
+                    <textarea name="message" className="hidden" defaultValue="Requesting access to Cloud Pro Waitlist"></textarea>
+
+                    {result && <p className={`text-sm ${result.includes("Success") ? "text-green-500" : "text-red-500"} font-medium`}>{result}</p>}
+
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        {isSubmitting ? "Joining..." : "Join Waitlist"}
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const ContactForm = ({ isDarkMode }: { isDarkMode: boolean }) => {
+    const [result, setResult] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsSubmitting(true);
+        setResult("Sending...");
+
+        const formData = new FormData(event.target as HTMLFormElement);
+        formData.append("access_key", WEB3FORMS_KEY);
+        formData.append("subject", "New Contact Form Submission from Canvas AI");
+
+        const response = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            setResult("Message sent! We'll get back to you soon.");
+            (event.target as HTMLFormElement).reset();
+        } else {
+            console.log("Error", data);
+            setResult(data.message || "Something went wrong. Please try again.");
+        }
+
+        setIsSubmitting(false);
+    };
+
+    const inputClasses = `w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`;
+
+    return (
+        <form onSubmit={onSubmit} className="space-y-5 text-left">
+            <div>
+                <label className="block text-sm font-medium mb-1.5 opacity-70">Name</label>
+                <input
+                    type="text"
+                    name="name"
+                    required
+                    className={inputClasses}
+                    placeholder="Your Name"
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium mb-1.5 opacity-70">Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    required
+                    className={inputClasses}
+                    placeholder="Your Email"
+                />
+            </div>
+            <div>
+                <label className="block text-sm font-medium mb-1.5 opacity-70">Message</label>
+                <textarea
+                    name="message"
+                    required
+                    rows={4}
+                    className={inputClasses}
+                    placeholder="How can we help you?"
+                />
+            </div>
+
+            {result && <p className={`text-sm ${result.includes("sent") ? "text-green-500" : result === "Sending..." ? "opacity-70" : "text-red-500"} font-medium text-center`}>{result}</p>}
+
+            <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+                {isSubmitting ? "Sending..." : "Send Message"}
+            </button>
+        </form>
+    );
+};
+
 export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkMode, onGetStarted }) => {
+    const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+
     return (
         <div id="top" className={`min-h-screen ${isDarkMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-900'} scroll-smooth selection:bg-blue-500/30`}>
+            <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} isDarkMode={isDarkMode} />
+
             {/* Navigation */}
             <nav className="flex items-center justify-between px-6 py-4 fixed top-0 w-full z-50 backdrop-blur-md border-b border-zinc-500/10">
                 <div className="flex items-center gap-2 font-bold text-xl cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
@@ -74,12 +246,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
 
             {/* Overview Section */}
             <section id="overview" className="py-32 px-6 max-w-7xl mx-auto">
-                <div className="text-center mb-20">
-                    <h2 className="text-4xl md:text-5xl font-bold mb-6">Master Parallel Thought</h2>
-                    <div className="h-1.5 w-24 bg-blue-600 mx-auto rounded-full"></div>
-                </div>
+
                 <div className="grid md:grid-cols-2 gap-20 items-center">
                     <div className="space-y-8">
+                        <div>
+                            <span className="text-blue-500 font-bold tracking-widest text-sm uppercase mb-2 block">INNOVATION</span>
+                            <h3 className="text-3xl md:text-4xl font-bold mb-4">A New Way to Interact with AI</h3>
+                            <p className="opacity-60 text-lg leading-relaxed mb-8">
+                                Stop juggling tabs. Master parallel thought with the help of Canvas AI.
+                            </p>
+                        </div>
                         <div className={`p-8 rounded-3xl ${isDarkMode ? 'bg-zinc-900/50 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border hover:border-blue-500/30 transition-all`}>
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Layers className="text-blue-500" /> Dynamic Branching
@@ -119,16 +295,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                         {[
                             {
                                 title: "Instant Snapshots",
-                                desc: "Save the state of any conversation and return to it later. Perfect for A/B testing prompts.",
+                                desc: "Save any conversation state instantly and return to it later. Ideal for A/B testing prompts and paths.",
                                 icon: <Sparkles className="text-yellow-500" />
                             },
                             {
                                 title: "Multi-Model Hub",
-                                desc: "Access hundreds of models via OpenRouter to find the perfect balance of speed and logic.",
+                                desc: "Access hundreds of models via OpenRouter to balance speed, cost, and reasoning.",
                                 icon: <Zap className="text-blue-500" />
                             },
                             {
-                                title: "Local Privacy",
+                                title: "Privacy First",
                                 desc: "Your canvas data stays in your browser's local storage. We don't store your secrets.",
                                 icon: <Target className="text-red-500" />
                             },
@@ -143,8 +319,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 icon: <Monitor className="text-emerald-500" />
                             },
                             {
-                                title: "Unlimited Nodes",
-                                desc: "Scale your orchestration up to 10 nodes per canvas for complex multi-step reasoning tasks.",
+                                title: "Infinite 2D Canvas",
+                                desc: "Scale your orchestration on an endless spatial workspace for complex multi-step reasoning tasks.",
                                 icon: <MessageSquare className="text-orange-500" />
                             }
                         ].map((f, i) => (
@@ -162,50 +338,48 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
             <section id="pricing" className="py-32 px-6 max-w-6xl mx-auto text-center">
                 <h2 className="text-4xl md:text-5xl font-bold mb-16">Simple. Transparent. Built for You.</h2>
                 <div className="grid md:grid-cols-2 gap-12">
-                    <div className={`p-12 rounded-[50px] ${isDarkMode ? 'bg-zinc-900/50 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border text-left hover:scale-[1.02] transition-transform duration-500`}>
-                        <h3 className="text-2xl font-bold mb-2">Individual</h3>
-                        <p className="opacity-50 mb-8">For personal use and exploration.</p>
-                        <div className="text-6xl font-black mb-8">$0 <span className="text-sm font-normal opacity-30">/ forever</span></div>
-                        <ul className="space-y-6 mb-12">
-                            {["10 Draggable Nodes", "OpenRouter Integration", "Local Persistent Storage", "Visual Connections", "Lifetime Updates"].map((item, i) => (
-                                <li key={i} className="flex items-center gap-3 font-medium opacity-80">
-                                    <Check size={20} className="text-blue-500" /> {item}
-                                </li>
-                            ))}
-                        </ul>
-                        <button onClick={onGetStarted} className={`w-full py-5 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-900 text-white hover:bg-zinc-800'} rounded-2xl font-black transition-all`}>Start Now</button>
-                    </div>
+                    {/* Individual / Free (Blue Style) */}
                     <div className="p-12 rounded-[50px] bg-blue-600 border border-blue-400/20 text-left relative overflow-hidden shadow-2xl shadow-blue-600/20 hover:scale-[1.02] transition-transform duration-500">
-                        <div className="absolute top-8 right-8 bg-white/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-md">Popular</div>
-                        <h3 className="text-2xl font-bold mb-2 text-white">Cloud Pro</h3>
-                        <p className="opacity-80 mb-8 text-white">For professional teams and researchers.</p>
-                        <div className="text-6xl font-black mb-8 text-white">Custom <span className="text-sm font-normal opacity-60">/ project</span></div>
+                        <h3 className="text-2xl font-bold mb-2 text-white">Individual</h3>
+                        <p className="opacity-80 mb-8 text-white">For personal use and exploration.</p>
+                        <div className="text-6xl font-black mb-8 text-white">€0</div>
                         <ul className="space-y-6 mb-12 text-white">
-                            {["Unlimited Nodes", "Full Model Suite", "Cloud Synced Workspaces", "Collaborative Canvases", "API Integration Hub"].map((item, i) => (
+                            {["Up to 10 nodes per canvas", "OpenRouter Integration", "Local Persistent Storage"].map((item, i) => (
                                 <li key={i} className="flex items-center gap-3 font-medium">
                                     <Check size={20} className="text-white" /> {item}
                                 </li>
                             ))}
                         </ul>
-                        <button className="w-full py-5 bg-white text-blue-600 hover:bg-zinc-100 rounded-2xl font-black transition-all shadow-xl">Contact Sales</button>
+                        <button onClick={onGetStarted} className="w-full py-5 bg-white text-blue-600 hover:bg-zinc-100 rounded-2xl font-black transition-all shadow-xl">Get started</button>
+                    </div>
+
+                    {/* Cloud Pro (Zinc Style) */}
+                    <div className={`p-12 rounded-[50px] ${isDarkMode ? 'bg-zinc-900/50 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border text-left hover:scale-[1.02] transition-transform duration-500 relative`}>
+                        <div className={`absolute top-8 right-8 ${isDarkMode ? 'bg-zinc-800' : 'bg-white'} border border-zinc-500/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest`}>Coming Soon</div>
+                        <h3 className="text-2xl font-bold mb-2">Cloud Pro</h3>
+                        <p className="opacity-50 mb-8">For professional teams and researchers.</p>
+                        <div className="text-6xl font-black mb-8">€20 <span className="text-sm font-normal opacity-30">/ month</span></div>
+                        <ul className="space-y-6 mb-12">
+                            {["Up to 50 nodes per canvas", "Access to flagships models", "Collaborative Canvases"].map((item, i) => (
+                                <li key={i} className="flex items-center gap-3 font-medium opacity-80">
+                                    <Check size={20} className="text-blue-500" /> {item}
+                                </li>
+                            ))}
+                        </ul>
+                        <button onClick={() => setIsWaitlistOpen(true)} className={`w-full py-5 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-900 text-white hover:bg-zinc-800'} rounded-2xl font-black transition-all`}>Join Waitlist</button>
                     </div>
                 </div>
             </section>
 
             {/* Contact Section */}
-            <section id="contact" className="py-32 px-6 max-w-5xl mx-auto text-center">
-                <div className={`p-20 rounded-[60px] ${isDarkMode ? 'bg-zinc-900 border-zinc-500/10' : 'bg-zinc-50 border-zinc-900/5'} border relative overflow-hidden group`}>
+            <section id="contact" className="py-32 px-6 max-w-3xl mx-auto">
+                <div className={`p-12 md:p-16 rounded-[40px] ${isDarkMode ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-50 border-zinc-200'} border relative overflow-hidden`}>
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px]"></div>
-                    <h2 className="text-4xl md:text-5xl font-black mb-10">Get in Touch</h2>
-                    <p className="text-xl opacity-60 mb-12 max-w-xl mx-auto">Have questions or feedback? We'd love to hear from you as we build the future of AI orchestration.</p>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <a href="mailto:hello@canvasai.io" className={`flex items-center gap-3 px-8 py-4 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-100 hover:bg-zinc-200'} rounded-2xl transition-all font-bold text-lg group-hover:scale-105 duration-300`}>
-                            <Mail size={24} className="text-blue-500" /> hello@canvasai.io
-                        </a>
-                        <a href="https://github.com" target="_blank" className={`flex items-center gap-3 px-8 py-4 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-100 hover:bg-zinc-200'} rounded-2xl transition-all font-bold text-lg group-hover:scale-105 duration-300`}>
-                            <Github size={24} className={isDarkMode ? 'text-white' : 'text-zinc-900'} /> Source Code
-                        </a>
+                    <div className="text-center mb-10">
+                        <h2 className="text-4xl md:text-5xl font-black mb-4">Get in Touch</h2>
+                        <p className="text-lg opacity-60 max-w-md mx-auto">Have questions or feedback? We'd love to hear from you.</p>
                     </div>
+                    <ContactForm isDarkMode={isDarkMode} />
                 </div>
             </section>
 
@@ -218,3 +392,4 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
         </div>
     );
 };
+
