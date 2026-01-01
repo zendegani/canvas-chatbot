@@ -28,12 +28,13 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
 
 ## 🛠️ Tech Stack
 
--   **Frontend**: React, TypeScript, Vite
--   **Styling**: Tailwind CSS (via CDN) + Custom CSS
+-   **Frontend**: React, TypeScript (Strict Mode), Vite
+-   **Styling**: Tailwind CSS v4 (Locally built via Vite plugin)
 -   **Icons**: Lucide React
 -   **AI Integration**: OpenRouter API
--   **Forms**: Web3Forms (for contact/waitlist)
--   **Markdown**: `react-markdown`, `remark-gfm`, `rehype-katex`
+-   **Forms**: Web3Forms
+-   **Quality**: ESLint, Prettier, Vitest, Zod, DOMPurify
+
 
 ## 🔐 Environment Variables
 

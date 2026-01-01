@@ -37,9 +37,9 @@ Canvas AI is an infinite-canvas based chat interface that allows users to have b
 ## 3. Technical Stack
 
 ### 3.1 Frontend
--   **Framework**: React 18 with TypeScript
--   **Build Tool**: Vite
--   **Styling**: Tailwind CSS
+-   **Framework**: React 18 with TypeScript (Strict Mode enabled)
+-   **Build Tool**: Vite (configured with `@` alias to `src`)
+-   **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite`)
 -   **Icons**: Lucide React
 
 ### 3.2 State Management
@@ -51,8 +51,9 @@ Canvas AI is an infinite-canvas based chat interface that allows users to have b
     -   `view`: View persistence (landing/canvas) across reloads.
 
 ### 3.3 Key Dependencies
--   `react-markdown`, `remark-gfm`, `rehype-katex`: For rich text rendering.
--   `react-syntax-highlighter`: For code blocks (Optimized build).
+-   **Core**: `react-markdown`, `remark-gfm`, `rehype-katex` (Rich Text)
+-   **Utils**: `clsx`, `tailwind-merge`, `zod`, `dompurify`
+-   **Dev**: `vitest`, `eslint`, `prettier`
 
 ### 3.4 Environment Variables
 -   **`VITE_WEB3FORMS_KEY`**: Access key for Web3Forms API integration.
