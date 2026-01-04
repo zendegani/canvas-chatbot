@@ -29,7 +29,8 @@ const App: React.FC = () => {
     addInitialNode,
     handleBranch,
     handleSendMessage,
-    clearData
+    clearData,
+    hasLoaded
   } = useCanvas(currentUser);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -58,11 +59,13 @@ const App: React.FC = () => {
   useEffect(() => {
     if (view === 'canvas') {
       document.body.style.overflow = 'hidden';
-      if (nodes.length === 0) addInitialNode();
+      if (hasLoaded && nodes.length === 0) {
+        addInitialNode();
+      }
     } else {
       document.body.style.overflow = 'auto';
     }
-  }, [view, nodes.length, addInitialNode]);
+  }, [view, nodes.length, addInitialNode, hasLoaded]);
 
   return (
     <>

@@ -32,8 +32,8 @@ describe('useCanvas', () => {
             });
 
             expect(result.current.nodes).toHaveLength(1);
-            expect(result.current.nodes[0].x).toBe(100);
-            expect(result.current.nodes[0].y).toBe(100);
+            expect(result.current.nodes[0].x).toBe(224);
+            expect(result.current.nodes[0].y).toBe(184);
             expect(result.current.nodes[0].parentId).toBeNull();
             expect(result.current.nodes[0].messages).toEqual([]);
             expect(result.current.nodes[0].model).toBe('google/gemini-pro');
@@ -58,7 +58,7 @@ describe('useCanvas', () => {
             expect(result.current.nodes).toHaveLength(2);
             const childNode = result.current.nodes[1];
             expect(childNode.parentId).toBe(parentId);
-            expect(childNode.x).toBe(550); // parent.x + 450
+            expect(childNode.x).toBe(850); // parent.x + 576 + 50
             expect(childNode.model).toBe(result.current.nodes[0].model);
         });
 

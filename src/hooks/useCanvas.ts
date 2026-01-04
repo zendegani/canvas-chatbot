@@ -15,33 +15,42 @@ interface UseCanvasReturn {
     handleBranch: (parentId: string) => void;
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
     clearData: (setView: (view: ViewState) => void, setIsLoggedIn: (val: boolean) => void, setIsRegistered: (val: boolean) => void) => void;
+    hasLoaded: boolean;
 }
 
 export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const [nodes, setNodes] = useState<ChatNode[]>([]);
     const [models, setModels] = useState<OpenRouterModel[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [hasLoaded, setHasLoaded] = useState(false);
 
     // Load nodes when currentUser changes
     useEffect(() => {
         if (currentUser) {
             const storedNodes = localStorage.getItem(`canvasNodes_${currentUser}`);
             if (storedNodes) {
-                setNodes(JSON.parse(storedNodes));
+                try {
+                    setNodes(JSON.parse(storedNodes));
+                } catch (e) {
+                    console.error('Failed to parse stored nodes', e);
+                    setNodes([]);
+                }
             } else {
                 setNodes([]);
             }
+            setHasLoaded(true);
         } else {
             setNodes([]);
+            setHasLoaded(false);
         }
     }, [currentUser]);
 
     // Persist nodes
     useEffect(() => {
-        if (currentUser) {
+        if (currentUser && hasLoaded) {
             localStorage.setItem(`canvasNodes_${currentUser}`, JSON.stringify(nodes));
         }
-    }, [nodes, currentUser]);
+    }, [nodes, currentUser, hasLoaded]);
 
     // Fetch models
     useEffect(() => {
@@ -168,6 +177,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         addInitialNode,
         handleBranch,
         handleSendMessage,
-        clearData
+        clearData,
+        hasLoaded
     };
 };
