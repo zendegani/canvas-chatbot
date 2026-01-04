@@ -21,94 +21,68 @@
 }
 
 /* Base Variables - Defaulting to Claude Theme for now, but overridable */
-:root {
-  /* Default Theme (Claude) */
+/* THEME CONFIGURATION */
+
+/* 1. CLAUDE THEME (Light Mode Default) */
+:root,
+[data-theme="claude"] {
   --bg-primary: #FAF9F5;
-  /* Pampas */
   --bg-card: #FFFFFF;
   --text-primary: #141413;
-  /* Cod Gray */
   --text-secondary: #B0AEA5;
   --border-primary: #E8E6DC;
   --accent-primary: #C15F3C;
-  /* Rust Orange */
+  --font-main: "Inter", sans-serif;
+  --font-header: "Lora", serif;
 
   --color-border-subtle: rgba(20, 20, 19, 0.05);
   --color-scroll-thumb: rgba(20, 20, 19, 0.2);
   --color-scroll-thumb-hover: rgba(20, 20, 19, 0.4);
-
-  --font-main: "Inter", sans-serif;
-  --font-header: "Lora", serif;
 }
 
-/* Original Theme (Cyberpunk/Zinc) */
-[data-theme="original"] {
-  --bg-primary: #09090b;
-  /* zinc-950 */
-  --bg-card: #18181b;
-  /* zinc-900 */
-  --text-primary: #FFFFFF;
-  --text-secondary: #a1a1aa;
-  /* zinc-400 */
-  --border-primary: #27272a;
-  /* zinc-800 */
-  --accent-primary: #2563eb;
-  /* blue-600 */
+/* Claude Dark Mode */
+:root.dark,
+[data-theme="claude"].dark {
+  --bg-primary: #141413;
+  --bg-card: #2E2E2C;
+  --text-primary: #FAF9F5;
+  --text-secondary: #828179;
+  --border-primary: #2E2E2C;
+  --accent-primary: #C15F3C;
 
   --color-border-subtle: rgba(255, 255, 255, 0.05);
   --color-scroll-thumb: rgba(255, 255, 255, 0.2);
   --color-scroll-thumb-hover: rgba(255, 255, 255, 0.4);
+}
 
+/* 2. ORIGINAL THEME (Zinc/Blue) */
+[data-theme="original"] {
+  --bg-primary: #FFFFFF;
+  --bg-card: #F4F4F5;
+  --text-primary: #18181B;
+  --text-secondary: #71717A;
+  --border-primary: #E4E4E7;
+  --accent-primary: #2563EB;
   --font-main: "Inter", sans-serif;
   --font-header: "Inter", sans-serif;
-  /* Original didn't use Lora */
+
+  --color-border-subtle: rgba(0, 0, 0, 0.05);
+  --color-scroll-thumb: rgba(0, 0, 0, 0.2);
+  --color-scroll-thumb-hover: rgba(0, 0, 0, 0.4);
 }
 
-/* Claude Theme (Explicit) */
-[data-theme="claude"] {
-  --bg-primary: #FAF9F5;
-  /* Pampas */
-  --bg-card: #FFFFFF;
-  --text-primary: #141413;
-  /* Cod Gray */
-  --text-secondary: #B0AEA5;
-  --border-primary: #E8E6DC;
-  --accent-primary: #C15F3C;
-  /* Rust Orange */
+/* Original Dark Mode */
+[data-theme="original"].dark {
+  --bg-primary: #09090B;
+  --bg-card: #18181B;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --border-primary: #27272A;
+  --accent-primary: #3B82F6;
 
-  --color-border-subtle: rgba(20, 20, 19, 0.05);
-  --color-scroll-thumb: rgba(20, 20, 19, 0.2);
-  --color-scroll-thumb-hover: rgba(20, 20, 19, 0.4);
-
-  --font-main: "Inter", sans-serif;
-  --font-header: "Lora", serif;
-}
-
-/* Dark Mode Overrides for Claude Theme Only */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="original"]) {
-    --bg-primary: #141413;
-    /* Cod Gray */
-    --bg-card: #2E2E2C;
-    /* Subtle Gray */
-    --text-primary: #FAF9F5;
-    --text-secondary: #828179;
-    --border-primary: #2E2E2C;
-
-    --color-border-subtle: rgba(255, 255, 255, 0.05);
-    --color-scroll-thumb: rgba(255, 255, 255, 0.2);
-    --color-scroll-thumb-hover: rgba(255, 255, 255, 0.4);
-  }
-
-  [data-theme="claude"] {
-    --bg-primary: #141413;
-    --bg-card: #2E2E2C;
-    --text-primary: #FAF9F5;
-    --text-secondary: #828179;
-    --border-primary: #2E2E2C;
-
-    --color-border-subtle: rgba(255, 255, 255, 0.05);
-  }
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-scroll-thumb: rgba(255, 255, 255, 0.2);
+  --color-scroll-thumb-hover: rgba(255, 255, 255, 0.4);
 }
 
 /* Custom Styles */

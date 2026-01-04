@@ -46,6 +46,15 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Sync isDarkMode with DOM for Tailwind/CSS selector support
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   useEffect(() => {
     if (view === 'canvas') {
       document.body.style.overflow = 'hidden';

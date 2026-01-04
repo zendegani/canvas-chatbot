@@ -14,7 +14,7 @@ export const Auth: React.FC<AuthProps> = ({ view, setView, onLogin, onSignup }) 
         <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] p-6 selection:bg-claude-accent/30 text-[var(--text-primary)]">
             <div className="w-full max-w-md">
                 <div className="text-center mb-10">
-                    <div className="inline-block p-4 bg-claude-accent rounded-2xl mb-6 cursor-pointer shadow-2xl shadow-claude-accent/30" onClick={() => setView('landing')}>
+                    <div className="inline-block p-4 bg-[var(--accent-primary)] rounded-2xl mb-6 cursor-pointer shadow-2xl shadow-[var(--accent-primary)]/30" onClick={() => setView('landing')}>
                         <Sparkles size={32} className="text-white" />
                     </div>
                     <h1 className="text-4xl font-black tracking-tight mb-2">{isSignup ? 'Create Account' : 'Welcome Back'}</h1>
@@ -31,14 +31,14 @@ export const Auth: React.FC<AuthProps> = ({ view, setView, onLogin, onSignup }) 
                                 <label className="block text-sm font-bold mb-2 opacity-70 uppercase tracking-widest text-[10px]">Password</label>
                                 <input name="password" type="password" required placeholder="••••••••" className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-2xl px-5 py-4 text-sm focus:ring-2 focus:ring-claude-accent outline-none text-[var(--text-primary)] transition-all" />
                             </div>
-                            <button type="submit" className="w-full py-5 bg-claude-accent hover:opacity-90 text-white rounded-2xl font-black transition-all shadow-xl shadow-claude-accent/20 active:scale-95">
+                            <button type="submit" className="w-full py-5 bg-[var(--accent-primary)] hover:opacity-90 text-white rounded-2xl font-black transition-all shadow-xl shadow-[var(--accent-primary)]/20 active:scale-95">
                                 {isSignup ? 'Sign up' : 'Login'}
                             </button>
                         </div>
                     </form>
                     <div className="mt-8 text-center text-sm opacity-60">
                         {isSignup ? "Already have an account? " : "Don't have an account? "}
-                        <button onClick={() => setView(isSignup ? 'login' : 'signup')} className="text-claude-accent font-bold hover:underline">
+                        <button onClick={() => setView(isSignup ? 'login' : 'signup')} className="text-[var(--accent-primary)] font-bold hover:underline">
                             {isSignup ? 'Login here' : 'Sign up here'}
                         </button>
                     </div>

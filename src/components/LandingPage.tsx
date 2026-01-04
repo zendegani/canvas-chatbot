@@ -47,12 +47,12 @@ const WaitlistModal = ({ isOpen, onClose, isDarkMode }: { isOpen: boolean; onClo
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className={`rounded-3xl p-8 max-w-md w-full shadow-2xl relative border ${isDarkMode ? 'bg-claude-border-dark border-claude-border-dark text-claude-text-dark' : 'bg-card border-claude-border text-claude-text'}`}>
-                <button onClick={onClose} className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-zinc-800' : 'hover:bg-zinc-100'}`}>
+            <div className="rounded-3xl p-8 max-w-md w-full shadow-2xl relative border bg-[var(--bg-card)] border-[var(--border-primary)] text-[var(--text-primary)]">
+                <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full transition-colors hover:bg-[var(--bg-primary)]">
                     <X size={20} />
                 </button>
                 <div className="mb-6">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 font-bold ${isDarkMode ? 'bg-[var(--accent-primary)]/30 text-[var(--accent-primary)]' : 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'}`}>
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 font-bold bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]">
                         <Sparkles size={24} />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">Join the Waitlist</h3>
@@ -179,7 +179,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
     const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
     return (
-        <div id="top" className={`min-h-screen ${isDarkMode ? 'bg-claude-bg-dark text-claude-text-dark' : 'bg-claude-bg text-claude-text'} scroll-smooth selection:bg-[var(--accent-primary)]/30`}>
+        <div id="top" className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] scroll-smooth selection:bg-[var(--accent-primary)]/30">
             <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} isDarkMode={isDarkMode} />
 
             {/* Navigation */}
@@ -229,7 +229,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     </button>
                     <a
                         href="#overview"
-                        className={`w-full sm:w-auto px-10 py-5 border border-[var(--border-primary)] ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'} rounded-2xl font-bold text-lg transition-all text-center`}
+                        className="w-full sm:w-auto px-10 py-5 border border-[var(--border-primary)] hover:bg-[var(--bg-card)]/10 rounded-2xl font-bold text-lg transition-all text-center"
                     >
                         See How it Works
                     </a>
@@ -256,7 +256,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 Stop juggling tabs. Master parallel thought with the help of Canvas AI.
                             </p>
                         </div>
-                        <div className={`p-8 rounded-3xl ${isDarkMode ? 'bg-claude-border-dark/30 border-claude-border-dark' : 'bg-card border-claude-border'} border hover:border-claude-accent/30 transition-all`}>
+                        <div className="p-8 rounded-3xl bg-[var(--bg-card)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)]/30 transition-all">
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Layers className="text-[var(--accent-primary)]" /> Dynamic Branching
                             </h3>
@@ -285,7 +285,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
             </section>
 
             {/* Product / Features Section */}
-            <section id="product" className={`py-32 ${isDarkMode ? 'bg-claude-bg-dark border-claude-border-dark' : 'bg-claude-bg border-claude-border'} border-y`}>
+            <section id="product" className="py-32 bg-[var(--bg-primary)] border-y border-[var(--border-primary)]">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-20">
                         <h2 className="text-4xl md:text-5xl font-bold mb-6">Unrivaled Power</h2>
@@ -324,8 +324,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 icon: <MessageSquare className="text-orange-500" />
                             }
                         ].map((f, i) => (
-                            <div key={i} className={`group p-10 rounded-[40px] ${isDarkMode ? 'bg-claude-bg-dark border-claude-border-dark' : 'bg-card border-claude-border'} border hover:border-claude-accent/40 transition-all duration-500`}>
-                                <div className={`mb-6 p-4 ${isDarkMode ? 'bg-claude-border-dark' : 'bg-claude-bg'} rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500`}>{f.icon}</div>
+                            <div key={i} className="group p-10 rounded-[40px] bg-[var(--bg-card)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)]/40 transition-all duration-500">
+                                <div className="mb-6 p-4 bg-[var(--bg-primary)] rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500">{f.icon}</div>
                                 <h3 className="text-2xl font-bold mb-4">{f.title}</h3>
                                 <p className="opacity-50 leading-relaxed text-lg">{f.desc}</p>
                             </div>
@@ -339,8 +339,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                 <h2 className="text-4xl md:text-5xl font-bold mb-16">Simple. Transparent. Built for You.</h2>
                 <div className="grid md:grid-cols-2 gap-12">
                     {/* Individual / Free (Blue Style) */}
-                    {/* Free Plan (Zinc Style - De-emphasized) */}
-                    <div className={`p-12 rounded-[50px] ${isDarkMode ? 'bg-claude-border-dark/30 border-claude-border-dark' : 'bg-card border-claude-border'} border text-left hover:scale-[1.02] transition-transform duration-500`}>
+                    {/* Free Plan */}
+                    <div className="p-12 rounded-[50px] bg-[var(--bg-card)] border border-[var(--border-primary)] text-left hover:scale-[1.02] transition-transform duration-500">
                         <h3 className="text-2xl font-bold mb-2">Free</h3>
                         <p className="opacity-80 mb-8">For personal use and exploration.</p>
                         <div className="text-6xl font-black mb-8">€0</div>
@@ -351,12 +351,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 </li>
                             ))}
                         </ul>
-                        <button onClick={onGetStarted} className={`w-full py-5 ${isDarkMode ? 'bg-claude-border-dark text-white' : 'bg-claude-bg text-claude-text'} hover:scale-105 border border-[var(--border-primary)] rounded-2xl font-black transition-all shadow-lg`}>Get started</button>
+                        <button onClick={onGetStarted} className="w-full py-5 bg-[var(--bg-primary)] text-[var(--text-primary)] hover:scale-105 border border-[var(--border-primary)] rounded-2xl font-black transition-all shadow-lg">Get started</button>
                     </div>
 
                     {/* Cloud Pro (Zinc Style) */}
                     {/* Cloud Pro (Highlighted) */}
-                    <div className="p-12 rounded-[50px] bg-claude-accent border border-claude-accent text-left relative overflow-hidden shadow-2xl shadow-claude-accent/20 hover:scale-[1.02] transition-transform duration-500">
+                    {/* Cloud Pro (Highlighted) */}
+                    <div className="p-12 rounded-[50px] bg-[var(--accent-primary)] border border-[var(--accent-primary)] text-left relative overflow-hidden shadow-2xl shadow-[var(--accent-primary)]/20 hover:scale-[1.02] transition-transform duration-500">
                         <div className="absolute top-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest text-white">Coming Soon</div>
                         <h3 className="text-2xl font-bold mb-2 text-white">Cloud Pro</h3>
                         <p className="opacity-80 mb-8 text-white">For professional teams and researchers.</p>
@@ -368,14 +369,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 </li>
                             ))}
                         </ul>
-                        <button onClick={() => setIsWaitlistOpen(true)} className="w-full py-5 bg-white text-claude-accent hover:opacity-90 rounded-2xl font-black transition-all shadow-xl">Join Waitlist</button>
+                        <button onClick={() => setIsWaitlistOpen(true)} className="w-full py-5 bg-white text-[var(--accent-primary)] hover:opacity-90 rounded-2xl font-black transition-all shadow-xl">Join Waitlist</button>
                     </div>
                 </div>
             </section>
 
             {/* Contact Section */}
             <section id="contact" className="py-32 px-6 max-w-3xl mx-auto">
-                <div className={`p-12 md:p-16 rounded-[40px] ${isDarkMode ? 'bg-claude-border-dark border-claude-border-dark' : 'bg-card border-claude-border'} border relative overflow-hidden`}>
+                <div className="p-12 md:p-16 rounded-[40px] bg-[var(--bg-card)] border border-[var(--border-primary)] relative overflow-hidden">
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-[var(--accent-primary)]/10 rounded-full blur-[100px]"></div>
                     <div className="text-center mb-10">
                         <h2 className="text-4xl md:text-5xl font-black mb-4">Get in Touch</h2>
