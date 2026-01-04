@@ -52,7 +52,7 @@ const WaitlistModal = ({ isOpen, onClose, isDarkMode }: { isOpen: boolean; onClo
                     <X size={20} />
                 </button>
                 <div className="mb-6">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 text-blue-600 font-bold ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 font-bold ${isDarkMode ? 'bg-[var(--accent-primary)]/30 text-[var(--accent-primary)]' : 'bg-[var(--accent-primary)]/10 text-[var(--accent-primary)]'}`}>
                         <Sparkles size={24} />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">Join the Waitlist</h3>
@@ -127,7 +127,7 @@ const ContactForm = ({ isDarkMode }: { isDarkMode: boolean }) => {
         setIsSubmitting(false);
     };
 
-    const inputClasses = `w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ${isDarkMode ? 'bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500' : 'bg-zinc-50 border-zinc-200 text-zinc-900 placeholder:text-zinc-400'}`;
+    const inputClasses = `w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] transition-all ${isDarkMode ? 'bg-claude-bg-dark border-claude-border-dark text-claude-text-dark placeholder:text-claude-text-secondary-dark' : 'bg-claude-bg border-claude-border text-claude-text placeholder:text-claude-text-secondary'}`;
 
     return (
         <form onSubmit={onSubmit} className="space-y-5 text-left">
@@ -167,7 +167,7 @@ const ContactForm = ({ isDarkMode }: { isDarkMode: boolean }) => {
             <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-4 bg-[var(--accent-primary)] hover:opacity-90 text-white rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
                 {isSubmitting ? "Sending..." : "Send Message"}
             </button>
@@ -179,13 +179,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
     const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
 
     return (
-        <div id="top" className={`min-h-screen ${isDarkMode ? 'bg-claude-bg-dark text-claude-text-dark' : 'bg-claude-bg text-claude-text'} scroll-smooth selection:bg-claude-accent/30`}>
+        <div id="top" className={`min-h-screen ${isDarkMode ? 'bg-claude-bg-dark text-claude-text-dark' : 'bg-claude-bg text-claude-text'} scroll-smooth selection:bg-[var(--accent-primary)]/30`}>
             <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} isDarkMode={isDarkMode} />
 
             {/* Navigation */}
-            <nav className="flex items-center justify-between px-6 py-4 fixed top-0 w-full z-50 backdrop-blur-md border-b border-zinc-500/10">
+            <nav className="flex items-center justify-between px-6 py-4 fixed top-0 w-full z-50 backdrop-blur-md border-b border-[var(--border-primary)]/50">
                 <div className="flex items-center gap-2 font-bold text-xl cursor-pointer" onClick={() => window.scrollTo(0, 0)}>
-                    <div className="p-1.5 bg-blue-600 rounded-lg"><Sparkles size={20} className="text-white" /></div>
+                    <div className="p-1.5 bg-[var(--accent-primary)] rounded-lg"><Sparkles size={20} className="text-white" /></div>
                     <span>Canvas AI</span>
                 </div>
                 <div className="hidden md:flex items-center gap-8 text-sm font-medium opacity-70">
@@ -201,7 +201,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     </button>
                     <button
                         onClick={onGetStarted}
-                        className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-full text-sm font-semibold transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                        className="px-5 py-2 bg-[var(--accent-primary)] hover:opacity-90 text-white rounded-full text-sm font-semibold transition-all shadow-lg shadow-[var(--accent-primary)]/20 active:scale-95"
                     >
                         Get Started
                     </button>
@@ -210,12 +210,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
 
             {/* Home Section */}
             <section className="pt-48 pb-20 px-6 text-center max-w-5xl mx-auto">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 text-xs font-bold mb-6 animate-fade-in">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20 text-[var(--accent-primary)] text-xs font-bold mb-6 animate-fade-in">
                     <Sparkles size={14} /> POWERED BY OPENROUTER
                 </div>
                 <h1 className="text-6xl md:text-8xl font-black mb-8 leading-tight tracking-tight">
                     Orchestrate Your <br />
-                    <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">Intelligence</span>
+                    <span className="bg-gradient-to-r from-[var(--accent-primary)] to-indigo-500 bg-clip-text text-transparent">Intelligence</span>
                 </h1>
                 <p className="text-xl md:text-2xl opacity-60 mb-12 max-w-2xl mx-auto leading-relaxed">
                     The ultimate 2D spatial workspace to branch, compare, and scale parallel conversations across hundreds of LLMs.
@@ -235,7 +235,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     </a>
                 </div>
                 <div className="mt-24 relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent-primary)] to-indigo-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
                     <img
                         src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1200"
                         className="relative rounded-3xl border border-zinc-500/20 shadow-2xl mx-auto transform group-hover:scale-[1.01] transition-all duration-500"
@@ -250,7 +250,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                 <div className="grid md:grid-cols-2 gap-20 items-center">
                     <div className="space-y-8">
                         <div>
-                            <span className="text-blue-500 font-bold tracking-widest text-sm uppercase mb-2 block">INNOVATION</span>
+                            <span className="text-[var(--accent-primary)] font-bold tracking-widest text-sm uppercase mb-2 block">INNOVATION</span>
                             <h3 className="text-3xl md:text-4xl font-bold mb-4">A New Way to Interact with AI</h3>
                             <p className="opacity-60 text-lg leading-relaxed mb-8">
                                 Stop juggling tabs. Master parallel thought with the help of Canvas AI.
@@ -258,7 +258,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                         </div>
                         <div className={`p-8 rounded-3xl ${isDarkMode ? 'bg-claude-border-dark/30 border-claude-border-dark' : 'bg-card border-claude-border'} border hover:border-claude-accent/30 transition-all`}>
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
-                                <Layers className="text-blue-500" /> Dynamic Branching
+                                <Layers className="text-[var(--accent-primary)]" /> Dynamic Branching
                             </h3>
                             <p className="opacity-60 text-lg leading-relaxed">
                                 Fork any conversation at any point to test different prompts, parameters, or models. Never lose your creative flow again.
@@ -274,7 +274,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                         </div>
                     </div>
                     <div className="relative">
-                        <div className="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full"></div>
+                        <div className="absolute inset-0 bg-[var(--accent-primary)]/20 blur-[100px] rounded-full"></div>
                         <img
                             src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800"
                             className="relative rounded-3xl border border-zinc-500/20 shadow-2xl w-full"
@@ -301,7 +301,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                             {
                                 title: "Multi-Model Hub",
                                 desc: "Access hundreds of models via OpenRouter to balance speed, cost, and reasoning.",
-                                icon: <Zap className="text-blue-500" />
+                                icon: <Zap className="text-[var(--accent-primary)]" />
                             },
                             {
                                 title: "Privacy First",
@@ -374,7 +374,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
             {/* Contact Section */}
             <section id="contact" className="py-32 px-6 max-w-3xl mx-auto">
                 <div className={`p-12 md:p-16 rounded-[40px] ${isDarkMode ? 'bg-claude-border-dark border-claude-border-dark' : 'bg-card border-claude-border'} border relative overflow-hidden`}>
-                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/10 rounded-full blur-[100px]"></div>
+                    <div className="absolute -top-24 -right-24 w-64 h-64 bg-[var(--accent-primary)]/10 rounded-full blur-[100px]"></div>
                     <div className="text-center mb-10">
                         <h2 className="text-4xl md:text-5xl font-black mb-4">Get in Touch</h2>
                         <p className="text-lg opacity-60 max-w-md mx-auto">Have questions or feedback? We'd love to hear from you.</p>

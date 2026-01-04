@@ -4,60 +4,105 @@
   --font-serif: "Lora", serif;
   --font-sans: "Inter", sans-serif;
 
-  /* Claude Palette */
+  /* We keep the Claude tokens available as utilities if needed, but primarily rely on semantic vars */
   --color-claude-bg: #FAF9F5;
-  /* Pampas */
-  --color-claude-bg-dark: #141413;
-  /* Cod Gray */
-
-  --color-claude-text: #141413;
-  --color-claude-text-dark: #FAF9F5;
-
-  --color-claude-text-secondary: #B0AEA5;
-  --color-claude-text-secondary-dark: #828179;
-
-  --color-claude-border: #E8E6DC;
-  --color-claude-border-dark: #2E2E2C;
-
   --color-claude-accent: #C15F3C;
-  /* Rust Orange */
 }
 
+/* Base Variables - Defaulting to Claude Theme for now, but overridable */
 :root {
-  /* Default to Light Mode values */
-  --bg-primary: var(--color-claude-bg);
-  --text-primary: var(--color-claude-text);
-  --text-secondary: var(--color-claude-text-secondary);
-  --border-primary: var(--color-claude-border);
-  --accent-primary: var(--color-claude-accent);
+  /* Default Theme (Claude) */
+  --bg-primary: #FAF9F5;
+  /* Pampas */
+  --bg-card: #FFFFFF;
+  --text-primary: #141413;
+  /* Cod Gray */
+  --text-secondary: #B0AEA5;
+  --border-primary: #E8E6DC;
+  --accent-primary: #C15F3C;
+  /* Rust Orange */
 
   --color-border-subtle: rgba(20, 20, 19, 0.05);
-  /* For grid lines */
   --color-scroll-thumb: rgba(20, 20, 19, 0.2);
   --color-scroll-thumb-hover: rgba(20, 20, 19, 0.4);
 
-  --bg-card: #FFFFFF;
+  --font-main: "Inter", sans-serif;
+  --font-header: "Lora", serif;
 }
 
+/* Original Theme (Cyberpunk/Zinc) */
+[data-theme="original"] {
+  --bg-primary: #09090b;
+  /* zinc-950 */
+  --bg-card: #18181b;
+  /* zinc-900 */
+  --text-primary: #FFFFFF;
+  --text-secondary: #a1a1aa;
+  /* zinc-400 */
+  --border-primary: #27272a;
+  /* zinc-800 */
+  --accent-primary: #2563eb;
+  /* blue-600 */
+
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-scroll-thumb: rgba(255, 255, 255, 0.2);
+  --color-scroll-thumb-hover: rgba(255, 255, 255, 0.4);
+
+  --font-main: "Inter", sans-serif;
+  --font-header: "Inter", sans-serif;
+  /* Original didn't use Lora */
+}
+
+/* Claude Theme (Explicit) */
+[data-theme="claude"] {
+  --bg-primary: #FAF9F5;
+  /* Pampas */
+  --bg-card: #FFFFFF;
+  --text-primary: #141413;
+  /* Cod Gray */
+  --text-secondary: #B0AEA5;
+  --border-primary: #E8E6DC;
+  --accent-primary: #C15F3C;
+  /* Rust Orange */
+
+  --color-border-subtle: rgba(20, 20, 19, 0.05);
+  --color-scroll-thumb: rgba(20, 20, 19, 0.2);
+  --color-scroll-thumb-hover: rgba(20, 20, 19, 0.4);
+
+  --font-main: "Inter", sans-serif;
+  --font-header: "Lora", serif;
+}
+
+/* Dark Mode Overrides for Claude Theme Only */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: var(--color-claude-bg-dark);
-    --text-primary: var(--color-claude-text-dark);
-    --text-secondary: var(--color-claude-text-secondary-dark);
-    --border-primary: var(--color-claude-border-dark);
+  :root:not([data-theme="original"]) {
+    --bg-primary: #141413;
+    /* Cod Gray */
+    --bg-card: #2E2E2C;
+    /* Subtle Gray */
+    --text-primary: #FAF9F5;
+    --text-secondary: #828179;
+    --border-primary: #2E2E2C;
 
     --color-border-subtle: rgba(255, 255, 255, 0.05);
     --color-scroll-thumb: rgba(255, 255, 255, 0.2);
     --color-scroll-thumb-hover: rgba(255, 255, 255, 0.4);
+  }
 
-    --bg-card: var(--color-claude-border-dark);
-    /* Using the "Borders / Cards" color */
+  [data-theme="claude"] {
+    --bg-primary: #141413;
+    --bg-card: #2E2E2C;
+    --text-primary: #FAF9F5;
+    --text-secondary: #828179;
+    --border-primary: #2E2E2C;
+
+    --color-border-subtle: rgba(255, 255, 255, 0.05);
   }
 }
 
 /* Custom Styles */
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-main);
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
@@ -68,7 +113,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-serif);
+  font-family: var(--font-header);
 }
 
 .grid-bg {
