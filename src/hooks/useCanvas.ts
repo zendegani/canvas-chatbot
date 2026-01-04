@@ -16,6 +16,7 @@ interface UseCanvasReturn {
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
     clearData: (setView: (view: ViewState) => void, setIsLoggedIn: (val: boolean) => void, setIsRegistered: (val: boolean) => void) => void;
     hasLoaded: boolean;
+    refreshModels: () => void;
 }
 
 export const useCanvas = (currentUser: string): UseCanvasReturn => {
@@ -168,6 +169,13 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     };
 
+    const refreshModels = () => {
+        if (currentUser) {
+            const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`) || '';
+            fetchModels(apiKey).then(setModels);
+        }
+    };
+
     return {
         nodes,
         setNodes,
@@ -178,6 +186,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         handleBranch,
         handleSendMessage,
         clearData,
-        hasLoaded
+        hasLoaded,
+        refreshModels
     };
 };
