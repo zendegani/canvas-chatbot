@@ -1,16 +1,78 @@
 @import "tailwindcss";
 
-/* Custom Styles */
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--color-zinc-950);
+@theme {
+  --font-serif: "Lora", serif;
+  --font-sans: "Inter", sans-serif;
+
+  /* Claude Palette */
+  --color-claude-bg: #FAF9F5;
+  /* Pampas */
+  --color-claude-bg-dark: #141413;
+  /* Cod Gray */
+
+  --color-claude-text: #141413;
+  --color-claude-text-dark: #FAF9F5;
+
+  --color-claude-text-secondary: #B0AEA5;
+  --color-claude-text-secondary-dark: #828179;
+
+  --color-claude-border: #E8E6DC;
+  --color-claude-border-dark: #2E2E2C;
+
+  --color-claude-accent: #C15F3C;
+  /* Rust Orange */
 }
 
+:root {
+  /* Default to Light Mode values */
+  --bg-primary: var(--color-claude-bg);
+  --text-primary: var(--color-claude-text);
+  --text-secondary: var(--color-claude-text-secondary);
+  --border-primary: var(--color-claude-border);
+  --accent-primary: var(--color-claude-accent);
+
+  --color-border-subtle: rgba(20, 20, 19, 0.05);
+  /* For grid lines */
+  --color-scroll-thumb: rgba(20, 20, 19, 0.2);
+  --color-scroll-thumb-hover: rgba(20, 20, 19, 0.4);
+
+  --bg-card: #FFFFFF;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: var(--color-claude-bg-dark);
+    --text-primary: var(--color-claude-text-dark);
+    --text-secondary: var(--color-claude-text-secondary-dark);
+    --border-primary: var(--color-claude-border-dark);
+
+    --color-border-subtle: rgba(255, 255, 255, 0.05);
+    --color-scroll-thumb: rgba(255, 255, 255, 0.2);
+    --color-scroll-thumb-hover: rgba(255, 255, 255, 0.4);
+
+    --bg-card: var(--color-claude-border-dark);
+    /* Using the "Borders / Cards" color */
+  }
+}
+
+/* Custom Styles */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+}
 
 .grid-bg {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  /* Grid lines are handled in inline style via CSS var now, but keeping class for reference */
   background-size: 40px 40px;
 }
 
@@ -24,12 +86,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(155, 155, 155, 0.2);
+  background: var(--color-scroll-thumb);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(155, 155, 155, 0.4);
+  background: var(--color-scroll-thumb-hover);
 }
 
 html {

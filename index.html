@@ -8,20 +8,21 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+    rel="stylesheet">
   <style>
     body {
       font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #09090b;
-      /* zinc-950 */
+      /* Background handled in index.css */
     }
 
     .grid-bg {
       background-image:
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        linear-gradient(to right, var(--color-border-subtle) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--color-border-subtle) 1px, transparent 1px);
       background-size: 40px 40px;
     }
 
@@ -35,12 +36,12 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(155, 155, 155, 0.2);
+      background: var(--color-scroll-thumb);
       border-radius: 10px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(155, 155, 155, 0.4);
+      background: var(--color-scroll-thumb-hover);
     }
 
     /* Smooth scrolling for anchor links */
@@ -62,7 +63,7 @@
   <link rel="stylesheet" href="/index.css">
 </head>
 
-<body class="bg-zinc-950 text-white">
+<body class="transition-colors duration-300">
   <div id="root"></div>
   <script type="module" src="/src/index.tsx"></script>
 </body>
