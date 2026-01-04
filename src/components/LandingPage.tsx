@@ -215,7 +215,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                 </div>
                 <h1 className="text-6xl md:text-8xl font-black mb-8 leading-tight tracking-tight">
                     Orchestrate Your <br />
-                    <span className="bg-gradient-to-r from-[var(--accent-primary)] to-indigo-500 bg-clip-text text-transparent">Intelligence</span>
+                    <span className="text-[var(--accent-primary)]">Intelligence</span>
                 </h1>
                 <p className="text-xl md:text-2xl opacity-60 mb-12 max-w-2xl mx-auto leading-relaxed">
                     The ultimate 2D spatial workspace to branch, compare, and scale parallel conversations across hundreds of LLMs.
@@ -223,13 +223,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <button
                         onClick={onGetStarted}
-                        className={`w-full sm:w-auto px-10 py-5 ${isDarkMode ? 'bg-claude-text-dark text-claude-bg-dark hover:bg-claude-text-secondary' : 'bg-claude-text text-claude-bg hover:bg-claude-text-secondary-dark'} rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-2xl`}
+                        className="w-full sm:w-auto px-10 py-5 bg-[var(--accent-primary)] hover:opacity-90 text-white rounded-2xl font-black text-lg flex items-center justify-center gap-2 transition-all active:scale-95 shadow-2xl shadow-[var(--accent-primary)]/20"
                     >
                         Enter the Canvas <Zap size={20} fill="currentColor" />
                     </button>
                     <a
                         href="#overview"
-                        className={`w-full sm:w-auto px-10 py-5 border ${isDarkMode ? 'border-claude-border-dark hover:bg-white/5' : 'border-claude-border hover:bg-black/5'} rounded-2xl font-bold text-lg transition-all text-center`}
+                        className={`w-full sm:w-auto px-10 py-5 border border-[var(--border-primary)] ${isDarkMode ? 'hover:bg-white/5' : 'hover:bg-black/5'} rounded-2xl font-bold text-lg transition-all text-center`}
                     >
                         See How it Works
                     </a>
@@ -339,34 +339,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                 <h2 className="text-4xl md:text-5xl font-bold mb-16">Simple. Transparent. Built for You.</h2>
                 <div className="grid md:grid-cols-2 gap-12">
                     {/* Individual / Free (Blue Style) */}
-                    <div className="p-12 rounded-[50px] bg-claude-accent border border-claude-accent text-left relative overflow-hidden shadow-2xl shadow-claude-accent/20 hover:scale-[1.02] transition-transform duration-500">
-                        <h3 className="text-2xl font-bold mb-2 text-white">Individual</h3>
-                        <p className="opacity-80 mb-8 text-white">For personal use and exploration.</p>
-                        <div className="text-6xl font-black mb-8 text-white">€0</div>
-                        <ul className="space-y-6 mb-12 text-white">
+                    {/* Free Plan (Zinc Style - De-emphasized) */}
+                    <div className={`p-12 rounded-[50px] ${isDarkMode ? 'bg-claude-border-dark/30 border-claude-border-dark' : 'bg-card border-claude-border'} border text-left hover:scale-[1.02] transition-transform duration-500`}>
+                        <h3 className="text-2xl font-bold mb-2">Free</h3>
+                        <p className="opacity-80 mb-8">For personal use and exploration.</p>
+                        <div className="text-6xl font-black mb-8">€0</div>
+                        <ul className="space-y-6 mb-12">
                             {["Up to 10 nodes per canvas", "OpenRouter Integration", "Local Persistent Storage"].map((item, i) => (
                                 <li key={i} className="flex items-center gap-3 font-medium">
+                                    <Check size={20} className="text-[var(--accent-primary)]" /> {item}
+                                </li>
+                            ))}
+                        </ul>
+                        <button onClick={onGetStarted} className={`w-full py-5 ${isDarkMode ? 'bg-claude-border-dark text-white' : 'bg-claude-bg text-claude-text'} hover:scale-105 border border-[var(--border-primary)] rounded-2xl font-black transition-all shadow-lg`}>Get started</button>
+                    </div>
+
+                    {/* Cloud Pro (Zinc Style) */}
+                    {/* Cloud Pro (Highlighted) */}
+                    <div className="p-12 rounded-[50px] bg-claude-accent border border-claude-accent text-left relative overflow-hidden shadow-2xl shadow-claude-accent/20 hover:scale-[1.02] transition-transform duration-500">
+                        <div className="absolute top-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest text-white">Coming Soon</div>
+                        <h3 className="text-2xl font-bold mb-2 text-white">Cloud Pro</h3>
+                        <p className="opacity-80 mb-8 text-white">For professional teams and researchers.</p>
+                        <div className="text-6xl font-black mb-8 text-white">€20 <span className="text-sm font-normal opacity-50">/ month</span></div>
+                        <ul className="space-y-6 mb-12 text-white">
+                            {["Up to 50 nodes per canvas", "Access to flagships models", "Collaborative Canvases"].map((item, i) => (
+                                <li key={i} className="flex items-center gap-3 font-medium opacity-90">
                                     <Check size={20} className="text-white" /> {item}
                                 </li>
                             ))}
                         </ul>
-                        <button onClick={onGetStarted} className="w-full py-5 bg-white text-claude-accent hover:bg-claude-bg rounded-2xl font-black transition-all shadow-xl">Get started</button>
-                    </div>
-
-                    {/* Cloud Pro (Zinc Style) */}
-                    <div className={`p-12 rounded-[50px] ${isDarkMode ? 'bg-claude-border-dark/30 border-claude-border-dark' : 'bg-card border-claude-border'} border text-left hover:scale-[1.02] transition-transform duration-500 relative`}>
-                        <div className={`absolute top-8 right-8 ${isDarkMode ? 'bg-zinc-800' : 'bg-white'} border border-zinc-500/20 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest`}>Coming Soon</div>
-                        <h3 className="text-2xl font-bold mb-2">Cloud Pro</h3>
-                        <p className="opacity-50 mb-8">For professional teams and researchers.</p>
-                        <div className="text-6xl font-black mb-8">€20 <span className="text-sm font-normal opacity-30">/ month</span></div>
-                        <ul className="space-y-6 mb-12">
-                            {["Up to 50 nodes per canvas", "Access to flagships models", "Collaborative Canvases"].map((item, i) => (
-                                <li key={i} className="flex items-center gap-3 font-medium opacity-80">
-                                    <Check size={20} className="text-blue-500" /> {item}
-                                </li>
-                            ))}
-                        </ul>
-                        <button onClick={() => setIsWaitlistOpen(true)} className={`w-full py-5 ${isDarkMode ? 'bg-zinc-800 hover:bg-zinc-700' : 'bg-zinc-900 text-white hover:bg-zinc-800'} rounded-2xl font-black transition-all`}>Join Waitlist</button>
+                        <button onClick={() => setIsWaitlistOpen(true)} className="w-full py-5 bg-white text-claude-accent hover:opacity-90 rounded-2xl font-black transition-all shadow-xl">Join Waitlist</button>
                     </div>
                 </div>
             </section>

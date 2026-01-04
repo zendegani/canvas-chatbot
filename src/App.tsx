@@ -32,7 +32,12 @@ const App: React.FC = () => {
     clearData
   } = useCanvas(currentUser);
 
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return true; // Fallback
+  });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
