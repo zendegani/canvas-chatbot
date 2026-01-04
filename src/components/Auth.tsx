@@ -1,17 +1,27 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Sun, Moon } from 'lucide-react';
 
 interface AuthProps {
     view: 'signup' | 'login';
     setView: (view: 'signup' | 'login' | 'landing') => void;
     onLogin: (e: React.FormEvent) => void;
     onSignup: (e: React.FormEvent) => void;
+    isDarkMode: boolean;
+    setIsDarkMode: (isDark: boolean) => void;
 }
 
-export const Auth: React.FC<AuthProps> = ({ view, setView, onLogin, onSignup }) => {
+export const Auth: React.FC<AuthProps> = ({ view, setView, onLogin, onSignup, isDarkMode, setIsDarkMode }) => {
     const isSignup = view === 'signup';
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] p-6 selection:bg-claude-accent/30 text-[var(--text-primary)]">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)] p-6 selection:bg-claude-accent/30 text-[var(--text-primary)] relative">
+            {/* Theme Toggle */}
+            <button
+                onClick={() => setIsDarkMode(!isDarkMode)}
+                className="absolute top-6 right-6 p-2 hover:bg-zinc-500/10 rounded-full transition-colors"
+                aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+                {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
             <div className="w-full max-w-md">
                 <div className="text-center mb-10">
                     <div className="inline-block p-4 bg-[var(--accent-primary)] rounded-2xl mb-6 cursor-pointer shadow-2xl shadow-[var(--accent-primary)]/30" onClick={() => setView('landing')}>

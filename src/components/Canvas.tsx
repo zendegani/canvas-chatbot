@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { Sparkles, MessageSquare, Plus, Settings, Trash2, LogOut } from 'lucide-react';
+import { Sparkles, MessageSquare, Plus, Settings, Trash2, LogOut, Sun, Moon } from 'lucide-react';
 import { ChatNode, OpenRouterModel } from '../types';
 import { Node } from './Node';
 import { ConnectionLine } from './ConnectionLine';
@@ -17,6 +17,8 @@ interface CanvasProps {
     handleBranch: (parentId: string) => void;
     handleSendMessage: (nodeId: string, text: string) => void;
     isMobile: boolean;
+    isDarkMode: boolean;
+    setIsDarkMode: (isDark: boolean) => void;
 }
 
 const NODE_WIDTH = 384;
@@ -33,7 +35,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     onGoHome,
     handleBranch,
     handleSendMessage,
-    isMobile
+    isMobile,
+    isDarkMode,
+    setIsDarkMode
 }) => {
     const canvasRef = useRef<HTMLDivElement>(null);
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -145,6 +149,13 @@ export const Canvas: React.FC<CanvasProps> = ({
                         <div className="text-xs font-bold opacity-50 uppercase tracking-widest text-[10px]">{nodes.length}/10 Nodes</div>
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsDarkMode(!isDarkMode)}
+                            className="p-2 hover:bg-[var(--bg-primary)] rounded-xl transition-colors"
+                            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                        >
+                            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                        </button>
                         <button onClick={onOpenSettings} className="p-2 hover:bg-[var(--bg-primary)] rounded-xl transition-colors flex items-center gap-2 text-xs font-bold">
                             <Settings size={18} /> <span className="hidden sm:inline">Settings</span>
                         </button>

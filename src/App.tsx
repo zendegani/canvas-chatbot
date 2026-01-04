@@ -88,6 +88,8 @@ const App: React.FC = () => {
           setView={setView}
           onLogin={handleLoginSubmit}
           onSignup={handleSignupSubmit}
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
         />
       )}
 
@@ -105,6 +107,8 @@ const App: React.FC = () => {
             handleBranch={handleBranch}
             handleSendMessage={handleSendMessage}
             isMobile={isMobile}
+            isDarkMode={isDarkMode}
+            setIsDarkMode={setIsDarkMode}
           />
           <SettingsModal
             isOpen={isSettingsOpen}
