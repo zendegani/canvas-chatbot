@@ -138,10 +138,10 @@ export const Canvas: React.FC<CanvasProps> = ({
                 <div className="flex items-center justify-between w-full pointer-events-auto bg-[var(--bg-card)]/80 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl p-3 px-5 shadow-2xl">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 font-bold cursor-pointer" onClick={onGoHome}>
-                            <div className="p-1 bg-claude-accent rounded-md"><Sparkles size={16} className="text-white" /></div>
+                            <div className="p-1 bg-[var(--accent-primary)] rounded-md"><Sparkles size={16} className="text-white" /></div>
                             <span>Canvas AI</span>
                         </div>
-                        <div className="h-4 w-px bg-zinc-700"></div>
+                        <div className="h-4 w-px bg-[var(--border-primary)]"></div>
                         <div className="text-xs font-bold opacity-50 uppercase tracking-widest text-[10px]">{nodes.length}/10 Nodes</div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -158,7 +158,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                 {nodes.length === 0 && (
                     <div className="flex-1 flex items-center justify-center">
                         <div className="p-12 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-[50px] text-center max-w-sm pointer-events-auto shadow-2xl scale-in text-[var(--text-primary)]">
-                            <div className="p-5 bg-claude-accent inline-block rounded-3xl mb-8 shadow-2xl shadow-claude-accent/30 animate-bounce"><MessageSquare size={40} className="text-white" /></div>
+                            <div className="p-5 bg-[var(--accent-primary)] inline-block rounded-3xl mb-8 shadow-2xl shadow-[var(--accent-primary)]/30 animate-bounce"><MessageSquare size={40} className="text-white" /></div>
                             <h3 className="text-2xl font-black mb-4">Your canvas is empty</h3>
                             <p className="opacity-50 mb-10 font-medium">Create a root node to start your first orchestration.</p>
                             <button onClick={onAddInitialNode} className="w-full py-4 bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-2xl font-black text-lg hover:opacity-80 transition-all active:scale-95">Create Node</button>
@@ -174,7 +174,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                         </div>
                     </div>
                     {!isMobile && (
-                        <button onClick={onAddInitialNode} className="p-6 bg-claude-accent text-white rounded-full shadow-2xl shadow-claude-accent/30 hover:scale-110 active:scale-95 transition-all animate-fade-in"><Plus size={32} /></button>
+                        <button onClick={onAddInitialNode} className="p-6 bg-[var(--accent-primary)] text-white rounded-full shadow-2xl shadow-[var(--accent-primary)]/30 hover:scale-110 active:scale-95 transition-all animate-fade-in"><Plus size={32} /></button>
                     )}
                 </div>
             </div>

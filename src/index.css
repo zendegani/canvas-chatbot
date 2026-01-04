@@ -41,8 +41,8 @@
 }
 
 /* Claude Dark Mode */
-:root.dark,
-[data-theme="claude"].dark {
+/* Claude Dark Mode */
+:root.dark [data-theme="claude"] {
   --bg-primary: #141413;
   --bg-card: #2E2E2C;
   --text-primary: #FAF9F5;
@@ -72,7 +72,7 @@
 }
 
 /* Original Dark Mode */
-[data-theme="original"].dark {
+:root.dark [data-theme="original"] {
   --bg-primary: #09090B;
   --bg-card: #18181B;
   --text-primary: #FFFFFF;

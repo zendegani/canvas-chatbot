@@ -69,7 +69,7 @@ export const Node: React.FC<NodeProps> = ({
 
   return (
     <div
-      className="absolute w-80 md:w-96 flex flex-col bg-[var(--bg-card)]/90 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl shadow-2xl transition-all hover:border-claude-accent/50 text-[var(--text-primary)]"
+      className="absolute w-80 md:w-96 flex flex-col bg-[var(--bg-card)]/90 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl shadow-2xl transition-all hover:border-[var(--accent-primary)]/50 text-[var(--text-primary)]"
       style={{
         left: node.x,
         top: node.y,
@@ -83,7 +83,7 @@ export const Node: React.FC<NodeProps> = ({
         onMouseDown={(e) => onDragStart(node.id, e)}
       >
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-claude-accent animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse" />
           <ModelSelector
             models={models}
             selectedModel={node.model}
@@ -111,7 +111,7 @@ export const Node: React.FC<NodeProps> = ({
           const visibleMessages = node.messages.slice(node.startIndex || 0);
           if (visibleMessages.length === 0) {
             return (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-600 italic py-8">
+              <div className="flex flex-col items-center justify-center h-full text-[var(--text-secondary)] italic py-8">
                 <BrainCircuit size={32} className="mb-2 opacity-20" />
                 <span>{node.startIndex ? 'Continue the conversation...' : 'Start a conversation...'}</span>
               </div>
@@ -120,7 +120,7 @@ export const Node: React.FC<NodeProps> = ({
           return visibleMessages.map((msg, i) => (
             <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div className={`max-w-[95%] px-3 py-2 rounded-xl ${msg.role === 'user'
-                ? 'bg-claude-accent text-white rounded-tr-none'
+                ? 'bg-[var(--accent-primary)] text-white rounded-tr-none'
                 : 'bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-tl-none border border-[var(--border-primary)]'
                 }`}>
                 {msg.role === 'user' ? (
@@ -175,14 +175,14 @@ export const Node: React.FC<NodeProps> = ({
           <button
             onClick={() => onBranch(node.id)}
             title="Branch from right"
-            className="absolute -right-4 top-1/2 -translate-y-1/2 p-1.5 bg-zinc-800 border border-zinc-700 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-700 shadow-lg z-20"
+            className="absolute -right-4 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-full text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] shadow-lg z-20"
           >
             <Plus size={14} />
           </button>
           <button
             onClick={() => onBranch(node.id)}
             title="Branch from bottom"
-            className="absolute -bottom-4 left-1/2 -translate-x-1/2 p-1.5 bg-zinc-800 border border-zinc-700 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-700 shadow-lg z-20"
+            className="absolute -bottom-4 left-1/2 -translate-x-1/2 p-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-full text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] shadow-lg z-20"
           >
             <Plus size={14} />
           </button>
@@ -205,12 +205,12 @@ export const Node: React.FC<NodeProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={node.isThinking}
-            className="flex-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-claude-accent/50 disabled:opacity-50 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
+            className="flex-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/50 disabled:opacity-50 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
           />
           <button
             type="submit"
             disabled={!inputText.trim() || node.isThinking}
-            className="p-2 bg-claude-accent hover:opacity-90 text-white rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:hover:bg-claude-accent"
+            className="p-2 bg-[var(--accent-primary)] hover:opacity-90 text-white rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:hover:bg-[var(--accent-primary)]"
           >
             <Send size={18} />
           </button>

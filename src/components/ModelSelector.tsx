@@ -27,7 +27,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ models, selectedMo
   }, [models, selectedModel]);
 
   if (isLoading) {
-    return <div className="animate-pulse bg-zinc-800 h-8 w-32 rounded-lg"></div>;
+    return <div className="animate-pulse bg-[var(--bg-card)] h-8 w-32 rounded-lg border border-[var(--border-primary)]"></div>;
   }
 
   return (
@@ -56,7 +56,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ models, selectedMo
                   placeholder="Search models..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-claude-accent/50 text-[var(--text-primary)]"
+                  className="w-full pl-8 pr-3 py-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]/50 text-[var(--text-primary)]"
                 />
               </div>
             </div>
