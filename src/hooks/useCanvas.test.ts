@@ -43,6 +43,7 @@ describe('useCanvas', () => {
     describe('handleBranch', () => {
         it('creates child node from parent', async () => {
             const { result } = renderHook(() => useCanvas(testUser));
+            await waitFor(() => expect(result.current.models).toHaveLength(1));
 
             act(() => {
                 result.current.addInitialNode();
@@ -63,6 +64,7 @@ describe('useCanvas', () => {
 
         it('respects maximum of 10 nodes', async () => {
             const { result } = renderHook(() => useCanvas(testUser));
+            await waitFor(() => expect(result.current.models).toHaveLength(1));
 
             act(() => {
                 result.current.addInitialNode();
@@ -90,6 +92,7 @@ describe('useCanvas', () => {
 
         it('does nothing when parent not found', async () => {
             const { result } = renderHook(() => useCanvas(testUser));
+            await waitFor(() => expect(result.current.models).toHaveLength(1));
 
             act(() => {
                 result.current.addInitialNode();
@@ -156,6 +159,7 @@ describe('useCanvas', () => {
     describe('settings modal', () => {
         it('toggles settings modal state', async () => {
             const { result } = renderHook(() => useCanvas(testUser));
+            await waitFor(() => expect(result.current.models).toHaveLength(1));
 
             expect(result.current.isSettingsOpen).toBe(false);
 
