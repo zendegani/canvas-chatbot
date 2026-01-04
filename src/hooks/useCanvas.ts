@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ChatNode, OpenRouterModel, Message, ViewState } from '../types';
 import { fetchModels, chatCompletion } from '../services/openRouterService';
 
-const INITIAL_POS = { x: 100, y: 100 };
+const NODE_WIDTH = 576;
+const NODE_HEIGHT = 400;
 
 interface UseCanvasReturn {
     nodes: ChatNode[];
@@ -53,11 +54,15 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     }, [currentUser]);
 
     const addInitialNode = () => {
+        // Calculate center position based on viewport
+        const centerX = (window.innerWidth - NODE_WIDTH) / 2;
+        const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
+
         const newNode: ChatNode = {
             id: Math.random().toString(36).substr(2, 9),
             parentId: null,
-            x: INITIAL_POS.x,
-            y: INITIAL_POS.y,
+            x: centerX,
+            y: centerY,
             model: 'google/gemini-pro',
             messages: [],
         };
@@ -73,11 +78,11 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             const parent = prevNodes.find(n => n.id === parentId);
             if (!parent) return prevNodes;
 
-            const NODE_WIDTH = 384;
+            const NODE_WIDTH = 576;
             const NODE_HEIGHT = 400;
             const GAP = 25;
 
-            let newX = parent.x + 450;
+            let newX = parent.x + NODE_WIDTH + 50; // Use NODE_WIDTH for proper spacing
             let newY = parent.y + 100; // Offset first child to ensure curved connection line
 
             // Simple collision avoidance: vertical stacking

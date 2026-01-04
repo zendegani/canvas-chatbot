@@ -21,7 +21,7 @@ interface CanvasProps {
     setIsDarkMode: (isDark: boolean) => void;
 }
 
-const NODE_WIDTH = 384;
+const NODE_WIDTH = 576;
 const NODE_HEIGHT = 400;
 
 export const Canvas: React.FC<CanvasProps> = ({
@@ -168,7 +168,7 @@ export const Canvas: React.FC<CanvasProps> = ({
 
                 {nodes.length === 0 && (
                     <div className="flex-1 flex items-center justify-center">
-                        <div className="p-12 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-[50px] text-center max-w-sm pointer-events-auto shadow-2xl scale-in text-[var(--text-primary)]">
+                        <div className="p-12 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-[50px] text-center max-w-xl pointer-events-auto shadow-2xl scale-in text-[var(--text-primary)]">
                             <div className="p-5 bg-[var(--accent-primary)] inline-block rounded-3xl mb-8 shadow-2xl shadow-[var(--accent-primary)]/30 animate-bounce"><MessageSquare size={40} className="text-white" /></div>
                             <h3 className="text-2xl font-black mb-4">Your canvas is empty</h3>
                             <p className="opacity-50 mb-10 font-medium">Create a root node to start your first orchestration.</p>

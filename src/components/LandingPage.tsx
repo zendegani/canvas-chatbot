@@ -276,9 +276,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     <div className="relative">
                         <div className="absolute inset-0 bg-[var(--accent-primary)]/20 blur-[100px] rounded-full"></div>
                         <img
-                            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800"
+                            src="/images/branching.png"
                             className="relative rounded-3xl border border-zinc-500/20 shadow-2xl w-full"
-                            alt="Feature Showcase"
+                            alt="Canvas AI Branching Feature"
                         />
                     </div>
                 </div>
