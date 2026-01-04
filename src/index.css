@@ -4,8 +4,19 @@
   --font-serif: "Lora", serif;
   --font-sans: "Inter", sans-serif;
 
-  /* We keep the Claude tokens available as utilities if needed, but primarily rely on semantic vars */
+  /* Claude Palette - Restoring specific tokens used by LandingPage manual toggle */
   --color-claude-bg: #FAF9F5;
+  --color-claude-bg-dark: #141413;
+
+  --color-claude-text: #141413;
+  --color-claude-text-dark: #FAF9F5;
+
+  --color-claude-text-secondary: #B0AEA5;
+  --color-claude-text-secondary-dark: #828179;
+
+  --color-claude-border: #E8E6DC;
+  --color-claude-border-dark: #2E2E2C;
+
   --color-claude-accent: #C15F3C;
 }
 
