@@ -1,16 +1,108 @@
 @import "tailwindcss";
 
-/* Custom Styles */
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--color-zinc-950);
+@theme {
+  --font-serif: "Lora", serif;
+  --font-sans: "Inter", sans-serif;
+
+  /* Claude Palette - Restoring specific tokens used by LandingPage manual toggle */
+  --color-claude-bg: #FAF9F5;
+  --color-claude-bg-dark: #141413;
+
+  --color-claude-text: #141413;
+  --color-claude-text-dark: #FAF9F5;
+
+  --color-claude-text-secondary: #B0AEA5;
+  --color-claude-text-secondary-dark: #828179;
+
+  --color-claude-border: #E8E6DC;
+  --color-claude-border-dark: #2E2E2C;
+
+  --color-claude-accent: #C15F3C;
 }
 
+/* Base Variables - Defaulting to Claude Theme for now, but overridable */
+/* THEME CONFIGURATION */
+
+/* 1. CLAUDE THEME (Light Mode Default) */
+:root,
+[data-theme="claude"] {
+  --bg-primary: #FAF9F5;
+  --bg-card: #FFFFFF;
+  --text-primary: #141413;
+  --text-secondary: #B0AEA5;
+  --border-primary: #E8E6DC;
+  --accent-primary: #C15F3C;
+  --font-main: "Inter", sans-serif;
+  --font-header: "Lora", serif;
+
+  --color-border-subtle: rgba(20, 20, 19, 0.05);
+  --color-scroll-thumb: rgba(20, 20, 19, 0.2);
+  --color-scroll-thumb-hover: rgba(20, 20, 19, 0.4);
+}
+
+/* Claude Dark Mode */
+/* Claude Dark Mode */
+:root.dark [data-theme="claude"] {
+  --bg-primary: #141413;
+  --bg-card: #2E2E2C;
+  --text-primary: #FAF9F5;
+  --text-secondary: #828179;
+  --border-primary: #2E2E2C;
+  --accent-primary: #C15F3C;
+
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-scroll-thumb: rgba(255, 255, 255, 0.2);
+  --color-scroll-thumb-hover: rgba(255, 255, 255, 0.4);
+}
+
+/* 2. ORIGINAL THEME (Zinc/Blue) */
+[data-theme="original"] {
+  --bg-primary: #FFFFFF;
+  --bg-card: #F4F4F5;
+  --text-primary: #18181B;
+  --text-secondary: #71717A;
+  --border-primary: #E4E4E7;
+  --accent-primary: #2563EB;
+  --font-main: "Inter", sans-serif;
+  --font-header: "Inter", sans-serif;
+
+  --color-border-subtle: rgba(0, 0, 0, 0.05);
+  --color-scroll-thumb: rgba(0, 0, 0, 0.2);
+  --color-scroll-thumb-hover: rgba(0, 0, 0, 0.4);
+}
+
+/* Original Dark Mode */
+:root.dark [data-theme="original"] {
+  --bg-primary: #09090B;
+  --bg-card: #18181B;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A1A1AA;
+  --border-primary: #27272A;
+  --accent-primary: #3B82F6;
+
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-scroll-thumb: rgba(255, 255, 255, 0.2);
+  --color-scroll-thumb-hover: rgba(255, 255, 255, 0.4);
+}
+
+/* Custom Styles */
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-header);
+}
 
 .grid-bg {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  /* Grid lines are handled in inline style via CSS var now, but keeping class for reference */
   background-size: 40px 40px;
 }
 
@@ -24,12 +116,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(155, 155, 155, 0.2);
+  background: var(--color-scroll-thumb);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(155, 155, 155, 0.4);
+  background: var(--color-scroll-thumb-hover);
 }
 
 html {

@@ -39,9 +39,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all text-[var(--text-primary)]">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
                         <Settings className="w-5 h-5" />
                         Settings
                     </h2>
@@ -64,7 +64,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
                                 value={apiKey}
                                 onChange={(e) => setApiKey(e.target.value)}
                                 placeholder="sk-or-..."
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 pr-10"
+                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-claude-accent/50 pr-10"
                             />
                             <button
                                 type="button"
@@ -81,7 +81,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
 
                     <button
                         onClick={handleSave}
-                        className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-colors"
+                        className="w-full py-2.5 bg-claude-accent hover:opacity-90 text-white rounded-xl font-medium transition-colors"
                     >
                         Save Changes
                     </button>

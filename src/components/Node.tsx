@@ -69,7 +69,7 @@ export const Node: React.FC<NodeProps> = ({
 
   return (
     <div
-      className="absolute w-80 md:w-96 flex flex-col bg-zinc-900/90 backdrop-blur-md border border-zinc-700/50 rounded-2xl shadow-2xl transition-all hover:border-zinc-500/50"
+      className="absolute w-80 md:w-96 flex flex-col bg-[var(--bg-card)]/90 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl shadow-2xl transition-all hover:border-[var(--accent-primary)]/50 text-[var(--text-primary)]"
       style={{
         left: node.x,
         top: node.y,
@@ -79,11 +79,11 @@ export const Node: React.FC<NodeProps> = ({
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between p-3 border-b border-zinc-800 cursor-grab active:cursor-grabbing"
+        className="flex items-center justify-between p-3 border-b border-[var(--border-primary)] cursor-grab active:cursor-grabbing"
         onMouseDown={(e) => onDragStart(node.id, e)}
       >
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse" />
           <ModelSelector
             models={models}
             selectedModel={node.model}
@@ -94,7 +94,7 @@ export const Node: React.FC<NodeProps> = ({
         {!hasChildren && (
           <button
             onClick={() => onDelete(node.id)}
-            className="p-1.5 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-white transition-colors"
+            className="p-1.5 hover:bg-[var(--bg-primary)] rounded-lg text-[var(--text-secondary)] hover:text-red-500 transition-colors"
             title="Delete this node"
           >
             <X size={16} />
@@ -111,7 +111,7 @@ export const Node: React.FC<NodeProps> = ({
           const visibleMessages = node.messages.slice(node.startIndex || 0);
           if (visibleMessages.length === 0) {
             return (
-              <div className="flex flex-col items-center justify-center h-full text-zinc-600 italic py-8">
+              <div className="flex flex-col items-center justify-center h-full text-[var(--text-secondary)] italic py-8">
                 <BrainCircuit size={32} className="mb-2 opacity-20" />
                 <span>{node.startIndex ? 'Continue the conversation...' : 'Start a conversation...'}</span>
               </div>
@@ -120,8 +120,8 @@ export const Node: React.FC<NodeProps> = ({
           return visibleMessages.map((msg, i) => (
             <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div className={`max-w-[95%] px-3 py-2 rounded-xl ${msg.role === 'user'
-                ? 'bg-blue-600 text-white rounded-tr-none'
-                : 'bg-zinc-800 text-zinc-200 rounded-tl-none border border-zinc-700/50'
+                ? 'bg-[var(--accent-primary)] text-white rounded-tr-none'
+                : 'bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-tl-none border border-[var(--border-primary)]'
                 }`}>
                 {msg.role === 'user' ? (
                   <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
@@ -162,8 +162,8 @@ export const Node: React.FC<NodeProps> = ({
         })()}
         {node.isThinking && (
           <div className="flex items-start">
-            <div className="bg-zinc-800/50 px-3 py-2 rounded-xl rounded-tl-none border border-zinc-700/30">
-              <Loader2 size={16} className="animate-spin text-zinc-500" />
+            <div className="bg-[var(--bg-primary)] px-3 py-2 rounded-xl rounded-tl-none border border-[var(--border-primary)]">
+              <Loader2 size={16} className="animate-spin text-[var(--text-secondary)]" />
             </div>
           </div>
         )}
@@ -175,14 +175,14 @@ export const Node: React.FC<NodeProps> = ({
           <button
             onClick={() => onBranch(node.id)}
             title="Branch from right"
-            className="absolute -right-4 top-1/2 -translate-y-1/2 p-1.5 bg-zinc-800 border border-zinc-700 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-700 shadow-lg z-20"
+            className="absolute -right-4 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-full text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] shadow-lg z-20"
           >
             <Plus size={14} />
           </button>
           <button
             onClick={() => onBranch(node.id)}
             title="Branch from bottom"
-            className="absolute -bottom-4 left-1/2 -translate-x-1/2 p-1.5 bg-zinc-800 border border-zinc-700 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-700 shadow-lg z-20"
+            className="absolute -bottom-4 left-1/2 -translate-x-1/2 p-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-full text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] shadow-lg z-20"
           >
             <Plus size={14} />
           </button>
@@ -190,11 +190,11 @@ export const Node: React.FC<NodeProps> = ({
       )}
 
       {/* Input */}
-      <div className="p-3 border-t border-zinc-800 bg-zinc-900/50 rounded-b-2xl">
+      <div className="p-3 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]/30 rounded-b-2xl">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <button
             type="button"
-            className="p-2 text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             title="Attach file (Not implemented yet)"
           >
             <LinkIcon size={18} />
@@ -205,12 +205,12 @@ export const Node: React.FC<NodeProps> = ({
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={node.isThinking}
-            className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50"
+            className="flex-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/50 disabled:opacity-50 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
           />
           <button
             type="submit"
             disabled={!inputText.trim() || node.isThinking}
-            className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:hover:bg-blue-600"
+            className="p-2 bg-[var(--accent-primary)] hover:opacity-90 text-white rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:hover:bg-[var(--accent-primary)]"
           >
             <Send size={18} />
           </button>

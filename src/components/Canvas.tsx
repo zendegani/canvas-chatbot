@@ -86,7 +86,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-zinc-950 flex flex-col relative selection:bg-blue-500/30">
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-[var(--bg-primary)] flex flex-col relative selection:bg-claude-accent/30 text-[var(--text-primary)]">
             <div
                 ref={canvasRef}
                 className="absolute inset-0 grid-bg cursor-grab active:cursor-grabbing select-none"
@@ -100,8 +100,8 @@ export const Canvas: React.FC<CanvasProps> = ({
                 <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
                     <defs>
                         <linearGradient id="connection-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
-                            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.6" />
+                            <stop offset="0%" stopColor="#C15F3C" stopOpacity="0.4" />
+                            <stop offset="100%" stopColor="#C15F3C" stopOpacity="0.6" />
                         </linearGradient>
                     </defs>
                 </svg>
@@ -135,46 +135,46 @@ export const Canvas: React.FC<CanvasProps> = ({
             </div>
 
             <div className="relative z-50 pointer-events-none w-full h-full flex flex-col p-6">
-                <div className="flex items-center justify-between w-full pointer-events-auto bg-zinc-900/80 backdrop-blur-md border border-zinc-700/50 rounded-2xl p-3 px-5 shadow-2xl">
+                <div className="flex items-center justify-between w-full pointer-events-auto bg-[var(--bg-card)]/80 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl p-3 px-5 shadow-2xl">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 font-bold cursor-pointer" onClick={onGoHome}>
-                            <div className="p-1 bg-blue-600 rounded-md"><Sparkles size={16} /></div>
+                            <div className="p-1 bg-[var(--accent-primary)] rounded-md"><Sparkles size={16} className="text-white" /></div>
                             <span>Canvas AI</span>
                         </div>
-                        <div className="h-4 w-px bg-zinc-700"></div>
+                        <div className="h-4 w-px bg-[var(--border-primary)]"></div>
                         <div className="text-xs font-bold opacity-50 uppercase tracking-widest text-[10px]">{nodes.length}/10 Nodes</div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button onClick={onOpenSettings} className="p-2 hover:bg-zinc-800 rounded-xl transition-colors flex items-center gap-2 text-xs font-bold">
+                        <button onClick={onOpenSettings} className="p-2 hover:bg-[var(--bg-primary)] rounded-xl transition-colors flex items-center gap-2 text-xs font-bold">
                             <Settings size={18} /> <span className="hidden sm:inline">Settings</span>
                         </button>
                         <button onClick={onClearData} className="p-2 text-red-400 hover:bg-red-400/10 rounded-xl text-xs font-bold transition-colors">
                             <Trash2 size={18} /> <span className="hidden sm:inline">Clear</span>
                         </button>
-                        <button onClick={onLogout} className="p-2 hover:bg-zinc-800 rounded-xl transition-colors"><LogOut size={18} /></button>
+                        <button onClick={onLogout} className="p-2 hover:bg-[var(--bg-primary)] rounded-xl transition-colors"><LogOut size={18} /></button>
                     </div>
                 </div>
 
                 {nodes.length === 0 && (
                     <div className="flex-1 flex items-center justify-center">
-                        <div className="p-12 bg-zinc-900 border border-zinc-700 rounded-[50px] text-center max-w-sm pointer-events-auto shadow-2xl scale-in">
-                            <div className="p-5 bg-blue-600 inline-block rounded-3xl mb-8 shadow-2xl shadow-blue-600/30 animate-bounce"><MessageSquare size={40} /></div>
+                        <div className="p-12 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-[50px] text-center max-w-sm pointer-events-auto shadow-2xl scale-in text-[var(--text-primary)]">
+                            <div className="p-5 bg-[var(--accent-primary)] inline-block rounded-3xl mb-8 shadow-2xl shadow-[var(--accent-primary)]/30 animate-bounce"><MessageSquare size={40} className="text-white" /></div>
                             <h3 className="text-2xl font-black mb-4">Your canvas is empty</h3>
                             <p className="opacity-50 mb-10 font-medium">Create a root node to start your first orchestration.</p>
-                            <button onClick={onAddInitialNode} className="w-full py-4 bg-white text-zinc-950 rounded-2xl font-black text-lg hover:bg-zinc-200 transition-all active:scale-95">Create Node</button>
+                            <button onClick={onAddInitialNode} className="w-full py-4 bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-2xl font-black text-lg hover:opacity-80 transition-all active:scale-95">Create Node</button>
                         </div>
                     </div>
                 )}
 
                 <div className="mt-auto flex justify-between items-end pointer-events-auto">
-                    <div className="p-4 bg-zinc-900/80 backdrop-blur-md border border-zinc-700/50 rounded-2xl shadow-xl flex items-center gap-4">
-                        <div className="flex gap-3 text-xs font-bold text-zinc-400">
-                            <span className="px-3 py-1.5 bg-zinc-800 rounded-xl border border-zinc-700">Drag headers to Move</span>
-                            <span className="px-3 py-1.5 bg-zinc-800 rounded-xl border border-zinc-700">Snap Branches with +</span>
+                    <div className="p-4 bg-[var(--bg-card)]/80 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl shadow-xl flex items-center gap-4">
+                        <div className="flex gap-3 text-xs font-bold text-[var(--text-secondary)]">
+                            <span className="px-3 py-1.5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)]">Drag headers to Move</span>
+                            <span className="px-3 py-1.5 bg-[var(--bg-primary)] rounded-xl border border-[var(--border-primary)]">Snap Branches with +</span>
                         </div>
                     </div>
                     {!isMobile && (
-                        <button onClick={onAddInitialNode} className="p-6 bg-blue-600 text-white rounded-full shadow-2xl shadow-blue-600/30 hover:scale-110 active:scale-95 transition-all animate-fade-in"><Plus size={32} /></button>
+                        <button onClick={onAddInitialNode} className="p-6 bg-[var(--accent-primary)] text-white rounded-full shadow-2xl shadow-[var(--accent-primary)]/30 hover:scale-110 active:scale-95 transition-all animate-fade-in"><Plus size={32} /></button>
                     )}
                 </div>
             </div>
