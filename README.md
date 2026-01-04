@@ -1,6 +1,9 @@
 # Canvas AI
 
 **A next-generation infinite canvas for non-linear AI conversations.**
+[![Node.js CI](https://github.com/zendegani/canvas-chatbot/actions/workflows/node.js.yml/badge.svg?event=pull_request)](https://github.com/zendegani/canvas-chatbot/actions/workflows/node.js.yml)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/zendegani/canvas-chatbot/blob/main/LICENSE)
+![Lines](./badges/coverage-lines.svg) ![Branches](./badges/coverage-branches.svg) ![Statements](./badges/coverage-statements.svg) ![Functions](./badges/coverage-functions.svg)
 
 Canvas AI allows you to break free from linear chat threads. Visualize your thoughts, branch conversations, and orchestrate multiple AI models on a single, infinite spatial interface.
 
