@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sparkles, Home as HomeIcon, Sun, Moon, Zap, Layers, Monitor, MessageSquare, Target, Check, Mail, Github, X } from 'lucide-react';
 
 const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
@@ -175,12 +175,53 @@ const ContactForm = ({ isDarkMode }: { isDarkMode: boolean }) => {
     );
 };
 
+const ImageLightbox = ({ isOpen, onClose, src, alt }: { isOpen: boolean; onClose: () => void; src: string; alt: string }) => {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    return (
+        <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in cursor-zoom-out"
+            onClick={onClose}
+        >
+            <img
+                src={src}
+                alt={alt}
+                className="max-w-[90vw] max-h-[90vh] rounded-2xl shadow-2xl object-contain animate-scale-in"
+                onClick={(e) => e.stopPropagation()}
+            />
+        </div>
+    );
+};
+
 export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkMode, onGetStarted }) => {
     const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+    const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
 
     return (
         <div id="top" className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] scroll-smooth selection:bg-[var(--accent-primary)]/30">
             <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} isDarkMode={isDarkMode} />
+            <ImageLightbox
+                isOpen={lightboxImage !== null}
+                onClose={() => setLightboxImage(null)}
+                src={lightboxImage?.src ?? ''}
+                alt={lightboxImage?.alt ?? ''}
+            />
 
             {/* Navigation */}
             <nav className="flex items-center justify-between px-6 py-4 fixed top-0 w-full z-50 backdrop-blur-md border-b border-[var(--border-primary)]/50">
@@ -234,14 +275,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                         See How it Works
                     </a>
                 </div>
-                <div className="mt-24 relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[var(--accent-primary)] to-indigo-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-                    <img
-                        src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1200"
-                        className="relative rounded-3xl border border-zinc-500/20 shadow-2xl mx-auto transform group-hover:scale-[1.01] transition-all duration-500"
-                        alt="Canvas AI Interface Preview"
-                    />
-                </div>
+
             </section>
 
             {/* Overview Section */}
@@ -277,8 +311,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                         <div className="absolute inset-0 bg-[var(--accent-primary)]/20 blur-[100px] rounded-full"></div>
                         <img
                             src="/images/branching.png"
-                            className="relative rounded-3xl border border-zinc-500/20 shadow-2xl w-full"
+                            className="relative rounded-3xl border border-zinc-500/20 shadow-2xl w-full cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
                             alt="Canvas AI Branching Feature"
+                            onClick={() => setLightboxImage({ src: '/images/branching.png', alt: 'Canvas AI Branching Feature' })}
                         />
                     </div>
                 </div>
