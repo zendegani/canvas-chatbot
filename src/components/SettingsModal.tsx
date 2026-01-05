@@ -5,9 +5,10 @@ interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentUser: string;
+    refreshModels: () => void;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentUser }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentUser, refreshModels }) => {
     const [apiKey, setApiKey] = useState('');
     const [showKey, setShowKey] = useState(false);
 
@@ -22,9 +23,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
     const handleSave = () => {
         if (!currentUser) return;
         localStorage.setItem(`openRouterApiKey_${currentUser}`, apiKey);
+        // Refresh models with the new API key
+        refreshModels();
         onClose();
-        // Force reload to refresh models with new key
-        window.location.reload();
     };
 
     const handleClearData = () => {

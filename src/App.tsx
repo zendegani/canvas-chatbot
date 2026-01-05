@@ -29,11 +29,19 @@ const App: React.FC = () => {
     addInitialNode,
     handleBranch,
     handleSendMessage,
-    clearData
+    clearData,
+    hasLoaded,
+    refreshModels
   } = useCanvas(currentUser);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
+      // First check localStorage for saved preference
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme !== null) {
+        return savedTheme === 'dark';
+      }
+      // Fall back to system preference
       return window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
     return true; // Fallback
@@ -46,23 +54,27 @@ const App: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Sync isDarkMode with DOM for Tailwind/CSS selector support
+  // Sync isDarkMode with DOM for Tailwind/CSS selector support and persist to localStorage
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
   }, [isDarkMode]);
 
   useEffect(() => {
     if (view === 'canvas') {
       document.body.style.overflow = 'hidden';
-      if (nodes.length === 0) addInitialNode();
+      if (hasLoaded && nodes.length === 0) {
+        addInitialNode();
+      }
     } else {
       document.body.style.overflow = 'auto';
     }
-  }, [view, nodes.length, addInitialNode]);
+  }, [view, nodes.length, addInitialNode, hasLoaded]);
 
   return (
     <>
@@ -88,6 +100,8 @@ const App: React.FC = () => {
           setView={setView}
           onLogin={handleLoginSubmit}
           onSignup={handleSignupSubmit}
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
         />
       )}
 
@@ -105,11 +119,14 @@ const App: React.FC = () => {
             handleBranch={handleBranch}
             handleSendMessage={handleSendMessage}
             isMobile={isMobile}
+            isDarkMode={isDarkMode}
+            setIsDarkMode={setIsDarkMode}
           />
           <SettingsModal
             isOpen={isSettingsOpen}
             onClose={() => setIsSettingsOpen(false)}
             currentUser={currentUser}
+            refreshModels={refreshModels}
           />
         </>
       )}

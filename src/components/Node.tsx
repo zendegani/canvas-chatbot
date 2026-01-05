@@ -69,7 +69,7 @@ export const Node: React.FC<NodeProps> = ({
 
   return (
     <div
-      className="absolute w-80 md:w-96 flex flex-col bg-[var(--bg-card)]/90 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl shadow-2xl transition-all hover:border-[var(--accent-primary)]/50 text-[var(--text-primary)]"
+      className="absolute w-80 md:w-[576px] flex flex-col bg-[var(--bg-card)]/90 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl shadow-2xl transition-all hover:border-[var(--accent-primary)]/50 text-[var(--text-primary)]"
       style={{
         left: node.x,
         top: node.y,

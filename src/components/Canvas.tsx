@@ -1,6 +1,6 @@
 
 import React, { useRef, useState } from 'react';
-import { Sparkles, MessageSquare, Plus, Settings, Trash2, LogOut } from 'lucide-react';
+import { Sparkles, MessageSquare, Plus, Settings, Trash2, LogOut, Sun, Moon } from 'lucide-react';
 import { ChatNode, OpenRouterModel } from '../types';
 import { Node } from './Node';
 import { ConnectionLine } from './ConnectionLine';
@@ -17,9 +17,11 @@ interface CanvasProps {
     handleBranch: (parentId: string) => void;
     handleSendMessage: (nodeId: string, text: string) => void;
     isMobile: boolean;
+    isDarkMode: boolean;
+    setIsDarkMode: (isDark: boolean) => void;
 }
 
-const NODE_WIDTH = 384;
+const NODE_WIDTH = 576;
 const NODE_HEIGHT = 400;
 
 export const Canvas: React.FC<CanvasProps> = ({
@@ -33,7 +35,9 @@ export const Canvas: React.FC<CanvasProps> = ({
     onGoHome,
     handleBranch,
     handleSendMessage,
-    isMobile
+    isMobile,
+    isDarkMode,
+    setIsDarkMode
 }) => {
     const canvasRef = useRef<HTMLDivElement>(null);
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -145,6 +149,13 @@ export const Canvas: React.FC<CanvasProps> = ({
                         <div className="text-xs font-bold opacity-50 uppercase tracking-widest text-[10px]">{nodes.length}/10 Nodes</div>
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsDarkMode(!isDarkMode)}
+                            className="p-2 hover:bg-[var(--bg-primary)] rounded-xl transition-colors"
+                            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                        >
+                            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                        </button>
                         <button onClick={onOpenSettings} className="p-2 hover:bg-[var(--bg-primary)] rounded-xl transition-colors flex items-center gap-2 text-xs font-bold">
                             <Settings size={18} /> <span className="hidden sm:inline">Settings</span>
                         </button>
@@ -157,7 +168,7 @@ export const Canvas: React.FC<CanvasProps> = ({
 
                 {nodes.length === 0 && (
                     <div className="flex-1 flex items-center justify-center">
-                        <div className="p-12 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-[50px] text-center max-w-sm pointer-events-auto shadow-2xl scale-in text-[var(--text-primary)]">
+                        <div className="p-12 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-[50px] text-center max-w-xl pointer-events-auto shadow-2xl scale-in text-[var(--text-primary)]">
                             <div className="p-5 bg-[var(--accent-primary)] inline-block rounded-3xl mb-8 shadow-2xl shadow-[var(--accent-primary)]/30 animate-bounce"><MessageSquare size={40} className="text-white" /></div>
                             <h3 className="text-2xl font-black mb-4">Your canvas is empty</h3>
                             <p className="opacity-50 mb-10 font-medium">Create a root node to start your first orchestration.</p>

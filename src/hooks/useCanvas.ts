@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { ChatNode, OpenRouterModel, Message, ViewState } from '../types';
 import { fetchModels, chatCompletion } from '../services/openRouterService';
 
-const INITIAL_POS = { x: 100, y: 100 };
+const NODE_WIDTH = 576;
+const NODE_HEIGHT = 400;
 
 interface UseCanvasReturn {
     nodes: ChatNode[];
@@ -14,33 +15,43 @@ interface UseCanvasReturn {
     handleBranch: (parentId: string) => void;
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
     clearData: (setView: (view: ViewState) => void, setIsLoggedIn: (val: boolean) => void, setIsRegistered: (val: boolean) => void) => void;
+    hasLoaded: boolean;
+    refreshModels: () => void;
 }
 
 export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const [nodes, setNodes] = useState<ChatNode[]>([]);
     const [models, setModels] = useState<OpenRouterModel[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [hasLoaded, setHasLoaded] = useState(false);
 
     // Load nodes when currentUser changes
     useEffect(() => {
         if (currentUser) {
             const storedNodes = localStorage.getItem(`canvasNodes_${currentUser}`);
             if (storedNodes) {
-                setNodes(JSON.parse(storedNodes));
+                try {
+                    setNodes(JSON.parse(storedNodes));
+                } catch (e) {
+                    console.error('Failed to parse stored nodes', e);
+                    setNodes([]);
+                }
             } else {
                 setNodes([]);
             }
+            setHasLoaded(true);
         } else {
             setNodes([]);
+            setHasLoaded(false);
         }
     }, [currentUser]);
 
     // Persist nodes
     useEffect(() => {
-        if (currentUser) {
+        if (currentUser && hasLoaded) {
             localStorage.setItem(`canvasNodes_${currentUser}`, JSON.stringify(nodes));
         }
-    }, [nodes, currentUser]);
+    }, [nodes, currentUser, hasLoaded]);
 
     // Fetch models
     useEffect(() => {
@@ -53,11 +64,15 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     }, [currentUser]);
 
     const addInitialNode = () => {
+        // Calculate center position based on viewport
+        const centerX = (window.innerWidth - NODE_WIDTH) / 2;
+        const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
+
         const newNode: ChatNode = {
             id: Math.random().toString(36).substr(2, 9),
             parentId: null,
-            x: INITIAL_POS.x,
-            y: INITIAL_POS.y,
+            x: centerX,
+            y: centerY,
             model: 'google/gemini-pro',
             messages: [],
         };
@@ -73,11 +88,11 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             const parent = prevNodes.find(n => n.id === parentId);
             if (!parent) return prevNodes;
 
-            const NODE_WIDTH = 384;
+            const NODE_WIDTH = 576;
             const NODE_HEIGHT = 400;
             const GAP = 25;
 
-            let newX = parent.x + 450;
+            let newX = parent.x + NODE_WIDTH + 50; // Use NODE_WIDTH for proper spacing
             let newY = parent.y + 100; // Offset first child to ensure curved connection line
 
             // Simple collision avoidance: vertical stacking
@@ -154,6 +169,13 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     };
 
+    const refreshModels = () => {
+        if (currentUser) {
+            const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`) || '';
+            fetchModels(apiKey).then(setModels);
+        }
+    };
+
     return {
         nodes,
         setNodes,
@@ -163,6 +185,8 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         addInitialNode,
         handleBranch,
         handleSendMessage,
-        clearData
+        clearData,
+        hasLoaded,
+        refreshModels
     };
 };
