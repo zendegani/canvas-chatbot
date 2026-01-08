@@ -22,7 +22,7 @@ Canvas AI is an infinite-canvas based chat interface that allows users to have b
 
 ### 2.3 Rich Text Experience
 -   **Markdown Support**: Full rendering of Markdown syntax (bold, italic, lists, headers) using `react-markdown`.
--   **Code Highlighting**: Syntax highlighting for code blocks (TypeScript, Python, JSON, etc.) using optimized "Light" Prism themes.
+-   **Code Highlighting**: Syntax highlighting for code blocks (TypeScript, Python, JSON, etc.) using optimized "Dark" Prism themes.
 -   **Mathematical Notation**: LaTeX support for rendering complex mathematical formulas using `Katex`.
 
 ### 2.4 User Session & Security
