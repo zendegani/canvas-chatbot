@@ -8,7 +8,11 @@ import { useAuth } from './hooks/useAuth';
 import { useCanvas } from './hooks/useCanvas';
 
 // Extend window object to include umami
-declare global { interface Window { umami?: any; } }
+declare global {
+  interface Window {
+    umami?: umami.umami;
+  }
+}
 
 const App: React.FC = () => {
   const {
