@@ -8,16 +8,7 @@ import { useAuth } from './hooks/useAuth';
 import { useCanvas } from './hooks/useCanvas';
 
 // Extend window object to include umami
-declare global {
-  interface Window {
-    umami?: {
-      track: (
-        eventOrCallback: string | ((props: { url: string; title: string }) => { url: string; title: string }),
-        data?: Record<string, unknown>
-      ) => void;
-    };
-  }
-}
+declare global { interface Window { umami?: any; } }
 
 const App: React.FC = () => {
   const {
@@ -91,44 +82,15 @@ const App: React.FC = () => {
   // Track page views for SPA navigation via Umami
   useEffect(() => {
     const pageMap: Record<string, string> = {
-      landing: '/',
-      signup: '/Auth',
-      login: '/Auth',
-      canvas: '/Canvas'
+      landing: '/', signup: '/Auth', login: '/Auth', canvas: '/Canvas'
     };
 
-    const pagePath = pageMap[view] || `/${view}`;
-    const pageTitle = view.charAt(0).toUpperCase() + view.slice(1);
-
-    const trackPageView = () => {
-      if (window.umami) {
-        console.log('[Umami] Tracking page:', pagePath);
-        window.umami.track((props) => ({
-          ...props,
-          url: pagePath,
-          title: pageTitle,
-        }));
-        return true;
-      }
-      return false;
-    };
-
-    // Try immediately, if not available, retry with interval
-    if (!trackPageView()) {
-      let retries = 0;
-      const maxRetries = 20; // 2 seconds max
-      const interval = setInterval(() => {
-        retries++;
-        if (trackPageView() || retries >= maxRetries) {
-          clearInterval(interval);
-          if (retries >= maxRetries) {
-            console.warn('[Umami] Script did not load after 2 seconds');
-          }
-        }
-      }, 100);
-
-      return () => clearInterval(interval);
-    }
+    // Optional Chaining (?.) handles the "Is Umami loaded yet?" check perfectly
+    window.umami?.track((props: any) => ({
+      ...props,
+      url: pageMap[view] || `/${view}`,
+      title: view.charAt(0).toUpperCase() + view.slice(1),
+    }));
   }, [view]);
 
   return (
