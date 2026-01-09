@@ -8,8 +8,8 @@
       "destination": "https://cloud.umami.is/script.js"
     },
     {
-      "source": "/vibe-telemetry",
-      "destination": "https://cloud.umami.is/api/send"
+      "source": "/vibe-telemetry/:path*",
+      "destination": "https://cloud.umami.is/:path*"
     },
     {
       "source": "/(.*)",
