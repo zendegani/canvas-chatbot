@@ -1,5 +1,19 @@
 {
   "git": {
     "deploymentEnabled": false
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/vibe-check.js",
+      "destination": "https://cloud.umami.is/script.js"
+    },
+    {
+      "source": "/vibe-telemetry/:match*",
+      "destination": "https://cloud.umami.is/api/send/:match*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
