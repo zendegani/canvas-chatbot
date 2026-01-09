@@ -11,6 +11,20 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       host: '0.0.0.0',
+      proxy: {
+        // Disguises the Umami script as a local file
+        '/vibe-check.js': {
+          target: 'https://cloud.umami.is',
+          changeOrigin: true,
+          rewrite: () => '/script.js',
+        },
+        // Disguises the data collection as a local folder
+        '/vibe-telemetry': {
+          target: 'https://cloud.umami.is',
+          changeOrigin: true,
+          rewrite: () => '/api/send',
+        },
+      },
     },
     plugins: [react(), tailwindcss()],
     define: {
