@@ -19,6 +19,7 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
     -   Full Markdown support
     -   Syntax highlighting for code blocks
     -   LaTeX math rendering ($E=mc^2$)
+-   **Modern UI Components**: Built with **shadcn/ui** - a collection of beautiful, accessible, and customizable components powered by Radix UI and Tailwind CSS.
 -   **Local & Secure**:
     -   **Bring Your Own Key**: You typically use your own OpenRouter API Key.
     -   **Local Storage**: Your API keys and chat history are stored **only** in your browser's local storage. Nothing is sent to our servers.
@@ -28,6 +29,19 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
     -   Pricing tiers (Individual Free, Cloud Pro Coming Soon)
     -   Waitlist signup modal for early access
     -   Contact form powered by Web3Forms
+
+## Architecture & Tech Stack
+
+Canvas AI follows a **hybrid feature-based architecture** that promotes scalability and maintainability:
+
+-   **Feature-Based Structure**: Code is organized by domain (auth, canvas, landing, settings) rather than by file type
+-   **Separation of Concerns**: Each feature contains its own components, hooks, services, and types
+-   **Global UI Layer**: shadcn/ui components in `src/components/ui` provide consistent, reusable primitives
+-   **TypeScript Strict Mode**: Full type safety across the entire codebase
+-   **Tailwind CSS v4**: Utility-first styling with modern design tokens
+-   **Vite**: Lightning-fast build tool with HMR for optimal developer experience
+
+For a detailed folder structure, see [docs/requirements.md](./docs/requirements.md#32-architecture).
 
 ## Environment Variables
 

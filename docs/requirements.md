@@ -40,9 +40,50 @@ Canvas AI is an infinite-canvas based chat interface that allows users to have b
 -   **Framework**: React 18 with TypeScript (Strict Mode enabled)
 -   **Build Tool**: Vite (configured with `@` alias to `src`)
 -   **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite`)
+-   **UI Components**: shadcn/ui - A collection of re-usable components built with Radix UI and Tailwind CSS
 -   **Icons**: Lucide React
 
-### 3.2 State Management
+### 3.2 Architecture
+-   **Feature-Based Structure**: The application follows a hybrid feature-based architecture that separates concerns by domain:
+    -   **Global UI Layer** (`src/components/ui`): shadcn/ui components and pure, logic-free atoms
+    -   **Feature Layer** (`src/features/{feature-name}/`): Domain-driven modules containing components, hooks, services, and types
+    -   **Locality of Behavior**: Components and hooks are kept within their specific feature folder unless needed globally
+    -   **Rule of Three**: Components are only moved to shared locations if used by three or more distinct features
+
+```text
+src/
+├── App.tsx                 # Main application component with routing logic
+├── index.tsx               # Application entry point
+├── index.css               # Global styles and Tailwind configuration
+├── types.ts                # Global TypeScript type definitions
+├── components/             # UI Components Layer
+│   ├── ui/                 # shadcn/ui components (13 components)
+│   └── ErrorBoundary.tsx   # Global error boundary component
+├── features/               # Feature-Based Modules
+│   ├── auth/               # Authentication feature
+│   │   ├── components/     # Auth-specific UI components
+│   │   ├── hooks/          # useAuth, useSession hooks
+│   │   ├── types.ts        # Auth type definitions
+│   │   └── index.ts        # Feature public API
+│   ├── canvas/             # Infinite canvas chat feature
+│   │   ├── components/     # Canvas nodes, chat interface
+│   │   ├── hooks/          # useCanvas, useCanvasNodes hooks
+│   │   ├── services/       # OpenRouter API integration
+│   │   ├── types.ts        # Canvas type definitions
+│   │   └── index.ts        # Feature public API
+│   ├── landing/            # Landing page feature
+│   │   ├── components/     # Landing page sections
+│   │   └── index.ts        # Feature public API
+│   └── settings/           # Settings & configuration feature
+│       ├── components/     # Settings modal, API key management
+│       └── index.ts        # Feature public API
+├── lib/                    # Third-party library configurations
+│   └── utils.ts            # shadcn/ui utility functions (cn helper)
+└── test/                   # Test utilities and setup
+    └── setup.ts            # Vitest test configuration
+```
+
+### 3.3 State Management
 -   **Persistence**: `localStorage` used for persisting:
     -   `canvasNodes_{user}`: The chat graph.
     -   `openRouterApiKey_{user}`: The user's API credential.
@@ -50,12 +91,13 @@ Canvas AI is an infinite-canvas based chat interface that allows users to have b
     -   `currentUser`: Session state.
     -   `view`: View persistence (landing/canvas) across reloads.
 
-### 3.3 Key Dependencies
+### 3.4 Key Dependencies
+-   **UI**: `@radix-ui/*` (shadcn/ui primitives), `sonner` (toast notifications)
 -   **Core**: `react-markdown`, `remark-gfm`, `rehype-katex` (Rich Text)
--   **Utils**: `clsx`, `tailwind-merge`, `zod`, `dompurify`
+-   **Utils**: `clsx`, `tailwind-merge`, `zod`, `dompurify`, `class-variance-authority`
 -   **Dev**: `vitest`, `eslint`, `prettier`
 
-### 3.4 Environment Variables
+### 3.5 Environment Variables
 -   **`VITE_WEB3FORMS_KEY`**: Access key for Web3Forms API integration.
     -   Used for contact form and waitlist modal submissions.
     -   Stored in `.env.local` (gitignored) for security.
