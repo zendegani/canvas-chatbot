@@ -28,7 +28,7 @@
 
 /* 1. CLAUDE THEME (Light Mode Default) */
 :root,
-[data-theme="claude"] {
+:root[data-theme="claude"] {
   --bg-primary: #FAF9F5;
   --bg-card: #FFFFFF;
   --text-primary: #141413;
@@ -45,6 +45,7 @@
 
 /* Claude Dark Mode */
 /* Claude Dark Mode */
+:root.dark,
 :root.dark [data-theme="claude"] {
   --bg-primary: #141413;
   --bg-card: #2E2E2C;
@@ -276,6 +277,7 @@ html {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

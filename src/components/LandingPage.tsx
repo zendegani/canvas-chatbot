@@ -252,7 +252,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 Stop juggling tabs. Master parallel thought with the help of Canvas AI.
                             </p>
                         </div>
-                        <div className="p-8 rounded-3xl bg-[var(--bg-card)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)]/30 transition-all">
+                        <div className="p-8 rounded-3xl bg-[var(--bg-card)]/50 backdrop-blur-md border border-[var(--border-primary)] hover:border-[var(--accent-primary)]/30 transition-all duration-300 shadow-xl shadow-black/5">
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Layers className="text-[var(--accent-primary)]" /> Dynamic Branching
                             </h3>
@@ -260,7 +260,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 Fork any conversation at any point to test different prompts, parameters, or models. Never lose your creative flow again.
                             </p>
                         </div>
-                        <div className={`p-8 rounded-3xl ${isDarkMode ? 'bg-claude-border-dark/30 border-claude-border-dark' : 'bg-card border-claude-border'} border hover:border-claude-accent/30 transition-all`}>
+                        <div className="p-8 rounded-3xl bg-[var(--bg-card)]/50 backdrop-blur-md border border-[var(--border-primary)] hover:border-[var(--accent-primary)]/30 transition-all duration-300 shadow-xl shadow-black/5">
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Monitor className="text-indigo-500" /> Spatial Intelligence
                             </h3>
@@ -320,12 +320,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 desc: "Scale your orchestration on an endless spatial workspace for complex multi-step reasoning tasks.",
                                 icon: <MessageSquare className="text-orange-500" />
                             }
-                        ].map((f, i) => (
-                            <Card key={i} className="group p-2 rounded-[40px] border-primary/10 hover:border-primary/40 transition-all duration-500 overflow-hidden">
+                        ].map((feature, i) => (
+                            <Card key={i} className="group p-2 rounded-[40px] bg-[var(--bg-card)]/30 backdrop-blur-sm border-primary/10 hover:border-primary/40 transition-all duration-500 overflow-hidden shadow-lg shadow-black/5">
                                 <CardContent className="p-8">
-                                    <div className="mb-6 p-4 bg-primary/10 text-primary rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500">{f.icon}</div>
-                                    <h3 className="text-2xl font-bold mb-4">{f.title}</h3>
-                                    <p className="opacity-50 leading-relaxed text-lg">{f.desc}</p>
+                                    <div className="mb-6 p-4 bg-primary/10 text-primary rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500">{feature.icon}</div>
+                                    <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
+                                    <p className="opacity-50 leading-relaxed text-lg">{feature.desc}</p>
                                 </CardContent>
                             </Card>
                         ))}
@@ -379,13 +379,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
 
             {/* Contact Section */}
             <section id="contact" className="py-32 px-6 max-w-3xl mx-auto">
-                <div className="p-12 md:p-16 rounded-[40px] bg-[var(--bg-card)] border border-[var(--border-primary)] relative overflow-hidden">
+                <div className="p-12 md:p-16 rounded-[40px] bg-[var(--bg-card)]/50 backdrop-blur-md border border-[var(--border-primary)] relative overflow-hidden shadow-2xl shadow-black/5">
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-[var(--accent-primary)]/10 rounded-full blur-[100px]"></div>
-                    <div className="text-center mb-10">
+                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px]"></div>
+                    <div className="text-center mb-10 relative z-10">
                         <h2 className="text-4xl md:text-5xl font-black mb-4">Get in Touch</h2>
                         <p className="text-lg opacity-60 max-w-md mx-auto">Have questions or feedback? We'd love to hear from you.</p>
                     </div>
-                    <ContactForm />
+                    <div className="relative z-10">
+                        <ContactForm />
+                    </div>
                 </div>
             </section>
 
