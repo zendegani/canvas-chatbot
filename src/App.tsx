@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { LandingPage } from './components/LandingPage';
-import { Auth } from './components/Auth';
-import { Canvas } from './components/Canvas';
-import { SettingsModal } from './components/SettingsModal';
-import { useAuth } from './hooks/useAuth';
-import { useCanvas } from './hooks/useCanvas';
+import { LandingPage } from './features/landing';
+import { Auth, useAuth } from './features/auth';
+import { Canvas, useCanvas } from './features/canvas';
+import { SettingsModal } from './features/settings';
+import { Toaster } from "@/components/ui/sonner"
 
 // Extend window object to include umami
 declare global {
@@ -151,6 +150,7 @@ const App: React.FC = () => {
           />
         </>
       )}
+      <Toaster />
     </>
   );
 };

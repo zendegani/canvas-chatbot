@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useCanvas } from './useCanvas';
-import { mockFetch } from '../test/setup';
+import { mockFetch } from '../../../test/setup';
 
 // Mock the openRouterService module
 vi.mock('../services/openRouterService', () => ({

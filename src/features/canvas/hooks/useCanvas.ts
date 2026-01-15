@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { ChatNode, OpenRouterModel, Message, ViewState } from '../types';
+import { ChatNode, OpenRouterModel, Message } from '../types';
 import { fetchModels, chatCompletion } from '../services/openRouterService';
+import type { ViewState } from '../../auth/types';
 
 const NODE_WIDTH = 576;
 const NODE_HEIGHT = 400;

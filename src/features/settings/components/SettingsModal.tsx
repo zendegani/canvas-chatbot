@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Layers, Key, Trash2, Settings, Eye, EyeOff } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -39,63 +43,55 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-2xl p-6 w-full max-w-md shadow-2xl transform transition-all text-[var(--text-primary)]">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-xl">
                         <Settings className="w-5 h-5" />
                         Settings
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="text-zinc-400 hover:text-white transition-colors"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
+                    </DialogTitle>
+                </DialogHeader>
 
-                <div className="space-y-6">
-                    <div>
-                        <label className="block text-sm font-medium text-zinc-400 mb-2">
-                            OpenRouter API Key
-                        </label>
+                <div className="space-y-6 py-4">
+                    <div className="space-y-2">
+                        <Label>OpenRouter API Key</Label>
                         <div className="relative">
-                            <input
+                            <Input
                                 type={showKey ? 'text' : 'password'}
                                 value={apiKey}
                                 onChange={(e) => setApiKey(e.target.value)}
                                 placeholder="sk-or-..."
-                                className="w-full bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-4 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-claude-accent/50 pr-10"
+                                className="pr-10"
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowKey(!showKey)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
                                 {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
                             </button>
                         </div>
-                        <p className="mt-2 text-xs text-zinc-500">
+                        <p className="text-xs text-muted-foreground">
                             Your key is stored locally in your browser and used securely to communicate with OpenRouter.
                         </p>
                     </div>
 
-                    <button
-                        onClick={handleSave}
-                        className="w-full py-2.5 bg-claude-accent hover:opacity-90 text-white rounded-xl font-medium transition-colors"
-                    >
+                    <Button onClick={handleSave} className="w-full">
                         Save Changes
-                    </button>
+                    </Button>
 
-
-                    <div>
-                        <label className="text-xs font-bold uppercase tracking-widest opacity-60 mb-4 block text-red-400">Danger Zone</label>
-                        <button onClick={handleClearData} className="w-full py-4 border border-red-500/20 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
+                    <div className="pt-4 border-t">
+                        <Label className="text-xs font-bold uppercase tracking-widest text-destructive mb-4 block">Danger Zone</Label>
+                        <Button
+                            variant="destructive"
+                            onClick={handleClearData}
+                            className="w-full gap-2 bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 shadow-none"
+                        >
                             <Trash2 size={18} /> Clear All App Data
-                        </button>
+                        </Button>
                     </div>
                 </div>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
