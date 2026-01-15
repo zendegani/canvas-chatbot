@@ -252,7 +252,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 Stop juggling tabs. Master parallel thought with the help of Canvas AI.
                             </p>
                         </div>
-                        <div className="p-8 rounded-3xl bg-[var(--bg-card)]/50 backdrop-blur-md border border-[var(--border-primary)] hover:border-[var(--accent-primary)]/30 transition-all duration-300 shadow-xl shadow-black/5">
+                        <div className="p-8 rounded-3xl bg-card border border-border hover:border-primary/30 transition-all">
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Layers className="text-[var(--accent-primary)]" /> Dynamic Branching
                             </h3>
@@ -260,7 +260,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 Fork any conversation at any point to test different prompts, parameters, or models. Never lose your creative flow again.
                             </p>
                         </div>
-                        <div className="p-8 rounded-3xl bg-[var(--bg-card)]/50 backdrop-blur-md border border-[var(--border-primary)] hover:border-[var(--accent-primary)]/30 transition-all duration-300 shadow-xl shadow-black/5">
+                        <div className="p-8 rounded-3xl bg-card border border-border hover:border-primary/30 transition-all">
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Monitor className="text-indigo-500" /> Spatial Intelligence
                             </h3>
@@ -321,7 +321,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 icon: <MessageSquare className="text-orange-500" />
                             }
                         ].map((feature, i) => (
-                            <Card key={i} className="group p-2 rounded-[40px] bg-[var(--bg-card)]/30 backdrop-blur-sm border-primary/10 hover:border-primary/40 transition-all duration-500 overflow-hidden shadow-lg shadow-black/5">
+                            <Card key={i} className="group p-2 rounded-[40px] border-primary/10 hover:border-primary/40 transition-all duration-500 overflow-hidden">
                                 <CardContent className="p-8">
                                     <div className="mb-6 p-4 bg-primary/10 text-primary rounded-2xl w-fit group-hover:scale-110 transition-transform duration-500">{feature.icon}</div>
                                     <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
@@ -379,16 +379,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
 
             {/* Contact Section */}
             <section id="contact" className="py-32 px-6 max-w-3xl mx-auto">
-                <div className="p-12 md:p-16 rounded-[40px] bg-[var(--bg-card)]/50 backdrop-blur-md border border-[var(--border-primary)] relative overflow-hidden shadow-2xl shadow-black/5">
+                <div className="p-12 md:p-16 rounded-[40px] bg-card border border-border relative overflow-hidden">
                     <div className="absolute -top-24 -right-24 w-64 h-64 bg-[var(--accent-primary)]/10 rounded-full blur-[100px]"></div>
-                    <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-[100px]"></div>
-                    <div className="text-center mb-10 relative z-10">
+                    <div className="text-center mb-10">
                         <h2 className="text-4xl md:text-5xl font-black mb-4">Get in Touch</h2>
                         <p className="text-lg opacity-60 max-w-md mx-auto">Have questions or feedback? We'd love to hear from you.</p>
                     </div>
-                    <div className="relative z-10">
-                        <ContactForm />
-                    </div>
+                    <ContactForm />
                 </div>
             </section>
 
