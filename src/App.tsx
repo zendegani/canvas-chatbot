@@ -6,6 +6,7 @@ import { Canvas } from './components/Canvas';
 import { SettingsModal } from './components/SettingsModal';
 import { useAuth } from './hooks/useAuth';
 import { useCanvas } from './hooks/useCanvas';
+import { Toaster } from "@/components/ui/sonner"
 
 // Extend window object to include umami
 declare global {
@@ -151,6 +152,7 @@ const App: React.FC = () => {
           />
         </>
       )}
+      <Toaster />
     </>
   );
 };
