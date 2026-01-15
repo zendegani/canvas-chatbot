@@ -149,12 +149,16 @@ const ContactForm = () => {
 const ImageLightbox = ({ isOpen, onClose, src, alt }: { isOpen: boolean; onClose: () => void; src: string; alt: string }) => {
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-[90vw] max-h-[90vh] p-0 overflow-hidden bg-transparent border-none shadow-none text-white">
+            <DialogContent
+                className="w-[100vw] h-[100vh] max-w-none p-0 bg-transparent border-none shadow-none flex items-center justify-center outline-none"
+                onClick={onClose}
+                showCloseButton={false}
+            >
                 <DialogTitle className="sr-only">{alt}</DialogTitle>
                 <img
                     src={src}
                     alt={alt}
-                    className="w-full h-full object-contain rounded-md"
+                    className="max-w-[95vw] max-h-[95vh] object-contain rounded-md shadow-2xl cursor-default"
                     onClick={(e) => e.stopPropagation()}
                 />
             </DialogContent>
@@ -168,7 +172,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
 
     return (
         <div id="top" className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] scroll-smooth selection:bg-[var(--accent-primary)]/30">
-            <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} isDarkMode={isDarkMode} />
+            <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
             <ImageLightbox
                 isOpen={lightboxImage !== null}
                 onClose={() => setLightboxImage(null)}
