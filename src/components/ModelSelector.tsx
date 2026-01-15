@@ -1,6 +1,21 @@
 
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronDown, Check } from 'lucide-react';
+import { Check, ChevronDown, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { OpenRouterModel } from '../types';
 
 interface ModelSelectorProps {
@@ -11,15 +26,7 @@ interface ModelSelectorProps {
 }
 
 export const ModelSelector: React.FC<ModelSelectorProps> = ({ models, selectedModel, onSelect, isLoading }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredModels = useMemo(() => {
-    return models.filter(m =>
-      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.id.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [models, searchTerm]);
+  const [open, setOpen] = useState(false);
 
   const activeModelName = useMemo(() => {
     const model = models.find(m => m.id === selectedModel);
@@ -27,64 +34,59 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ models, selectedMo
   }, [models, selectedModel]);
 
   if (isLoading) {
-    return <div className="animate-pulse bg-[var(--bg-card)] h-8 w-32 rounded-lg border border-[var(--border-primary)]"></div>;
+    return <div className="animate-pulse bg-muted h-9 w-32 rounded-md border border-input"></div>;
   }
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-primary)] hover:bg-[var(--bg-card)] rounded-lg text-xs font-medium transition-colors border border-[var(--border-primary)] text-[var(--text-primary)]"
-      >
-        <span className="truncate max-w-[120px]">{activeModelName}</span>
-        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute top-full left-0 mt-2 w-64 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-xl shadow-2xl z-50 overflow-hidden text-[var(--text-primary)]">
-            <div className="p-2 border-b border-[var(--border-primary)] bg-[var(--bg-primary)] sticky top-0">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" size={14} />
-                <input
-                  autoFocus
-                  type="text"
-                  placeholder="Search models..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-[var(--accent-primary)]/50 text-[var(--text-primary)]"
-                />
-              </div>
-            </div>
-            <div className="max-h-64 overflow-y-auto p-1">
-              {filteredModels.length === 0 ? (
-                <div className="p-3 text-center text-[var(--text-secondary)] text-xs italic">No models found</div>
-              ) : (
-                filteredModels.map(model => (
-                  <button
-                    key={model.id}
-                    onClick={() => {
-                      onSelect(model.id);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs transition-colors hover:bg-[var(--bg-primary)] ${selectedModel === model.id ? 'text-[var(--accent-primary)] bg-[var(--bg-primary)] font-bold' : 'text-[var(--text-secondary)]'}`}
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-medium truncate">{model.name}</span>
-                      <span className="text-[10px] text-[var(--text-secondary)] truncate opacity-70">{model.id}</span>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[200px] justify-between h-9 text-xs font-medium"
+        >
+          <span className="truncate">{activeModelName || "Select model..."}</span>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Search models..." className="h-9 text-xs" />
+          <CommandList>
+            <CommandEmpty className="py-2 text-center text-xs text-muted-foreground">No models found.</CommandEmpty>
+            <CommandGroup>
+              {models.map((model) => (
+                <CommandItem
+                  key={model.id}
+                  value={model.name} // Command searches by value label usually, or we can use keys. 
+                  // Note: shadcn Command uses cmk-dk-combo which searches by children text content by default or value prop.
+                  // We should make sure value is unique if possible or just rely on text.
+                  // Actually, let's use the name as value for search, but handle selection with ID.
+                  onSelect={() => {
+                    onSelect(model.id);
+                    setOpen(false);
+                  }}
+                  className="text-xs"
+                >
+                  <div className="flex flex-col w-full overflow-hidden">
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{model.name}</span>
+                      <Check
+                        className={cn(
+                          "ml-2 h-3 w-3",
+                          selectedModel === model.id ? "opacity-100" : "opacity-0"
+                        )}
+                      />
                     </div>
-                    {selectedModel === model.id && <Check size={14} />}
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+                    <span className="text-[10px] text-muted-foreground truncate opacity-70">{model.id}</span>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };

@@ -18,6 +18,10 @@ import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'katex/dist/katex.min.css';
 import { ErrorBoundary } from './ErrorBoundary';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 SyntaxHighlighter.registerLanguage('tsx', tsx);
 SyntaxHighlighter.registerLanguage('typescript', typescript);
@@ -68,22 +72,22 @@ export const Node: React.FC<NodeProps> = ({
   };
 
   return (
-    <div
-      className="absolute w-80 md:w-[576px] flex flex-col bg-[var(--bg-card)]/90 backdrop-blur-md border border-[var(--border-primary)] rounded-2xl shadow-2xl transition-all hover:border-[var(--accent-primary)]/50 text-[var(--text-primary)]"
+    <Card
+      className="absolute w-80 md:w-[576px] flex flex-col shadow-2xl transition-all border-primary/20 hover:border-primary/50"
       style={{
         left: node.x,
         top: node.y,
         zIndex: 10,
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' // Slightly softer shadow than before
       }}
     >
       {/* Header */}
       <div
-        className="flex items-center justify-between p-3 border-b border-[var(--border-primary)] cursor-grab active:cursor-grabbing"
+        className="flex items-center justify-between p-3 border-b cursor-grab active:cursor-grabbing bg-muted/30 rounded-t-xl"
         onMouseDown={(e) => onDragStart(node.id, e)}
       >
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[var(--accent-primary)] animate-pulse" />
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm" />
           <ModelSelector
             models={models}
             selectedModel={node.model}
@@ -92,26 +96,28 @@ export const Node: React.FC<NodeProps> = ({
           />
         </div>
         {!hasChildren && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => onDelete(node.id)}
-            className="p-1.5 hover:bg-[var(--bg-primary)] rounded-lg text-[var(--text-secondary)] hover:text-red-500 transition-colors"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive"
             title="Delete this node"
           >
             <X size={16} />
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Messages */}
       <div
         ref={scrollRef}
-        className="flex-1 max-h-72 overflow-y-auto p-4 space-y-4 text-sm"
+        className="flex-1 max-h-72 overflow-y-auto p-4 space-y-4 text-sm bg-card/50"
       >
         {(() => {
           const visibleMessages = node.messages.slice(node.startIndex || 0);
           if (visibleMessages.length === 0) {
             return (
-              <div className="flex flex-col items-center justify-center h-full text-[var(--text-secondary)] italic py-8">
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground italic py-8">
                 <BrainCircuit size={32} className="mb-2 opacity-20" />
                 <span>{node.startIndex ? 'Continue the conversation...' : 'Start a conversation...'}</span>
               </div>
@@ -119,15 +125,17 @@ export const Node: React.FC<NodeProps> = ({
           }
           return visibleMessages.map((msg, i) => (
             <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className={`max-w-[95%] px-3 py-2 rounded-xl ${msg.role === 'user'
-                ? 'bg-[var(--accent-primary)] text-white rounded-tr-none'
-                : 'bg-[var(--bg-primary)] text-[var(--text-primary)] rounded-tl-none border border-[var(--border-primary)]'
-                }`}>
+              <div className={cn(
+                "max-w-[95%] px-3 py-2 rounded-xl text-sm shadow-sm",
+                msg.role === 'user'
+                  ? 'bg-primary text-primary-foreground rounded-tr-none'
+                  : 'bg-muted/50 border rounded-tl-none'
+              )}>
                 {msg.role === 'user' ? (
                   <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                 ) : (
                   <ErrorBoundary>
-                    <div className="prose prose-invert prose-xs max-w-none">
+                    <div className="prose prose-invert prose-xs max-w-none dark:prose-invert">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm, remarkMath]}
                         rehypePlugins={[rehypeKatex]}
@@ -140,11 +148,12 @@ export const Node: React.FC<NodeProps> = ({
                                 style={vscDarkPlus}
                                 language={match[1]}
                                 PreTag="div"
+                                className="rounded-md !my-0"
                               >
                                 {String(children).replace(/\n$/, '')}
                               </SyntaxHighlighter>
                             ) : (
-                              <code {...props} className={className}>
+                              <code {...props} className={cn("bg-muted px-1 py-0.5 rounded font-mono text-xs", className)}>
                                 {children}
                               </code>
                             )
@@ -162,8 +171,8 @@ export const Node: React.FC<NodeProps> = ({
         })()}
         {node.isThinking && (
           <div className="flex items-start">
-            <div className="bg-[var(--bg-primary)] px-3 py-2 rounded-xl rounded-tl-none border border-[var(--border-primary)]">
-              <Loader2 size={16} className="animate-spin text-[var(--text-secondary)]" />
+            <div className="bg-muted/50 px-3 py-2 rounded-xl rounded-tl-none border">
+              <Loader2 size={16} className="animate-spin text-muted-foreground" />
             </div>
           </div>
         )}
@@ -172,50 +181,57 @@ export const Node: React.FC<NodeProps> = ({
       {/* Branching Buttons */}
       {!isMobile && (
         <>
-          <button
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => onBranch(node.id)}
             title="Branch from right"
-            className="absolute -right-4 top-1/2 -translate-y-1/2 p-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-full text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] shadow-lg z-20"
+            className="absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full shadow-md z-20 bg-background hover:bg-primary hover:text-primary-foreground border-primary/20"
           >
             <Plus size={14} />
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => onBranch(node.id)}
             title="Branch from bottom"
-            className="absolute -bottom-4 left-1/2 -translate-x-1/2 p-1.5 bg-[var(--bg-card)] border border-[var(--border-primary)] rounded-full text-[var(--text-secondary)] hover:text-white hover:bg-[var(--accent-primary)] shadow-lg z-20"
+            className="absolute -bottom-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full shadow-md z-20 bg-background hover:bg-primary hover:text-primary-foreground border-primary/20"
           >
             <Plus size={14} />
-          </button>
+          </Button>
         </>
       )}
 
       {/* Input */}
-      <div className="p-3 border-t border-[var(--border-primary)] bg-[var(--bg-primary)]/30 rounded-b-2xl">
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <button
+      <div className="p-3 border-t bg-muted/30 rounded-b-xl">
+        <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+          <Button
             type="button"
-            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            variant="ghost"
+            size="icon"
+            disabled
+            className="h-9 w-9 text-muted-foreground shrink-0"
             title="Attach file (Not implemented yet)"
           >
             <LinkIcon size={18} />
-          </button>
-          <input
-            type="text"
-            placeholder="Ask anything..."
+          </Button>
+          <Input
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={node.isThinking}
-            className="flex-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]/50 disabled:opacity-50 text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]"
+            placeholder="Ask anything..."
+            className="flex-1 bg-background"
           />
-          <button
+          <Button
             type="submit"
+            size="icon"
             disabled={!inputText.trim() || node.isThinking}
-            className="p-2 bg-[var(--accent-primary)] hover:opacity-90 text-white rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:hover:bg-[var(--accent-primary)]"
+            className="h-9 w-9 shrink-0 shadow-sm"
           >
-            <Send size={18} />
-          </button>
+            <Send size={16} />
+          </Button>
         </form>
       </div>
-    </div>
+    </Card>
   );
 };
