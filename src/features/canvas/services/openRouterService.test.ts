@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchModels, chatCompletion } from './openRouterService';
-import { mockFetch } from '../test/setup';
+import { mockFetch } from '../../../test/setup';
 
 describe('openRouterService', () => {
     beforeEach(() => {

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Plus, Send, Link as LinkIcon, Loader2, BrainCircuit } from 'lucide-react';
 import { ChatNode, OpenRouterModel } from '../types';
-import { ModelSelector } from './ModelSelector';
+import { ModelSelector } from '../../settings/components/ModelSelector';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -17,7 +17,7 @@ import markdown from 'react-syntax-highlighter/dist/esm/languages/prism/markdown
 import css from 'react-syntax-highlighter/dist/esm/languages/prism/css';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import 'katex/dist/katex.min.css';
-import { ErrorBoundary } from './ErrorBoundary';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

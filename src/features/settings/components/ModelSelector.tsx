@@ -16,7 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { OpenRouterModel } from '../types';
+import type { OpenRouterModel } from '../../canvas/types';
 
 interface ModelSelectorProps {
   models: OpenRouterModel[];
