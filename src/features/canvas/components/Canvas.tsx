@@ -18,8 +18,9 @@ interface CanvasProps {
     onLogout: () => void;
     onOpenSettings: () => void;
     onGoHome: () => void;
-    handleBranch: (parentId: string) => void;
+    handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => void;
+    updateNodeSize: (id: string, width: number, height: number) => void;
     isMobile: boolean;
     isDarkMode: boolean;
     setIsDarkMode: (isDark: boolean) => void;
@@ -39,6 +40,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     onGoHome,
     handleBranch,
     handleSendMessage,
+    updateNodeSize,
     isMobile,
     isDarkMode,
     setIsDarkMode
@@ -116,11 +118,78 @@ export const Canvas: React.FC<CanvasProps> = ({
                     </svg>
 
                     <div className="relative w-full h-full pointer-events-none" style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px)` }}>
+
                         {nodes.map(node => {
                             if (!node.parentId) return null;
                             const parent = nodes.find(n => n.id === node.parentId);
                             if (!parent) return null;
-                            return <ConnectionLine key={`${parent.id}-${node.id}`} startX={parent.x + NODE_WIDTH} startY={parent.y + NODE_HEIGHT / 4} endX={node.x} endY={node.y + NODE_HEIGHT / 4} />;
+
+                            // Dynamic connection logic (Shortest Path)
+                            const getConnectionPoints = (source: ChatNode, target: ChatNode) => {
+                                const sourceW = source.width || NODE_WIDTH;
+                                const sourceH = source.height || NODE_HEIGHT;
+                                const targetW = target.width || NODE_WIDTH;
+                                const targetH = target.height || NODE_HEIGHT;
+
+                                // Anchor points
+                                const anchors = {
+                                    source: {
+                                        right: { x: source.x + sourceW, y: source.y + sourceH / 2 },
+                                        left: { x: source.x, y: source.y + sourceH / 2 },
+                                        top: { x: source.x + sourceW / 2, y: source.y },
+                                        bottom: { x: source.x + sourceW / 2, y: source.y + sourceH },
+                                    },
+                                    target: {
+                                        right: { x: target.x + targetW, y: target.y + targetH / 2 },
+                                        left: { x: target.x, y: target.y + targetH / 2 },
+                                        top: { x: target.x + targetW / 2, y: target.y },
+                                        bottom: { x: target.x + targetW / 2, y: target.y + targetH },
+                                    }
+                                };
+
+                                let minDistance = Infinity;
+                                let bestConnection = {
+                                    startX: 0, startY: 0, endX: 0, endY: 0, orientation: 'horizontal' as 'horizontal' | 'vertical'
+                                };
+
+                                const combinations = [
+                                    { s: 'right', t: 'left', o: 'horizontal' },
+                                    { s: 'left', t: 'right', o: 'horizontal' },
+                                    { s: 'bottom', t: 'top', o: 'vertical' },
+                                    { s: 'top', t: 'bottom', o: 'vertical' }
+                                ];
+
+                                for (const combo of combinations) {
+                                    const start = anchors.source[combo.s as keyof typeof anchors.source];
+                                    const end = anchors.target[combo.t as keyof typeof anchors.target];
+
+                                    // Euclidean distance
+                                    const dist = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+
+                                    if (dist < minDistance) {
+                                        minDistance = dist;
+                                        bestConnection = {
+                                            startX: start.x,
+                                            startY: start.y,
+                                            endX: end.x,
+                                            endY: end.y,
+                                            orientation: combo.o as 'horizontal' | 'vertical'
+                                        };
+                                    }
+                                }
+                                return bestConnection;
+                            };
+
+                            const { startX, startY, endX, endY, orientation } = getConnectionPoints(parent, node);
+
+                            return <ConnectionLine
+                                key={`${parent.id}-${node.id}`}
+                                startX={startX}
+                                startY={startY}
+                                endX={endX}
+                                endY={endY}
+                                orientation={orientation}
+                            />;
                         })}
                         {nodes.map(node => {
                             const hasChildren = nodes.some(n => n.parentId === node.id);
@@ -136,6 +205,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                                         onUpdateModel={(id, m) => setNodes(prev => prev.map(n => n.id === id ? { ...n, model: m } : n))}
                                         onDragStart={handleNodeDragStart}
                                         isMobile={isMobile}
+                                        onResize={updateNodeSize}
                                     />
                                 </div>
                             );

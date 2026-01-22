@@ -9,7 +9,7 @@
 
 - When in doubt: choose the version with least code, least abstraction, least ceremony.
 - Never create throwaway test scripts or ad hoc verification files. If you need to test functionality, write a proper test in the test suite.
-When proposing a new idea or implementation, create or update a Markdown file in `./docs/spec/` using `proposal_template.md`. Do not explain the proposal in chat; ask for confirmation after the document is written.
+- When proposing a new idea or implementation, create or update a Markdown file in `./docs/spec/` using `proposal_template.md`. Do not explain the proposal in chat; ask for confirmation after the document is written.
 - DO NOT WRITE CODE UNTIL THE PROPOSED APPROACH HAS BEEN EXPLAINED AND CONFIRMED.
 
 
