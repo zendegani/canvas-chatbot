@@ -73,7 +73,7 @@ export const Node: React.FC<NodeProps> = ({
 
   return (
     <Card
-      className="absolute w-80 md:w-[576px] flex flex-col shadow-2xl transition-all border-primary/20 hover:border-primary/50"
+      className="absolute w-80 md:w-[576px] flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0"
       style={{
         left: node.x,
         top: node.y,
