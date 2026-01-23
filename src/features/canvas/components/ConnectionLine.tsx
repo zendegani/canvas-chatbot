@@ -6,18 +6,28 @@ interface ConnectionLineProps {
   startY: number;
   endX: number;
   endY: number;
+  orientation?: 'horizontal' | 'vertical';
 }
 
-export const ConnectionLine: React.FC<ConnectionLineProps> = ({ startX, startY, endX, endY }) => {
+export const ConnectionLine: React.FC<ConnectionLineProps> = ({ startX, startY, endX, endY, orientation = 'horizontal' }) => {
   // Simple cubic bezier curve calculation
   const dx = Math.abs(endX - startX);
   const dy = Math.abs(endY - startY);
 
-  // Controls points for the curve
-  const cp1x = startX + dx * 0.5;
-  const cp1y = startY;
-  const cp2x = endX - dx * 0.5;
-  const cp2y = endY;
+  let cp1x, cp1y, cp2x, cp2y;
+
+  if (orientation === 'horizontal') {
+    cp1x = startX + dx * 0.5;
+    cp1y = startY;
+    cp2x = endX - dx * 0.5;
+    cp2y = endY;
+  } else {
+    // Vertical orientation
+    cp1x = startX;
+    cp1y = startY + dy * 0.5;
+    cp2x = endX;
+    cp2y = endY - dy * 0.5;
+  }
 
   const path = `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`;
 

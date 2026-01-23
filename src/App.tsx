@@ -37,7 +37,8 @@ const App: React.FC = () => {
     handleSendMessage,
     clearData,
     hasLoaded,
-    refreshModels
+    refreshModels,
+    updateNodeSize
   } = useCanvas(currentUser);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -141,6 +142,7 @@ const App: React.FC = () => {
             isMobile={isMobile}
             isDarkMode={isDarkMode}
             setIsDarkMode={setIsDarkMode}
+            updateNodeSize={updateNodeSize}
           />
           <SettingsModal
             isOpen={isSettingsOpen}

@@ -12,6 +12,8 @@ export interface ChatNode {
     messages: Message[];
     isThinking?: boolean;
     startIndex?: number; // Index in messages array where this branch's own messages start
+    width?: number;
+    height?: number;
 }
 
 export interface OpenRouterModel {

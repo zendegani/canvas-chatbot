@@ -13,11 +13,12 @@ interface UseCanvasReturn {
     isSettingsOpen: boolean;
     setIsSettingsOpen: (isOpen: boolean) => void;
     addInitialNode: () => void;
-    handleBranch: (parentId: string) => void;
+    handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
     clearData: (setView: (view: ViewState) => void, setIsLoggedIn: (val: boolean) => void, setIsRegistered: (val: boolean) => void) => void;
     hasLoaded: boolean;
     refreshModels: () => void;
+    updateNodeSize: (id: string, width: number, height: number) => void;
 }
 
 export const useCanvas = (currentUser: string): UseCanvasReturn => {
@@ -80,7 +81,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         setNodes([newNode]);
     };
 
-    const handleBranch = (parentId: string) => {
+    const handleBranch = (parentId: string, direction: 'right' | 'bottom' = 'right') => {
         setNodes(prevNodes => {
             if (prevNodes.length >= 10) {
                 alert('Maximum of 10 nodes reached.');
@@ -93,21 +94,34 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             const NODE_HEIGHT = 400;
             const GAP = 25;
 
-            let newX = parent.x + NODE_WIDTH + 50; // Use NODE_WIDTH for proper spacing
-            let newY = parent.y + 100; // Offset first child to ensure curved connection line
+            let newX: number, newY: number;
 
-            // Simple collision avoidance: vertical stacking
+            if (direction === 'right') {
+                newX = parent.x + NODE_WIDTH + 50; // Use NODE_WIDTH for proper spacing
+                newY = parent.y + 100; // Offset first child to ensure curved connection line
+            } else {
+                newX = parent.x + 50; // Slight offset for bottom branch
+                newY = parent.y + NODE_HEIGHT + 50;
+            }
+
+            // Collision avoidance
             let collision = true;
             let attempts = 0;
 
             while (collision && attempts < 10) {
                 collision = prevNodes.some(n =>
                     Math.abs(n.x - newX) < 100 &&
-                    Math.abs(n.y - newY) < NODE_HEIGHT
+                    Math.abs(n.y - newY) < 100 // Tighter collision check
                 );
 
                 if (collision) {
-                    newY += NODE_HEIGHT + GAP;
+                    if (direction === 'right') {
+                        // Stack vertically for right branches
+                        newY += NODE_HEIGHT + GAP;
+                    } else {
+                        // Stack horizontally for bottom branches
+                        newX += NODE_WIDTH + 50;
+                    }
                     attempts++;
                 }
             }
@@ -177,6 +191,12 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     };
 
+    const updateNodeSize = (id: string, width: number, height: number) => {
+        setNodes(prev => prev.map(n =>
+            n.id === id ? { ...n, width, height } : n
+        ));
+    };
+
     return {
         nodes,
         setNodes,
@@ -188,6 +208,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         handleSendMessage,
         clearData,
         hasLoaded,
-        refreshModels
+        refreshModels,
+        updateNodeSize
     };
 };

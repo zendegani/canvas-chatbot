@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { X, Plus, Send, Link as LinkIcon, Loader2, BrainCircuit } from 'lucide-react';
 import { ChatNode, OpenRouterModel } from '../types';
 import { ModelSelector } from '../../settings/components/ModelSelector';
@@ -36,12 +36,13 @@ interface NodeProps {
   node: ChatNode;
   models: OpenRouterModel[];
   onDelete: (id: string) => void;
-  onBranch: (id: string) => void;
+  onBranch: (id: string, direction: 'right' | 'bottom') => void;
   onSendMessage: (id: string, text: string) => void;
   onUpdateModel: (id: string, model: string) => void;
   onDragStart: (id: string, e: React.MouseEvent) => void;
   isMobile: boolean;
   hasChildren: boolean;
+  onResize: (id: string, width: number, height: number) => void;
 }
 
 export const Node: React.FC<NodeProps> = ({
@@ -53,10 +54,19 @@ export const Node: React.FC<NodeProps> = ({
   onUpdateModel,
   onDragStart,
   isMobile,
-  hasChildren
+  hasChildren,
+  onResize
 }) => {
   const [inputText, setInputText] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (cardRef.current) {
+      const { offsetWidth, offsetHeight } = cardRef.current;
+      onResize(node.id, offsetWidth, offsetHeight);
+    }
+  }, [node.messages, node.isThinking, hasChildren]); // Re-measure when content changes
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -73,7 +83,8 @@ export const Node: React.FC<NodeProps> = ({
 
   return (
     <Card
-      className="absolute w-80 md:w-[576px] flex flex-col shadow-2xl transition-all border-primary/20 hover:border-primary/50"
+      ref={cardRef}
+      className="absolute w-80 md:w-[576px] flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0"
       style={{
         left: node.x,
         top: node.y,
@@ -184,7 +195,7 @@ export const Node: React.FC<NodeProps> = ({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => onBranch(node.id)}
+            onClick={() => onBranch(node.id, 'right')}
             title="Branch from right"
             className="absolute -right-4 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full shadow-md z-20 bg-background hover:bg-primary hover:text-primary-foreground border-primary/20"
           >
@@ -193,7 +204,7 @@ export const Node: React.FC<NodeProps> = ({
           <Button
             variant="outline"
             size="icon"
-            onClick={() => onBranch(node.id)}
+            onClick={() => onBranch(node.id, 'bottom')}
             title="Branch from bottom"
             className="absolute -bottom-4 left-1/2 -translate-x-1/2 h-8 w-8 rounded-full shadow-md z-20 bg-background hover:bg-primary hover:text-primary-foreground border-primary/20"
           >
