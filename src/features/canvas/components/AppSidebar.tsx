@@ -1,6 +1,11 @@
 import React from 'react';
-import { Sparkles, Settings, Trash2, Plus, MessageSquare, X } from 'lucide-react';
+import { Sparkles, Settings, Trash2, Plus, X, History, ChevronRight } from 'lucide-react';
 import { ChatSession } from '../types';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     Sidebar,
     SidebarContent,
@@ -13,6 +18,9 @@ import {
     SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
     SidebarRail,
     SidebarSeparator,
 } from '@/components/ui/sidebar';
@@ -81,41 +89,51 @@ export function AppSidebar({
                 {/* Chat History */}
                 <SidebarGroup>
                     <SidebarGroupLabel>History</SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            {sessions.map(session => (
-                                <SidebarMenuItem key={session.id}>
-                                    <SidebarMenuButton
-                                        isActive={session.id === activeSessionId}
-                                        onClick={() => onLoadSession(session.id)}
-                                        tooltip={session.title}
-                                    >
-                                        <MessageSquare />
-                                        <span>{session.title}</span>
+                    <SidebarMenu>
+                        <Collapsible defaultOpen className="group/collapsible">
+                            <SidebarMenuItem>
+                                <CollapsibleTrigger asChild>
+                                    <SidebarMenuButton tooltip="History">
+                                        <History />
+                                        <span>Recent Chats</span>
+                                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                     </SidebarMenuButton>
-                                    <SidebarMenuAction
-                                        showOnHover
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onDeleteSession(session.id);
-                                        }}
-                                        className="text-muted-foreground hover:text-destructive"
-                                    >
-                                        <X className="size-4" />
-                                        <span className="sr-only">Delete</span>
-                                    </SidebarMenuAction>
-                                </SidebarMenuItem>
-                            ))}
-                            {sessions.length === 0 && (
-                                <SidebarMenuItem>
-                                    <SidebarMenuButton disabled className="text-muted-foreground opacity-60">
-                                        <MessageSquare />
-                                        <span>No chats yet</span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
-                            )}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <SidebarMenuSub>
+                                        {sessions.map(session => (
+                                            <SidebarMenuSubItem key={session.id}>
+                                                <SidebarMenuSubButton
+                                                    isActive={session.id === activeSessionId}
+                                                    onClick={() => onLoadSession(session.id)}
+                                                >
+                                                    <span>{session.title}</span>
+                                                </SidebarMenuSubButton>
+                                                <SidebarMenuAction
+                                                    showOnHover
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onDeleteSession(session.id);
+                                                    }}
+                                                    className="text-muted-foreground hover:text-destructive"
+                                                >
+                                                    <X className="size-4" />
+                                                    <span className="sr-only">Delete</span>
+                                                </SidebarMenuAction>
+                                            </SidebarMenuSubItem>
+                                        ))}
+                                        {sessions.length === 0 && (
+                                            <SidebarMenuSubItem>
+                                                <SidebarMenuSubButton className="text-muted-foreground opacity-60 pointer-events-none">
+                                                    <span>No chats yet</span>
+                                                </SidebarMenuSubButton>
+                                            </SidebarMenuSubItem>
+                                        )}
+                                    </SidebarMenuSub>
+                                </CollapsibleContent>
+                            </SidebarMenuItem>
+                        </Collapsible>
+                    </SidebarMenu>
                 </SidebarGroup>
 
                 <SidebarSeparator />
