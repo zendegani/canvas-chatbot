@@ -35,10 +35,16 @@ const App: React.FC = () => {
     addInitialNode,
     handleBranch,
     handleSendMessage,
+    handleCompareMessage,
     clearData,
     hasLoaded,
     refreshModels,
-    updateNodeSize
+    updateNodeSize,
+    sessions,
+    activeSessionId,
+    createSession,
+    loadSession,
+    deleteSession
   } = useCanvas(currentUser);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -75,13 +81,13 @@ const App: React.FC = () => {
   useEffect(() => {
     if (view === 'canvas') {
       document.body.style.overflow = 'hidden';
-      if (hasLoaded && nodes.length === 0) {
+      if (hasLoaded && nodes.length === 0 && !activeSessionId) {
         addInitialNode();
       }
     } else {
       document.body.style.overflow = 'auto';
     }
-  }, [view, nodes.length, addInitialNode, hasLoaded]);
+  }, [view, nodes.length, addInitialNode, hasLoaded, activeSessionId]);
 
   // Track page views for SPA navigation via Umami
   useEffect(() => {
@@ -139,10 +145,17 @@ const App: React.FC = () => {
             onGoHome={() => setView('landing')}
             handleBranch={handleBranch}
             handleSendMessage={handleSendMessage}
+            handleCompareMessage={handleCompareMessage}
             isMobile={isMobile}
             isDarkMode={isDarkMode}
             setIsDarkMode={setIsDarkMode}
             updateNodeSize={updateNodeSize}
+            currentUser={currentUser}
+            sessions={sessions}
+            activeSessionId={activeSessionId}
+            onCreateSession={createSession}
+            onLoadSession={loadSession}
+            onDeleteSession={deleteSession}
           />
           <SettingsModal
             isOpen={isSettingsOpen}

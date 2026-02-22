@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { X, Plus, Send, Link as LinkIcon, Loader2, BrainCircuit } from 'lucide-react';
+import { X, Plus, Minus, Send, Link as LinkIcon, Loader2, BrainCircuit } from 'lucide-react';
 import { ChatNode, OpenRouterModel } from '../types';
 import { ModelSelector } from '../../settings/components/ModelSelector';
 import ReactMarkdown from 'react-markdown';
@@ -38,6 +38,7 @@ interface NodeProps {
   onDelete: (id: string) => void;
   onBranch: (id: string, direction: 'right' | 'bottom') => void;
   onSendMessage: (id: string, text: string) => void;
+  onCompareMessage: (id: string, text: string, models: [string, string]) => void;
   onUpdateModel: (id: string, model: string) => void;
   onDragStart: (id: string, e: React.MouseEvent) => void;
   isMobile: boolean;
@@ -51,6 +52,7 @@ export const Node: React.FC<NodeProps> = ({
   onDelete,
   onBranch,
   onSendMessage,
+  onCompareMessage,
   onUpdateModel,
   onDragStart,
   isMobile,
@@ -58,6 +60,7 @@ export const Node: React.FC<NodeProps> = ({
   onResize
 }) => {
   const [inputText, setInputText] = useState('');
+  const [secondModel, setSecondModel] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -77,7 +80,12 @@ export const Node: React.FC<NodeProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || node.isThinking) return;
-    onSendMessage(node.id, inputText);
+    if (secondModel) {
+      onCompareMessage(node.id, inputText, [node.model, secondModel]);
+      setSecondModel(null);
+    } else {
+      onSendMessage(node.id, inputText);
+    }
     setInputText('');
   };
 
@@ -97,14 +105,31 @@ export const Node: React.FC<NodeProps> = ({
         className="flex items-center justify-between p-3 border-b cursor-grab active:cursor-grabbing bg-muted/30 rounded-t-xl"
         onMouseDown={(e) => onDragStart(node.id, e)}
       >
-        <div className="flex items-center gap-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm" />
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm shrink-0" />
           <ModelSelector
             models={models}
             selectedModel={node.model}
             onSelect={(m) => onUpdateModel(node.id, m)}
             isLoading={models.length === 0}
           />
+          {secondModel && (
+            <ModelSelector
+              models={models}
+              selectedModel={secondModel}
+              onSelect={setSecondModel}
+              isLoading={models.length === 0}
+            />
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSecondModel(prev => prev ? null : (models[0]?.id || 'google/gemini-pro'))}
+            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
+            title={secondModel ? 'Remove comparison model' : 'Add model to compare'}
+          >
+            {secondModel ? <Minus size={14} /> : <Plus size={14} />}
+          </Button>
         </div>
         {!hasChildren && (
           <Button

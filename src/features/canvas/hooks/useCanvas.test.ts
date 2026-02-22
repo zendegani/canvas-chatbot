@@ -107,7 +107,7 @@ describe('useCanvas', () => {
     });
 
     describe('node persistence', () => {
-        it('saves nodes to localStorage for current user', async () => {
+        it('saves nodes to localStorage as a session', async () => {
             const { result } = renderHook(() => useCanvas(testUser));
 
             act(() => {
@@ -115,14 +115,19 @@ describe('useCanvas', () => {
             });
 
             await waitFor(() => {
-                const savedNodes = localStorage.getItem(`canvasNodes_${testUser}`);
-                expect(savedNodes).not.toBeNull();
-                const parsed = JSON.parse(savedNodes!);
-                expect(parsed).toHaveLength(1);
+                const sessionIndex = localStorage.getItem(`canvasSessions_${testUser}`);
+                expect(sessionIndex).not.toBeNull();
+                const sessions = JSON.parse(sessionIndex!);
+                expect(sessions).toHaveLength(1);
+                // Check session data was saved
+                const sessionData = localStorage.getItem(`canvasSession_${testUser}_${sessions[0].id}`);
+                expect(sessionData).not.toBeNull();
+                const parsed = JSON.parse(sessionData!);
+                expect(parsed.nodes).toHaveLength(1);
             });
         });
 
-        it('loads nodes from localStorage for user', async () => {
+        it('migrates legacy canvasNodes into a session', async () => {
             const existingNodes = [
                 { id: 'node1', parentId: null, x: 100, y: 100, model: 'gpt-4', messages: [] },
             ];
@@ -133,6 +138,11 @@ describe('useCanvas', () => {
             await waitFor(() => {
                 expect(result.current.nodes).toHaveLength(1);
                 expect(result.current.nodes[0].id).toBe('node1');
+                // Legacy key should be removed after migration
+                expect(localStorage.getItem(`canvasNodes_${testUser}`)).toBeNull();
+                // Session index should exist
+                const sessionIndex = localStorage.getItem(`canvasSessions_${testUser}`);
+                expect(sessionIndex).not.toBeNull();
             });
         });
 

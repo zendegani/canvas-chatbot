@@ -12,34 +12,35 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
 
 ## Features
 
--   **Infinite Canvas**: Pan, scroll, and organize your thoughts spatially. No more getting lost in long, vertical history.
--   **Branching Conversations**: Want to explore a tangent? Branch off any message node to create a new thread without losing context.
--   **Multi-Model Orchestration**: Powered by **OpenRouter**. Use Google Gemini 2.0 Flash for speed, Claude 3.5 Sonnet for coding, and GPT-4o for reasoning—all in the same workspace.
--   **Rich Text Rendering**:
-    -   Full Markdown support
-    -   Syntax highlighting for code blocks
-    -   LaTeX math rendering ($E=mc^2$)
--   **Modern UI Components**: Built with **shadcn/ui** - a collection of beautiful, accessible, and customizable components powered by Radix UI and Tailwind CSS.
--   **Local & Secure**:
-    -   **Bring Your Own Key**: You typically use your own OpenRouter API Key.
-    -   **Local Storage**: Your API keys and chat history are stored **only** in your browser's local storage. Nothing is sent to our servers.
-    -   **Session Isolation**: Multiple users can share a device safely; data is scoped to your login.
--   **Professional Landing Page**:
-    -   Modern, responsive design with dark/light mode toggle
-    -   Pricing tiers (Individual Free, Cloud Pro Coming Soon)
-    -   Waitlist signup modal for early access
-    -   Contact form powered by Web3Forms
+- **Infinite Canvas**: Pan, scroll, and organize your thoughts spatially. No more getting lost in long, vertical history.
+- **Chat History & Sidebar**: A sleek, collapsible sidebar lets you seamlessly switch between, manage, and autosave up to 50 previous conversations.
+- **Branching Conversations**: Want to explore a tangent? Branch off any message node to create a new thread without losing context.
+- **Multi-Model Orchestration & Comparison**: Powered by **OpenRouter**. Use Google Gemini, Anthropic Claude, and OpenAI models in the same workspace. Pick *two* models at once to split-test a prompt side-by-side.
+- **Rich Text Rendering**:
+  - Full Markdown support
+  - Syntax highlighting for code blocks
+  - LaTeX math rendering ($E=mc^2$)
+- **Modern UI Components**: Built with **shadcn/ui** - a collection of beautiful, accessible, and customizable components powered by Radix UI and Tailwind CSS.
+- **Local & Secure**:
+  - **Bring Your Own Key**: You typically use your own OpenRouter API Key.
+  - **Local Storage**: Your API keys and chat history are stored **only** in your browser's local storage. Nothing is sent to our servers.
+  - **Session Isolation**: Multiple users can share a device safely; data and chat histories are scoped to your login.
+- **Professional Landing Page**:
+  - Modern, responsive design with dark/light mode toggle
+  - Pricing tiers (Individual Free, Cloud Pro Coming Soon)
+  - Waitlist signup modal for early access
+  - Contact form powered by Web3Forms
 
 ## Architecture & Tech Stack
 
 Canvas AI follows a **hybrid feature-based architecture** that promotes scalability and maintainability:
 
--   **Feature-Based Structure**: Code is organized by domain (auth, canvas, landing, settings) rather than by file type
--   **Separation of Concerns**: Each feature contains its own components, hooks, services, and types
--   **Global UI Layer**: shadcn/ui components in `src/components/ui` provide consistent, reusable primitives
--   **TypeScript Strict Mode**: Full type safety across the entire codebase
--   **Tailwind CSS v4**: Utility-first styling with modern design tokens
--   **Vite**: Lightning-fast build tool with HMR for optimal developer experience
+- **Feature-Based Structure**: Code is organized by domain (auth, canvas, landing, settings) rather than by file type
+- **Separation of Concerns**: Each feature contains its own components, hooks, services, and types
+- **Global UI Layer**: shadcn/ui components in `src/components/ui` provide consistent, reusable primitives
+- **TypeScript Strict Mode**: Full type safety across the entire codebase
+- **Tailwind CSS v4**: Utility-first styling with modern design tokens
+- **Vite**: Lightning-fast build tool with HMR for optimal developer experience
 
 For a detailed folder structure, see [docs/requirements.md](./docs/requirements.md#32-architecture).
 
@@ -47,53 +48,60 @@ For a detailed folder structure, see [docs/requirements.md](./docs/requirements.
 
 The application uses environment variables for optional features:
 
--   **`VITE_WEB3FORMS_KEY`** (Optional): Access key for Web3Forms integration (contact form and waitlist)
-    -   Get your key at [web3forms.com](https://web3forms.com/)
-    -   Only needed if you want to test the contact/waitlist forms locally
-    -   See `.env.example` for the template
+- **`VITE_WEB3FORMS_KEY`** (Optional): Access key for Web3Forms integration (contact form and waitlist)
+  - Get your key at [web3forms.com](https://web3forms.com/)
+  - Only needed if you want to test the contact/waitlist forms locally
+  - See `.env.example` for the template
 
 ## Getting Started
 
 ### Prerequisites
 
--   Node.js (v16 or higher)
--   npm or yarn
--   An [OpenRouter API Key](https://openrouter.ai/keys)
+- Node.js (v16 or higher)
+- npm or yarn
+- An [OpenRouter API Key](https://openrouter.ai/keys)
 
 ### Installation
 
-1.  **Clone the repository**
+1. **Clone the repository**
+
     ```bash
     git clone https://github.com/zendegani/canvas-chatbot.git
     cd canvas-chatbot
     ```
 
-2.  **Install dependencies**
+2. **Install dependencies**
+
     ```bash
     npm install
     ```
 
-3.  **(Optional) Set up environment variables**
+3. **(Optional) Set up environment variables**
+
     ```bash
     cp .env.example .env.local
     ```
+
     Then edit `.env.local` and add your Web3Forms access key if you want to test the contact/waitlist forms.
 
-4.  **Run the development server**
+4. **Run the development server**
+
     ```bash
     npm run dev
     ```
+
     The app will start at `http://localhost:5173`.
 
 ### Usage Guide
 
-1.  **Sign Up**: Create a local account (this is a mock auth system for demo purposes).
-2.  **Add API Key**: Click on the **Settings** (gear icon) and paste your OpenRouter API Key.
-3.  **Start Chatting**:
-    -   Click the **"+"** button to add your first node.
-    -   Type your message and hit send.
-    -   Drag nodes to organize them.
-    -   Click the **Branch** icon on a node to split the conversation.
+1. **Sign Up**: Create a local account (this is a mock auth system for demo purposes).
+2. **Add API Key**: Click on the **Settings** (gear icon) and paste your OpenRouter API Key.
+3. **Start Chatting**:
+    - Click the **"New Chat"** button in the sidebar or the **"+"** button to start a fresh canvas.
+    - Type your message and hit send.
+    - Drag nodes to organize them.
+    - Click the **"+"** next to the model dropdown to add a second model and compare responses side-by-side.
+    - Click the **Branch** icon on a node to split the conversation.
 
 ## Building for Production
 

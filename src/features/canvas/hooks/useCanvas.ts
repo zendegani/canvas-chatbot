@@ -1,12 +1,71 @@
-import { useState, useEffect } from 'react';
-import { ChatNode, OpenRouterModel, Message } from '../types';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { ChatNode, ChatSession, OpenRouterModel, Message } from '../types';
 import { fetchModels, chatCompletion } from '../services/openRouterService';
 import type { ViewState } from '../../auth/types';
 
 const NODE_WIDTH = 576;
 const NODE_HEIGHT = 400;
+const MAX_SESSIONS = 50;
+const TITLE_MAX_LENGTH = 30;
 
-interface UseCanvasReturn {
+// --- localStorage helpers (scoped per user) ---
+
+function sessionIndexKey(user: string) { return `canvasSessions_${user}`; }
+function sessionDataKey(user: string, id: string) { return `canvasSession_${user}_${id}`; }
+function activeSessionKey(user: string) { return `canvasActiveSession_${user}`; }
+function legacyNodesKey(user: string) { return `canvasNodes_${user}`; }
+
+function loadSessionIndex(user: string): Omit<ChatSession, 'nodes'>[] {
+    try {
+        const raw = localStorage.getItem(sessionIndexKey(user));
+        return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+}
+
+function saveSessionIndex(user: string, sessions: Omit<ChatSession, 'nodes'>[]) {
+    localStorage.setItem(sessionIndexKey(user), JSON.stringify(sessions));
+}
+
+function loadSessionData(user: string, id: string): ChatSession | null {
+    try {
+        const raw = localStorage.getItem(sessionDataKey(user, id));
+        return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+}
+
+function saveSessionData(user: string, session: ChatSession) {
+    localStorage.setItem(sessionDataKey(user, session.id), JSON.stringify(session));
+}
+
+function deleteSessionData(user: string, id: string) {
+    localStorage.removeItem(sessionDataKey(user, id));
+}
+
+function generateId(): string {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+}
+
+function deriveTitle(nodes: ChatNode[]): string {
+    // Find the first user message across all nodes
+    for (const node of nodes) {
+        for (const msg of node.messages) {
+            if (msg.role === 'user' && msg.content.trim()) {
+                const text = msg.content.trim();
+                return text.length > TITLE_MAX_LENGTH
+                    ? text.slice(0, TITLE_MAX_LENGTH) + '…'
+                    : text;
+            }
+        }
+    }
+    return 'New Chat';
+}
+
+// --- Hook ---
+
+export interface UseCanvasReturn {
     nodes: ChatNode[];
     setNodes: React.Dispatch<React.SetStateAction<ChatNode[]>>;
     models: OpenRouterModel[];
@@ -15,10 +74,17 @@ interface UseCanvasReturn {
     addInitialNode: () => void;
     handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
+    handleCompareMessage: (nodeId: string, text: string, compareModels: [string, string]) => Promise<void>;
     clearData: (setView: (view: ViewState) => void, setIsLoggedIn: (val: boolean) => void, setIsRegistered: (val: boolean) => void) => void;
     hasLoaded: boolean;
     refreshModels: () => void;
     updateNodeSize: (id: string, width: number, height: number) => void;
+    // Session management
+    sessions: Omit<ChatSession, 'nodes'>[];
+    activeSessionId: string | null;
+    createSession: () => void;
+    loadSession: (id: string) => void;
+    deleteSession: (id: string) => void;
 }
 
 export const useCanvas = (currentUser: string): UseCanvasReturn => {
@@ -26,34 +92,98 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const [models, setModels] = useState<OpenRouterModel[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [hasLoaded, setHasLoaded] = useState(false);
+    const [sessions, setSessions] = useState<Omit<ChatSession, 'nodes'>[]>([]);
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+    const lastUsedModelRef = useRef('google/gemini-pro');
 
-    // Load nodes when currentUser changes
+    // Keep last used model in sync
     useEffect(() => {
-        if (currentUser) {
-            const storedNodes = localStorage.getItem(`canvasNodes_${currentUser}`);
-            if (storedNodes) {
-                try {
-                    setNodes(JSON.parse(storedNodes));
-                } catch (e) {
-                    console.error('Failed to parse stored nodes', e);
-                    setNodes([]);
+        if (nodes[0]?.model) {
+            lastUsedModelRef.current = nodes[0].model;
+        }
+    }, [nodes]);
+
+    // --- Migrate legacy data & load sessions on user change ---
+    useEffect(() => {
+        if (!currentUser) {
+            setNodes([]);
+            setSessions([]);
+            setActiveSessionId(null);
+            setHasLoaded(false);
+            return;
+        }
+
+        let index = loadSessionIndex(currentUser);
+
+        // Migrate legacy canvasNodes if no sessions exist yet
+        const legacyRaw = localStorage.getItem(legacyNodesKey(currentUser));
+        if (index.length === 0 && legacyRaw) {
+            try {
+                const legacyNodes: ChatNode[] = JSON.parse(legacyRaw);
+                if (legacyNodes.length > 0) {
+                    const now = Date.now();
+                    const session: ChatSession = {
+                        id: generateId(),
+                        title: deriveTitle(legacyNodes),
+                        nodes: legacyNodes,
+                        createdAt: now,
+                        updatedAt: now,
+                    };
+                    saveSessionData(currentUser, session);
+                    const { nodes: _, ...meta } = session;
+                    index = [meta];
+                    saveSessionIndex(currentUser, index);
+                    localStorage.removeItem(legacyNodesKey(currentUser));
                 }
-            } else {
-                setNodes([]);
+            } catch (e) {
+                console.error('Failed to migrate legacy nodes', e);
             }
-            setHasLoaded(true);
+        }
+
+        setSessions(index);
+
+        // Restore active session
+        const savedActiveId = localStorage.getItem(activeSessionKey(currentUser));
+        const activeId = savedActiveId && index.some(s => s.id === savedActiveId)
+            ? savedActiveId
+            : index[0]?.id ?? null;
+
+        if (activeId) {
+            const data = loadSessionData(currentUser, activeId);
+            setNodes(data?.nodes ?? []);
+            setActiveSessionId(activeId);
+            localStorage.setItem(activeSessionKey(currentUser), activeId);
         } else {
             setNodes([]);
-            setHasLoaded(false);
+            setActiveSessionId(null);
         }
+
+        setHasLoaded(true);
     }, [currentUser]);
 
-    // Persist nodes
+    // --- Auto-save current session on node changes ---
     useEffect(() => {
-        if (currentUser && hasLoaded) {
-            localStorage.setItem(`canvasNodes_${currentUser}`, JSON.stringify(nodes));
-        }
-    }, [nodes, currentUser, hasLoaded]);
+        if (!currentUser || !hasLoaded || !activeSessionId) return;
+
+        const session = loadSessionData(currentUser, activeSessionId);
+        if (!session) return;
+
+        const updatedSession: ChatSession = {
+            ...session,
+            nodes,
+            title: deriveTitle(nodes) || session.title,
+            updatedAt: Date.now(),
+        };
+        saveSessionData(currentUser, updatedSession);
+
+        // Update index metadata
+        const { nodes: _, ...meta } = updatedSession;
+        setSessions(prev => {
+            const updated = prev.map(s => s.id === meta.id ? meta : s);
+            saveSessionIndex(currentUser, updated);
+            return updated;
+        });
+    }, [nodes, currentUser, hasLoaded, activeSessionId]);
 
     // Fetch models
     useEffect(() => {
@@ -65,8 +195,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     }, [currentUser]);
 
-    const addInitialNode = () => {
-        // Calculate center position based on viewport
+    const addInitialNode = useCallback(() => {
         const centerX = (window.innerWidth - NODE_WIDTH) / 2;
         const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
 
@@ -75,11 +204,142 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             parentId: null,
             x: centerX,
             y: centerY,
-            model: 'google/gemini-pro',
+            model: lastUsedModelRef.current,
             messages: [],
         };
-        setNodes([newNode]);
-    };
+
+        // If current session already has nodes, create a new session
+        // If no session or current session is empty, add node in-place
+        if (activeSessionId && nodes.length > 0) {
+            // Create new session with the initial node
+            const now = Date.now();
+            const session: ChatSession = {
+                id: generateId(),
+                title: 'New Chat',
+                nodes: [newNode],
+                createdAt: now,
+                updatedAt: now,
+            };
+            saveSessionData(currentUser, session);
+            const { nodes: _, ...meta } = session;
+
+            setSessions(prev => {
+                const updated = [meta, ...prev].slice(0, MAX_SESSIONS);
+                if (prev.length >= MAX_SESSIONS) {
+                    const evicted = prev.slice(MAX_SESSIONS - 1);
+                    evicted.forEach(s => deleteSessionData(currentUser, s.id));
+                }
+                saveSessionIndex(currentUser, updated);
+                return updated;
+            });
+            setActiveSessionId(session.id);
+            localStorage.setItem(activeSessionKey(currentUser), session.id);
+            setNodes([newNode]);
+        } else if (!activeSessionId) {
+            // No session at all — create one
+            const now = Date.now();
+            const session: ChatSession = {
+                id: generateId(),
+                title: 'New Chat',
+                nodes: [newNode],
+                createdAt: now,
+                updatedAt: now,
+            };
+            saveSessionData(currentUser, session);
+            const { nodes: _, ...meta } = session;
+
+            setSessions(prev => {
+                const updated = [meta, ...prev].slice(0, MAX_SESSIONS);
+                saveSessionIndex(currentUser, updated);
+                return updated;
+            });
+            setActiveSessionId(session.id);
+            localStorage.setItem(activeSessionKey(currentUser), session.id);
+            setNodes([newNode]);
+        } else {
+            // Active session exists but is empty — just add the node
+            setNodes([newNode]);
+        }
+    }, [activeSessionId, currentUser, nodes]);
+
+    const createSession = useCallback(() => {
+        if (!currentUser) return;
+
+        const centerX = (window.innerWidth - NODE_WIDTH) / 2;
+        const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
+
+        const initialNode: ChatNode = {
+            id: Math.random().toString(36).substr(2, 9),
+            parentId: null,
+            x: centerX,
+            y: centerY,
+            model: lastUsedModelRef.current,
+            messages: [],
+        };
+
+        const now = Date.now();
+        const session: ChatSession = {
+            id: generateId(),
+            title: 'New Chat',
+            nodes: [initialNode],
+            createdAt: now,
+            updatedAt: now,
+        };
+        saveSessionData(currentUser, session);
+        const { nodes: _, ...meta } = session;
+
+        setSessions(prev => {
+            const updated = [meta, ...prev].slice(0, MAX_SESSIONS);
+            if (prev.length >= MAX_SESSIONS) {
+                const evicted = prev.slice(MAX_SESSIONS - 1);
+                evicted.forEach(s => deleteSessionData(currentUser, s.id));
+            }
+            saveSessionIndex(currentUser, updated);
+            return updated;
+        });
+
+        setActiveSessionId(session.id);
+        localStorage.setItem(activeSessionKey(currentUser), session.id);
+        setNodes([initialNode]);
+    }, [currentUser]);
+
+    const loadSession = useCallback((id: string) => {
+        if (!currentUser || id === activeSessionId) return;
+
+        const data = loadSessionData(currentUser, id);
+        if (data) {
+            setNodes(data.nodes);
+            setActiveSessionId(id);
+            localStorage.setItem(activeSessionKey(currentUser), id);
+        }
+    }, [currentUser, activeSessionId]);
+
+    const deleteSession = useCallback((id: string) => {
+        if (!currentUser) return;
+
+        deleteSessionData(currentUser, id);
+        setSessions(prev => {
+            const updated = prev.filter(s => s.id !== id);
+            saveSessionIndex(currentUser, updated);
+
+            // If we deleted the active session, switch to the next one
+            if (id === activeSessionId) {
+                const next = updated[0];
+                if (next) {
+                    const nextData = loadSessionData(currentUser, next.id);
+                    setNodes(nextData?.nodes ?? []);
+                    setActiveSessionId(next.id);
+                    localStorage.setItem(activeSessionKey(currentUser), next.id);
+                } else {
+                    setNodes([]);
+                    setActiveSessionId(null);
+                    localStorage.removeItem(activeSessionKey(currentUser));
+                }
+            }
+
+            return updated;
+        });
+    }, [currentUser, activeSessionId]);
 
     const handleBranch = (parentId: string, direction: 'right' | 'bottom' = 'right') => {
         setNodes(prevNodes => {
@@ -97,10 +357,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             let newX: number, newY: number;
 
             if (direction === 'right') {
-                newX = parent.x + NODE_WIDTH + 50; // Use NODE_WIDTH for proper spacing
-                newY = parent.y + 100; // Offset first child to ensure curved connection line
+                newX = parent.x + NODE_WIDTH + 50;
+                newY = parent.y + 100;
             } else {
-                newX = parent.x + 50; // Slight offset for bottom branch
+                newX = parent.x + 50;
                 newY = parent.y + NODE_HEIGHT + 50;
             }
 
@@ -111,15 +371,13 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             while (collision && attempts < 10) {
                 collision = prevNodes.some(n =>
                     Math.abs(n.x - newX) < 100 &&
-                    Math.abs(n.y - newY) < 100 // Tighter collision check
+                    Math.abs(n.y - newY) < 100
                 );
 
                 if (collision) {
                     if (direction === 'right') {
-                        // Stack vertically for right branches
                         newY += NODE_HEIGHT + GAP;
                     } else {
-                        // Stack horizontally for bottom branches
                         newX += NODE_WIDTH + 50;
                     }
                     attempts++;
@@ -133,7 +391,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                 y: newY,
                 model: parent.model,
                 messages: [...parent.messages],
-                startIndex: parent.messages.length, // Branch starts after parent's messages
+                startIndex: parent.messages.length,
             };
             return [...prevNodes, newNode];
         });
@@ -167,17 +425,88 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     };
 
+    const handleCompareMessage = async (nodeId: string, text: string, compareModels: [string, string]) => {
+        const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`);
+        if (!apiKey) {
+            alert('Please set your OpenRouter API Key in Settings first.');
+            setIsSettingsOpen(true);
+            return;
+        }
+
+        if (nodes.length + 2 > 10) {
+            alert('Not enough room — maximum of 10 nodes reached.');
+            return;
+        }
+
+        const userMsg: Message = { role: 'user', content: text };
+        const parent = nodes.find(n => n.id === nodeId);
+        if (!parent) return;
+
+        const history = [...parent.messages, userMsg];
+        const parentW = parent.width || NODE_WIDTH;
+        const GAP = 25;
+
+        // Position children side-by-side above the parent's top-center
+        const childIds = [Math.random().toString(36).substr(2, 9), Math.random().toString(36).substr(2, 9)];
+        const children: ChatNode[] = compareModels.map((model, i) => {
+            const offsetX = i === 0
+                ? parent.x - NODE_WIDTH / 2 - GAP / 2
+                : parent.x + parentW / 2 + GAP / 2;
+
+            return {
+                id: childIds[i],
+                parentId: nodeId,
+                x: offsetX,
+                y: parent.y - NODE_HEIGHT - 50,
+                model,
+                messages: [...history],
+                startIndex: history.length - 1, // Show only the user msg + upcoming response
+                isThinking: true,
+            };
+        });
+
+        // Add user message to parent + create both children
+        setNodes(prev => [
+            ...prev.map(n => n.id === nodeId ? { ...n, messages: [...n.messages, userMsg] } : n),
+            ...children,
+        ]);
+
+        // Fire both API requests simultaneously
+        const requests = compareModels.map(async (model, i) => {
+            try {
+                const reply = await chatCompletion(apiKey, model, history);
+                const assistantMsg: Message = { role: 'assistant', content: reply };
+                setNodes(prev => prev.map(n =>
+                    n.id === childIds[i] ? { ...n, messages: [...n.messages, assistantMsg], isThinking: false } : n
+                ));
+            } catch (error: any) {
+                const errorMsg: Message = { role: 'assistant', content: `Error: ${error.message}` };
+                setNodes(prev => prev.map(n =>
+                    n.id === childIds[i] ? { ...n, messages: [...n.messages, errorMsg], isThinking: false } : n
+                ));
+            }
+        });
+
+        await Promise.allSettled(requests);
+    };
+
     const clearData = (
         setView: (view: ViewState) => void,
         setIsLoggedIn: (val: boolean) => void,
         setIsRegistered: (val: boolean) => void
     ) => {
         if (window.confirm('Are you sure you want to clear all data and reset the canvas?')) {
-            localStorage.removeItem('canvasNodes'); // Legacy clearing
-            localStorage.removeItem(`canvasNodes_${currentUser}`);
+            // Clear all sessions
+            sessions.forEach(s => deleteSessionData(currentUser, s.id));
+            localStorage.removeItem(sessionIndexKey(currentUser));
+            localStorage.removeItem(activeSessionKey(currentUser));
+            localStorage.removeItem(legacyNodesKey(currentUser)); // Legacy
+            localStorage.removeItem('canvasNodes'); // Legacy
             localStorage.removeItem('isRegistered');
             localStorage.removeItem('isLoggedIn');
             setNodes([]);
+            setSessions([]);
+            setActiveSessionId(null);
             setIsLoggedIn(false);
             setIsRegistered(false);
             setView('landing');
@@ -206,9 +535,15 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         addInitialNode,
         handleBranch,
         handleSendMessage,
+        handleCompareMessage,
         clearData,
         hasLoaded,
         refreshModels,
-        updateNodeSize
+        updateNodeSize,
+        sessions,
+        activeSessionId,
+        createSession,
+        loadSession,
+        deleteSession,
     };
 };
