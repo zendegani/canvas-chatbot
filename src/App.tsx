@@ -143,6 +143,7 @@ const App: React.FC = () => {
             isDarkMode={isDarkMode}
             setIsDarkMode={setIsDarkMode}
             updateNodeSize={updateNodeSize}
+            currentUser={currentUser}
           />
           <SettingsModal
             isOpen={isSettingsOpen}
