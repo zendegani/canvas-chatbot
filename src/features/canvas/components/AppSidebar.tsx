@@ -139,7 +139,7 @@ export function AppSidebar({
                 <SidebarSeparator />
 
                 {/* Actions */}
-                <SidebarGroup>
+                <SidebarGroup className="mt-auto">
                     <SidebarGroupLabel>Actions</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
