@@ -21,6 +21,7 @@ interface CanvasProps {
     onGoHome: () => void;
     handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => void;
+    handleCompareMessage: (nodeId: string, text: string, models: [string, string]) => void;
     updateNodeSize: (id: string, width: number, height: number) => void;
     isMobile: boolean;
     isDarkMode: boolean;
@@ -47,6 +48,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     onGoHome,
     handleBranch,
     handleSendMessage,
+    handleCompareMessage,
     updateNodeSize,
     isMobile,
     isDarkMode,
@@ -229,6 +231,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                                                 onDelete={deleteNode}
                                                 onBranch={handleBranch}
                                                 onSendMessage={handleSendMessage}
+                                                onCompareMessage={handleCompareMessage}
                                                 onUpdateModel={(id, m) => setNodes(prev => prev.map(n => n.id === id ? { ...n, model: m } : n))}
                                                 onDragStart={handleNodeDragStart}
                                                 isMobile={isMobile}

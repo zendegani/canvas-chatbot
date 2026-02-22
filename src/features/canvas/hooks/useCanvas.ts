@@ -74,6 +74,7 @@ export interface UseCanvasReturn {
     addInitialNode: () => void;
     handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
+    handleCompareMessage: (nodeId: string, text: string, compareModels: [string, string]) => Promise<void>;
     clearData: (setView: (view: ViewState) => void, setIsLoggedIn: (val: boolean) => void, setIsRegistered: (val: boolean) => void) => void;
     hasLoaded: boolean;
     refreshModels: () => void;
@@ -424,6 +425,71 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     };
 
+    const handleCompareMessage = async (nodeId: string, text: string, compareModels: [string, string]) => {
+        const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`);
+        if (!apiKey) {
+            alert('Please set your OpenRouter API Key in Settings first.');
+            setIsSettingsOpen(true);
+            return;
+        }
+
+        if (nodes.length + 2 > 10) {
+            alert('Not enough room — maximum of 10 nodes reached.');
+            return;
+        }
+
+        const userMsg: Message = { role: 'user', content: text };
+        const parent = nodes.find(n => n.id === nodeId);
+        if (!parent) return;
+
+        const history = [...parent.messages, userMsg];
+        const parentW = parent.width || NODE_WIDTH;
+        const GAP = 25;
+
+        // Position children side-by-side above the parent's top-center
+        const childIds = [Math.random().toString(36).substr(2, 9), Math.random().toString(36).substr(2, 9)];
+        const children: ChatNode[] = compareModels.map((model, i) => {
+            const offsetX = i === 0
+                ? parent.x - NODE_WIDTH / 2 - GAP / 2
+                : parent.x + parentW / 2 + GAP / 2;
+
+            return {
+                id: childIds[i],
+                parentId: nodeId,
+                x: offsetX,
+                y: parent.y - NODE_HEIGHT - 50,
+                model,
+                messages: [...history],
+                startIndex: history.length - 1, // Show only the user msg + upcoming response
+                isThinking: true,
+            };
+        });
+
+        // Add user message to parent + create both children
+        setNodes(prev => [
+            ...prev.map(n => n.id === nodeId ? { ...n, messages: [...n.messages, userMsg] } : n),
+            ...children,
+        ]);
+
+        // Fire both API requests simultaneously
+        const requests = compareModels.map(async (model, i) => {
+            try {
+                const reply = await chatCompletion(apiKey, model, history);
+                const assistantMsg: Message = { role: 'assistant', content: reply };
+                setNodes(prev => prev.map(n =>
+                    n.id === childIds[i] ? { ...n, messages: [...n.messages, assistantMsg], isThinking: false } : n
+                ));
+            } catch (error: any) {
+                const errorMsg: Message = { role: 'assistant', content: `Error: ${error.message}` };
+                setNodes(prev => prev.map(n =>
+                    n.id === childIds[i] ? { ...n, messages: [...n.messages, errorMsg], isThinking: false } : n
+                ));
+            }
+        });
+
+        await Promise.allSettled(requests);
+    };
+
     const clearData = (
         setView: (view: ViewState) => void,
         setIsLoggedIn: (val: boolean) => void,
@@ -469,6 +535,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         addInitialNode,
         handleBranch,
         handleSendMessage,
+        handleCompareMessage,
         clearData,
         hasLoaded,
         refreshModels,

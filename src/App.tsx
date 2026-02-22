@@ -35,6 +35,7 @@ const App: React.FC = () => {
     addInitialNode,
     handleBranch,
     handleSendMessage,
+    handleCompareMessage,
     clearData,
     hasLoaded,
     refreshModels,
@@ -144,6 +145,7 @@ const App: React.FC = () => {
             onGoHome={() => setView('landing')}
             handleBranch={handleBranch}
             handleSendMessage={handleSendMessage}
+            handleCompareMessage={handleCompareMessage}
             isMobile={isMobile}
             isDarkMode={isDarkMode}
             setIsDarkMode={setIsDarkMode}
