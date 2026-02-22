@@ -108,8 +108,8 @@ export const Canvas: React.FC<CanvasProps> = ({
                     onClearData={onClearData}
                     onLogout={onLogout}
                 />
-                <SidebarInset className="overflow-hidden">
-                    <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-background flex flex-col relative selection:bg-primary/20 text-foreground">
+                <SidebarInset className="overflow-hidden h-screen">
+                    <div className="h-full w-full overflow-hidden bg-background flex flex-col relative selection:bg-primary/20 text-foreground">
                         <div
                             ref={canvasRef}
                             className="absolute inset-0 grid-bg cursor-grab active:cursor-grabbing select-none"
