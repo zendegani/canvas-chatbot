@@ -199,8 +199,35 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             messages: [],
         };
 
-        // If no active session, create one
-        if (!activeSessionId) {
+        // If current session already has nodes, create a new session
+        // If no session or current session is empty, add node in-place
+        if (activeSessionId && nodes.length > 0) {
+            // Create new session with the initial node
+            const now = Date.now();
+            const session: ChatSession = {
+                id: generateId(),
+                title: 'New Chat',
+                nodes: [newNode],
+                createdAt: now,
+                updatedAt: now,
+            };
+            saveSessionData(currentUser, session);
+            const { nodes: _, ...meta } = session;
+
+            setSessions(prev => {
+                const updated = [meta, ...prev].slice(0, MAX_SESSIONS);
+                if (prev.length >= MAX_SESSIONS) {
+                    const evicted = prev.slice(MAX_SESSIONS - 1);
+                    evicted.forEach(s => deleteSessionData(currentUser, s.id));
+                }
+                saveSessionIndex(currentUser, updated);
+                return updated;
+            });
+            setActiveSessionId(session.id);
+            localStorage.setItem(activeSessionKey(currentUser), session.id);
+            setNodes([newNode]);
+        } else if (!activeSessionId) {
+            // No session at all — create one
             const now = Date.now();
             const session: ChatSession = {
                 id: generateId(),
@@ -221,9 +248,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             localStorage.setItem(activeSessionKey(currentUser), session.id);
             setNodes([newNode]);
         } else {
+            // Active session exists but is empty — just add the node
             setNodes([newNode]);
         }
-    }, [activeSessionId, currentUser]);
+    }, [activeSessionId, currentUser, nodes.length]);
 
     const createSession = useCallback(() => {
         if (!currentUser) return;
