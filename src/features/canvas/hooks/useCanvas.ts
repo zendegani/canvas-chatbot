@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatNode, ChatSession, OpenRouterModel, Message } from '../types';
 import { fetchModels, chatCompletion } from '../services/openRouterService';
 import type { ViewState } from '../../auth/types';
@@ -93,6 +93,14 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const [hasLoaded, setHasLoaded] = useState(false);
     const [sessions, setSessions] = useState<Omit<ChatSession, 'nodes'>[]>([]);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+    const lastUsedModelRef = useRef('google/gemini-pro');
+
+    // Keep last used model in sync
+    useEffect(() => {
+        if (nodes[0]?.model) {
+            lastUsedModelRef.current = nodes[0].model;
+        }
+    }, [nodes]);
 
     // --- Migrate legacy data & load sessions on user change ---
     useEffect(() => {
@@ -190,15 +198,12 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const centerX = (window.innerWidth - NODE_WIDTH) / 2;
         const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
 
-        // Remember the model from the current session's first node
-        const lastModel = nodes[0]?.model || 'google/gemini-pro';
-
         const newNode: ChatNode = {
             id: Math.random().toString(36).substr(2, 9),
             parentId: null,
             x: centerX,
             y: centerY,
-            model: lastModel,
+            model: lastUsedModelRef.current,
             messages: [],
         };
 
@@ -259,11 +264,23 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const createSession = useCallback(() => {
         if (!currentUser) return;
 
+        const centerX = (window.innerWidth - NODE_WIDTH) / 2;
+        const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
+
+        const initialNode: ChatNode = {
+            id: Math.random().toString(36).substr(2, 9),
+            parentId: null,
+            x: centerX,
+            y: centerY,
+            model: lastUsedModelRef.current,
+            messages: [],
+        };
+
         const now = Date.now();
         const session: ChatSession = {
             id: generateId(),
             title: 'New Chat',
-            nodes: [],
+            nodes: [initialNode],
             createdAt: now,
             updatedAt: now,
         };
@@ -271,9 +288,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const { nodes: _, ...meta } = session;
 
         setSessions(prev => {
-            // Evict oldest if at cap
             const updated = [meta, ...prev].slice(0, MAX_SESSIONS);
-            // Remove data for evicted sessions
             if (prev.length >= MAX_SESSIONS) {
                 const evicted = prev.slice(MAX_SESSIONS - 1);
                 evicted.forEach(s => deleteSessionData(currentUser, s.id));
@@ -284,7 +299,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
         setActiveSessionId(session.id);
         localStorage.setItem(activeSessionKey(currentUser), session.id);
-        setNodes([]);
+        setNodes([initialNode]);
     }, [currentUser]);
 
     const loadSession = useCallback((id: string) => {
