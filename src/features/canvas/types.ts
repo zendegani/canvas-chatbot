@@ -16,6 +16,14 @@ export interface ChatNode {
     height?: number;
 }
 
+export interface ChatSession {
+    id: string;
+    title: string;
+    nodes: ChatNode[];
+    createdAt: number;
+    updatedAt: number;
+}
+
 export interface OpenRouterModel {
     id: string;
     name: string;

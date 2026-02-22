@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { MessageSquare, Plus, Sun, Moon } from 'lucide-react';
-import { ChatNode, OpenRouterModel } from '../types';
+import { ChatNode, ChatSession, OpenRouterModel } from '../types';
 import { Node } from './Node';
 import { ConnectionLine } from './ConnectionLine';
 import { AppSidebar } from './AppSidebar';
@@ -26,6 +26,11 @@ interface CanvasProps {
     isDarkMode: boolean;
     setIsDarkMode: (isDark: boolean) => void;
     currentUser: string;
+    sessions: Omit<ChatSession, 'nodes'>[];
+    activeSessionId: string | null;
+    onCreateSession: () => void;
+    onLoadSession: (id: string) => void;
+    onDeleteSession: (id: string) => void;
 }
 
 const NODE_WIDTH = 576;
@@ -46,7 +51,12 @@ export const Canvas: React.FC<CanvasProps> = ({
     isMobile,
     isDarkMode,
     setIsDarkMode,
-    currentUser
+    currentUser,
+    sessions,
+    activeSessionId,
+    onCreateSession,
+    onLoadSession,
+    onDeleteSession
 }) => {
     const canvasRef = useRef<HTMLDivElement>(null);
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -107,6 +117,11 @@ export const Canvas: React.FC<CanvasProps> = ({
                     onOpenSettings={onOpenSettings}
                     onClearData={onClearData}
                     onLogout={onLogout}
+                    sessions={sessions}
+                    activeSessionId={activeSessionId}
+                    onCreateSession={onCreateSession}
+                    onLoadSession={onLoadSession}
+                    onDeleteSession={onDeleteSession}
                 />
                 <SidebarInset className="overflow-hidden h-screen">
                     <div className="h-full w-full overflow-hidden bg-background flex flex-col relative selection:bg-primary/20 text-foreground">

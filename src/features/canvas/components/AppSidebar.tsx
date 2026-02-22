@@ -1,5 +1,6 @@
 import React from 'react';
-import { Sparkles, Settings, Trash2 } from 'lucide-react';
+import { Sparkles, Settings, Trash2, Plus, MessageSquare, X } from 'lucide-react';
+import { ChatSession } from '../types';
 import {
     Sidebar,
     SidebarContent,
@@ -9,9 +10,11 @@ import {
     SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
+    SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarRail,
+    SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { NavUser } from './NavUser';
 
@@ -21,6 +24,11 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
     onOpenSettings: () => void;
     onClearData: () => void;
     onLogout: () => void;
+    sessions: Omit<ChatSession, 'nodes'>[];
+    activeSessionId: string | null;
+    onCreateSession: () => void;
+    onLoadSession: (id: string) => void;
+    onDeleteSession: (id: string) => void;
 }
 
 export function AppSidebar({
@@ -29,6 +37,11 @@ export function AppSidebar({
     onOpenSettings,
     onClearData,
     onLogout,
+    sessions,
+    activeSessionId,
+    onCreateSession,
+    onLoadSession,
+    onDeleteSession,
     ...props
 }: AppSidebarProps) {
     return (
@@ -52,9 +65,62 @@ export function AppSidebar({
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SidebarMenuButton onClick={onCreateSession} tooltip="New Chat">
+                            <Plus />
+                            <span>New Chat</span>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                </SidebarMenu>
             </SidebarHeader>
 
+            <SidebarSeparator />
+
             <SidebarContent>
+                {/* Chat History */}
+                <SidebarGroup>
+                    <SidebarGroupLabel>History</SidebarGroupLabel>
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            {sessions.map(session => (
+                                <SidebarMenuItem key={session.id}>
+                                    <SidebarMenuButton
+                                        isActive={session.id === activeSessionId}
+                                        onClick={() => onLoadSession(session.id)}
+                                        tooltip={session.title}
+                                    >
+                                        <MessageSquare />
+                                        <span>{session.title}</span>
+                                    </SidebarMenuButton>
+                                    <SidebarMenuAction
+                                        showOnHover
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDeleteSession(session.id);
+                                        }}
+                                        className="text-muted-foreground hover:text-destructive"
+                                    >
+                                        <X className="size-4" />
+                                        <span className="sr-only">Delete</span>
+                                    </SidebarMenuAction>
+                                </SidebarMenuItem>
+                            ))}
+                            {sessions.length === 0 && (
+                                <SidebarMenuItem>
+                                    <SidebarMenuButton disabled className="text-muted-foreground opacity-60">
+                                        <MessageSquare />
+                                        <span>No chats yet</span>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            )}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
+
+                <SidebarSeparator />
+
+                {/* Actions */}
                 <SidebarGroup>
                     <SidebarGroupLabel>Actions</SidebarGroupLabel>
                     <SidebarGroupContent>
@@ -68,11 +134,11 @@ export function AppSidebar({
                             <SidebarMenuItem>
                                 <SidebarMenuButton
                                     onClick={onClearData}
-                                    tooltip="Clear Data"
+                                    tooltip="Clear All Data"
                                     className="text-destructive hover:text-destructive hover:bg-destructive/10"
                                 >
                                     <Trash2 />
-                                    <span>Clear Data</span>
+                                    <span>Clear All Data</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
