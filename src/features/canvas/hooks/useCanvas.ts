@@ -190,12 +190,15 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const centerX = (window.innerWidth - NODE_WIDTH) / 2;
         const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
 
+        // Remember the model from the current session's first node
+        const lastModel = nodes[0]?.model || 'google/gemini-pro';
+
         const newNode: ChatNode = {
             id: Math.random().toString(36).substr(2, 9),
             parentId: null,
             x: centerX,
             y: centerY,
-            model: 'google/gemini-pro',
+            model: lastModel,
             messages: [],
         };
 
@@ -251,7 +254,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             // Active session exists but is empty — just add the node
             setNodes([newNode]);
         }
-    }, [activeSessionId, currentUser, nodes.length]);
+    }, [activeSessionId, currentUser, nodes]);
 
     const createSession = useCallback(() => {
         if (!currentUser) return;
