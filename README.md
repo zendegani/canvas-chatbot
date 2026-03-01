@@ -23,8 +23,9 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
 - **Modern UI Components**: Built with **shadcn/ui** - a collection of beautiful, accessible, and customizable components powered by Radix UI and Tailwind CSS.
 - **Local & Secure**:
   - **Bring Your Own Key**: You typically use your own OpenRouter API Key.
-  - **Local Storage**: Your API keys and chat history are stored **only** in your browser's local storage. Nothing is sent to our servers.
-  - **Session Isolation**: Multiple users can share a device safely; data and chat histories are scoped to your login.
+  - **Local Storage**: Your chat history is stored **only** in your browser's local storage.
+  - **Authentication**: Powered by **Better Auth**, featuring robust local session management backed by PostgreSQL/Prisma, and rigorous NIST 800-63B password validation.
+  - **Session Isolation**: Multiple users can share a device safely; data and chat histories are scoped to your login session.
 - **Professional Landing Page**:
   - Modern, responsive design with dark/light mode toggle
   - Pricing tiers (Individual Free, Cloud Pro Coming Soon)

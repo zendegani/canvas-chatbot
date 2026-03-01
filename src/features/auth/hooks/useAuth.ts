@@ -1,92 +1,84 @@
-import { useState, useEffect } from 'react';
-import { ViewState } from '../types';
+import { useState, useEffect, useRef } from "react";
+import { authClient } from "@/lib/auth-client";
+import { ViewState } from "../types";
 
 interface UseAuthReturn {
-    isLoggedIn: boolean;
-    isRegistered: boolean;
-    currentUser: string;
-    view: ViewState;
-    setView: (view: ViewState) => void;
-    handleSignupSubmit: (e: React.FormEvent) => void;
-    handleLoginSubmit: (e: React.FormEvent) => void;
-    handleLogout: () => void;
-    setCurrentUser: (user: string) => void;
-    setIsLoggedIn: (loggedIn: boolean) => void;
-    setIsRegistered: (registered: boolean) => void;
+  isLoggedIn: boolean;
+  isPending: boolean;
+  currentUser: string;
+  view: ViewState;
+  setView: (view: ViewState) => void;
+  handleLoginSubmit: (email: string, password: string) => Promise<void>;
+  handleSignupSubmit: (name: string, email: string, password: string) => Promise<void>;
+  handleSocialLogin: (provider: "google" | "github") => Promise<void>;
+  handleLogout: () => Promise<void>;
 }
 
 export const useAuth = (): UseAuthReturn => {
-    const [view, setView] = useState<ViewState>(() => {
-        return localStorage.getItem('isLoggedIn') === 'true' ? 'canvas' : 'landing';
+  const { data: session, isPending } = authClient.useSession();
+  const [view, setView] = useState<ViewState>("loading");
+  const initialCheckDone = useRef(false);
+
+  // On initial load: once the session check finishes, decide where to go.
+  // After that, navigation is manual (login/logout/signup handlers set view).
+  useEffect(() => {
+    if (!isPending && !initialCheckDone.current) {
+      initialCheckDone.current = true;
+      setView(session ? "canvas" : "landing");
+    }
+  }, [session, isPending]);
+
+  const handleSignupSubmit = async (name: string, email: string, password: string) => {
+    const result = await authClient.signUp.email({
+      email,
+      password,
+      name,
     });
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(localStorage.getItem('isLoggedIn') === 'true');
-    const [isRegistered, setIsRegistered] = useState<boolean>(localStorage.getItem('isRegistered') === 'true');
-    const [currentUser, setCurrentUser] = useState<string>(localStorage.getItem('currentUser') || '');
 
-    const handleSignupSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const formData = new FormData(e.target as HTMLFormElement);
-        const email = formData.get('email') as string;
-        const password = formData.get('password') as string;
+    if (result.error) {
+      throw new Error(result.error.message ?? "Signup failed");
+    }
 
-        if (!email || !password) return;
+    setView("canvas");
+  };
 
-        const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-        if (users[email]) {
-            alert('User already exists. Please login.');
-            setView('login');
-            return;
-        }
+  const handleLoginSubmit = async (email: string, password: string) => {
+    const result = await authClient.signIn.email({
+      email,
+      password,
+    });
 
-        users[email] = password;
-        localStorage.setItem('registeredUsers', JSON.stringify(users));
+    if (result.error) {
+      throw new Error(result.error.message ?? "Invalid email or password");
+    }
 
-        // Auto login
-        localStorage.setItem('currentUser', email);
-        setCurrentUser(email);
-        localStorage.setItem('isLoggedIn', 'true');
-        setIsLoggedIn(true);
-        setView('canvas');
-    };
+    setView("canvas");
+  };
 
-    const handleLoginSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const formData = new FormData(e.target as HTMLFormElement);
-        const email = formData.get('email') as string;
-        const password = formData.get('password') as string;
+  const handleSocialLogin = async (provider: "google" | "github") => {
+    // This redirects the browser to the OAuth provider.
+    // After callback, the page reloads, useSession picks up the session,
+    // and the initial-check effect navigates to 'canvas'.
+    await authClient.signIn.social({
+      provider,
+      callbackURL: "/",
+    });
+  };
 
-        const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+  const handleLogout = async () => {
+    await authClient.signOut();
+    setView("login");
+  };
 
-        if (users[email] && users[email] === password) {
-            localStorage.setItem('currentUser', email);
-            setCurrentUser(email);
-            localStorage.setItem('isLoggedIn', 'true');
-            setIsLoggedIn(true);
-            setView('canvas');
-        } else {
-            alert('Invalid email or password.');
-        }
-    };
-
-    const handleLogout = () => {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('currentUser');
-        setCurrentUser('');
-        setIsLoggedIn(false);
-        setView('landing');
-    };
-
-    return {
-        isLoggedIn,
-        isRegistered,
-        currentUser,
-        view,
-        setView,
-        handleSignupSubmit,
-        handleLoginSubmit,
-        handleLogout,
-        setCurrentUser,
-        setIsLoggedIn,
-        setIsRegistered
-    };
+  return {
+    isLoggedIn: !!session,
+    isPending,
+    currentUser: session?.user?.email ?? "",
+    view,
+    setView,
+    handleLoginSubmit,
+    handleSignupSubmit,
+    handleSocialLogin,
+    handleLogout,
+  };
 };

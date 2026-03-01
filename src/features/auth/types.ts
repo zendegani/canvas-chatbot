@@ -1,1 +1,1 @@
-export type ViewState = 'landing' | 'login' | 'signup' | 'canvas';
+export type ViewState = "loading" | "landing" | "login" | "signup" | "canvas";
