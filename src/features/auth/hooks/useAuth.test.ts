@@ -135,7 +135,7 @@ describe("useAuth", () => {
   });
 
   describe("handleLogout", () => {
-    it("signs out and returns to landing", async () => {
+    it("signs out and returns to login", async () => {
       mockUseSession.mockReturnValue({
         data: { user: { email: "user@example.com" } },
         isPending: false,
@@ -150,7 +150,7 @@ describe("useAuth", () => {
       });
 
       expect(mockSignOut).toHaveBeenCalled();
-      expect(result.current.view).toBe("landing");
+      expect(result.current.view).toBe("login");
     });
   });
 
