@@ -67,8 +67,7 @@ export const useAuth = (): UseAuthReturn => {
 
   const handleLogout = async () => {
     await authClient.signOut();
-    initialCheckDone.current = false;
-    setView("landing");
+    setView("login");
   };
 
   return {
