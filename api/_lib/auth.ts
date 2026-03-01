@@ -1,3 +1,7 @@
+import { config } from "dotenv";
+import path from "path";
+config({ path: path.resolve(process.cwd(), ".env.local") });
+
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
