@@ -68,5 +68,9 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "vitest": "^4.0.16"
+  },
+  "overrides": {
+    "hono": "^4.12.3",
+    "lodash": "^4.17.23"
   }
 }
