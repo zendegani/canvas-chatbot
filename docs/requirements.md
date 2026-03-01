@@ -32,9 +32,9 @@ Canvas AI is an infinite-canvas based chat interface that allows users to have b
 
 ### 2.4 User Session & Security
 
-- **Local-First Architecture**: Application data (canvas nodes) and API keys are stored in the user's browser (`localStorage`).
-- **Session Isolation**: Data is scoped to the specific user account. Switching users on the same device clears the workspace and loads the new user's specific data.
-- **Mock Authentication**: A client-side authentication flow requiring users to Register and Login (Note: For demonstration; production requires a backend).
+- **Server-Side Authentication**: Powered by **Better Auth** with a PostgreSQL database via Prisma. Features include robust session management, secure credential storage, and NIST 800-63B password validation.
+- **Local-First Architecture for Chat**: Application data (canvas nodes) and API keys are stored in the user's browser (`localStorage`).
+- **Session Isolation**: Chat data is scoped to the specific user account. Switching users on the same device clears the workspace and loads the new user's specific data.
 - **API Key Management**:
   - Users provide their own OpenRouter API Key in settings.
   - Keys are stored securely in local storage and never transmitted to a backend server.
@@ -105,9 +105,8 @@ src/
   - `canvasActiveSession_{user}`: The ID of the currently open canvas session.
   - `canvasNodes_{user}`: (Legacy usage) Monolithic chat graph before session updates.
   - `openRouterApiKey_{user}`: The user's API credential.
-  - `registeredUsers`: Mock user database.
-  - `currentUser`: Session state.
   - `view`: View persistence (landing/canvas) across reloads.
+- **Server State**: Session state is managed by Better Auth, and database state manages user profiles and auth credentials.
 
 ### 3.4 Key Dependencies
 
@@ -136,7 +135,7 @@ src/
     - **Cloud Pro** (€20/month, Coming Soon): Up to 50 nodes, flagship models, collaboration
   - **Waitlist Modal**: Users can join the waitlist for Cloud Pro features via Web3Forms
   - **Contact Form**: Direct contact via Web3Forms integration (name, email, message)
-- **Auth**: Users must "Sign Up" or "Log In" to access the canvas.
+- **Auth**: Users must register and log in to access the canvas. Backed by Better Auth with secure sessions and password standards.
 
 ### 4.2 Configuration
 
