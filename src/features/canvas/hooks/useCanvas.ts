@@ -75,7 +75,7 @@ export interface UseCanvasReturn {
     handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
     handleCompareMessage: (nodeId: string, text: string, compareModels: [string, string]) => Promise<void>;
-    clearData: (setView: (view: ViewState) => void, setIsLoggedIn: (val: boolean) => void, setIsRegistered: (val: boolean) => void) => void;
+    clearData: (setView: (view: ViewState) => void) => void;
     hasLoaded: boolean;
     refreshModels: () => void;
     updateNodeSize: (id: string, width: number, height: number) => void;
@@ -490,25 +490,17 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         await Promise.allSettled(requests);
     };
 
-    const clearData = (
-        setView: (view: ViewState) => void,
-        setIsLoggedIn: (val: boolean) => void,
-        setIsRegistered: (val: boolean) => void
-    ) => {
+    const clearData = (setView: (view: ViewState) => void) => {
         if (window.confirm('Are you sure you want to clear all data and reset the canvas?')) {
-            // Clear all sessions
+            // Clear all canvas sessions (auth is managed by Better-Auth)
             sessions.forEach(s => deleteSessionData(currentUser, s.id));
             localStorage.removeItem(sessionIndexKey(currentUser));
             localStorage.removeItem(activeSessionKey(currentUser));
-            localStorage.removeItem(legacyNodesKey(currentUser)); // Legacy
-            localStorage.removeItem('canvasNodes'); // Legacy
-            localStorage.removeItem('isRegistered');
-            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem(legacyNodesKey(currentUser));
+            localStorage.removeItem('canvasNodes');
             setNodes([]);
             setSessions([]);
             setActiveSessionId(null);
-            setIsLoggedIn(false);
-            setIsRegistered(false);
             setView('landing');
         }
     };

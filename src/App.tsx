@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Loader2 } from 'lucide-react';
 import { LandingPage } from './features/landing';
 import { Auth, useAuth } from './features/auth';
 import { Canvas, useCanvas } from './features/canvas';
@@ -16,14 +17,14 @@ declare global {
 const App: React.FC = () => {
   const {
     isLoggedIn,
+    isPending,
     currentUser,
     view,
     setView,
     handleSignupSubmit,
     handleLoginSubmit,
+    handleSocialLogin,
     handleLogout,
-    setIsLoggedIn,
-    setIsRegistered
   } = useAuth();
 
   const {
@@ -91,6 +92,8 @@ const App: React.FC = () => {
 
   // Track page views for SPA navigation via Umami
   useEffect(() => {
+    if (view === 'loading') return; // Don't track the transient loading state
+
     const pageMap: Record<string, string> = {
       landing: '/', signup: '/Auth', login: '/Auth', canvas: '/Canvas'
     };
@@ -103,6 +106,15 @@ const App: React.FC = () => {
     }));
   }, [view]);
 
+  // Loading state while Better-Auth checks the session cookie
+  if (view === 'loading') {
+    return (
+      <div className="min-h-svh flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <>
       {view === 'landing' && (
@@ -112,10 +124,8 @@ const App: React.FC = () => {
           onGetStarted={() => {
             if (isLoggedIn) {
               setView('canvas');
-            } else if (localStorage.getItem('isRegistered') === 'true') {
-              setView('login');
             } else {
-              setView('signup');
+              setView('login');
             }
           }}
         />
@@ -127,6 +137,7 @@ const App: React.FC = () => {
           setView={setView}
           onLogin={handleLoginSubmit}
           onSignup={handleSignupSubmit}
+          onSocialLogin={handleSocialLogin}
           isDarkMode={isDarkMode}
           setIsDarkMode={setIsDarkMode}
         />
@@ -139,7 +150,7 @@ const App: React.FC = () => {
             models={models}
             setNodes={setNodes}
             onAddInitialNode={addInitialNode}
-            onClearData={() => clearData(setView, setIsLoggedIn, setIsRegistered)}
+            onClearData={() => clearData(setView)}
             onLogout={handleLogout}
             onOpenSettings={() => setIsSettingsOpen(true)}
             onGoHome={() => setView('landing')}
