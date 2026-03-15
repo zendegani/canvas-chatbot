@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Single Sign-On (SSO)**: Integrated GitHub and Google OAuth for seamless and secure user authentication.
 - **Collapsible Sidebar**: A powerful new navigation sidebar built with shadcn that manages chats, settings, and user actions.
 - **Chat History & Auto-save**: Introducing session-based storage! Conversations are now automatically saved and can be swapped on the fly. Up to 50 sessions are supported.
 - **Multi-Model Comparison**: Select a second AI model directly on a node and split-test prompts. The interface elegantly forks into two side-by-side children requesting from both models simultaneously.

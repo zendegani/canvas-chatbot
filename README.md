@@ -60,6 +60,7 @@ The application uses environment variables for optional features:
 
 - Node.js (v16 or higher)
 - npm or yarn
+- Vercel CLI (install via `npm i -g vercel`)
 - An [OpenRouter API Key](https://openrouter.ai/keys)
 
 ### Installation
@@ -88,10 +89,10 @@ The application uses environment variables for optional features:
 4. **Run the development server**
 
     ```bash
-    npm run dev
+    vercel dev
     ```
 
-    The app will start at `http://localhost:5173`.
+    The app will start locally. Vercel CLI will typically start the app at `http://localhost:3000`.
 
 ### Usage Guide
 
