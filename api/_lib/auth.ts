@@ -13,7 +13,9 @@ export const auth = betterAuth({
     connectionString: process.env.DATABASE_URL,
   }),
   plugins: [
-    dash(),
+    dash({
+      apiKey: process.env.BETTER_AUTH_API_KEY,
+    }),
   ],
   emailAndPassword: {
     enabled: true,
