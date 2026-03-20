@@ -4,6 +4,7 @@ config({ path: path.resolve(process.cwd(), ".env.local") });
 
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import { dash } from "@better-auth/infra";
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
@@ -11,6 +12,9 @@ export const auth = betterAuth({
   database: new Pool({
     connectionString: process.env.DATABASE_URL,
   }),
+  plugins: [
+    dash(),
+  ],
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 12,

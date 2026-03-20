@@ -112,7 +112,7 @@ export const Canvas: React.FC<CanvasProps> = ({
 
     return (
         <TooltipProvider>
-            <SidebarProvider defaultOpen={false}>
+            <SidebarProvider defaultOpen={true}>
                 <AppSidebar
                     currentUser={currentUser}
                     onGoHome={onGoHome}
