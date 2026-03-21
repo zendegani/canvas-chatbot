@@ -4,4 +4,4 @@ export { ConnectionLine } from './components/ConnectionLine';
 export { AppSidebar } from './components/AppSidebar';
 export { NavUser } from './components/NavUser';
 export { useCanvas } from './hooks/useCanvas';
-export type { ChatNode, ChatSession, Message, OpenRouterModel } from './types';
+export type { ChatNode, ChatSession, Message, LLMModel, ProviderId, ProviderConfig } from './types';

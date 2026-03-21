@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { MessageSquare, Plus, Sun, Moon } from 'lucide-react';
-import { ChatNode, ChatSession, OpenRouterModel } from '../types';
+import { ChatNode, ChatSession, LLMModel } from '../types';
 import { Node } from './Node';
 import { ConnectionLine } from './ConnectionLine';
 import { AppSidebar } from './AppSidebar';
@@ -12,7 +12,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 
 interface CanvasProps {
     nodes: ChatNode[];
-    models: OpenRouterModel[];
+    models: LLMModel[];
     setNodes: React.Dispatch<React.SetStateAction<ChatNode[]>>;
     onAddInitialNode: () => void;
     onClearData: () => void;

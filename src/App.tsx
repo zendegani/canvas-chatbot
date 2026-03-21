@@ -45,7 +45,9 @@ const App: React.FC = () => {
     activeSessionId,
     createSession,
     loadSession,
-    deleteSession
+    deleteSession,
+    selectedProvider,
+    setSelectedProvider,
   } = useCanvas(currentUser);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -173,6 +175,8 @@ const App: React.FC = () => {
             onClose={() => setIsSettingsOpen(false)}
             currentUser={currentUser}
             refreshModels={refreshModels}
+            selectedProvider={selectedProvider}
+            onProviderChange={setSelectedProvider}
           />
         </>
       )}

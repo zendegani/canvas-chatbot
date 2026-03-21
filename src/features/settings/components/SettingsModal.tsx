@@ -1,33 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { X, Layers, Key, Trash2, Settings, Eye, EyeOff } from 'lucide-react';
+import { Trash2, Settings, Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import type { ProviderId } from '../../canvas/types';
+import { PROVIDERS, PROVIDER_LIST, apiKeyStorageKey, selectedProviderKey, DEFAULT_PROVIDER } from '../../canvas/services/providers';
 
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentUser: string;
     refreshModels: () => void;
+    selectedProvider: ProviderId;
+    onProviderChange: (id: ProviderId) => void;
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, currentUser, refreshModels }) => {
-    const [apiKey, setApiKey] = useState('');
-    const [showKey, setShowKey] = useState(false);
+export const SettingsModal: React.FC<SettingsModalProps> = ({
+    isOpen, onClose, currentUser, refreshModels, selectedProvider, onProviderChange,
+}) => {
+    const [apiKeys, setApiKeys] = useState<Record<ProviderId, string>>({
+        openrouter: '', openai: '', google: '',
+    });
+    const [showKey, setShowKey] = useState<ProviderId | null>(null);
 
     useEffect(() => {
         if (isOpen && currentUser) {
-            const storedKey = localStorage.getItem(`openRouterApiKey_${currentUser}`);
-            if (storedKey) setApiKey(storedKey);
-            else setApiKey('');
+            const loaded: Record<ProviderId, string> = { openrouter: '', openai: '', google: '' };
+            for (const p of PROVIDER_LIST) {
+                loaded[p.id] = localStorage.getItem(apiKeyStorageKey(p.id, currentUser)) || '';
+            }
+            setApiKeys(loaded);
+            setShowKey(null);
         }
     }, [isOpen, currentUser]);
 
     const handleSave = () => {
         if (!currentUser) return;
-        localStorage.setItem(`openRouterApiKey_${currentUser}`, apiKey);
-        // Refresh models with the new API key
+        for (const p of PROVIDER_LIST) {
+            const key = apiKeys[p.id].trim();
+            if (key) {
+                localStorage.setItem(apiKeyStorageKey(p.id, currentUser), key);
+            } else {
+                localStorage.removeItem(apiKeyStorageKey(p.id, currentUser));
+            }
+        }
         refreshModels();
         onClose();
     };
@@ -35,7 +52,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
     const handleClearData = () => {
         if (confirm('Are you sure you want to clear all your data? This cannot be undone.')) {
             localStorage.removeItem(`canvasNodes_${currentUser}`);
-            localStorage.removeItem(`openRouterApiKey_${currentUser}`);
+            for (const p of PROVIDER_LIST) {
+                localStorage.removeItem(apiKeyStorageKey(p.id, currentUser));
+            }
             window.location.reload();
         }
     };
@@ -53,28 +72,50 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, c
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
+                    {/* Provider Selection */}
                     <div className="space-y-2">
-                        <Label>OpenRouter API Key</Label>
-                        <div className="relative">
-                            <Input
-                                type={showKey ? 'text' : 'password'}
-                                value={apiKey}
-                                onChange={(e) => setApiKey(e.target.value)}
-                                placeholder="sk-or-..."
-                                className="pr-10"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowKey(!showKey)}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                                {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </button>
+                        <Label>AI Provider</Label>
+                        <div className="flex gap-2">
+                            {PROVIDER_LIST.map(p => (
+                                <Button
+                                    key={p.id}
+                                    variant={selectedProvider === p.id ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => onProviderChange(p.id)}
+                                    className="flex-1 text-xs"
+                                >
+                                    {p.name}
+                                </Button>
+                            ))}
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            Your key is stored locally in your browser and used securely to communicate with OpenRouter.
-                        </p>
                     </div>
+
+                    {/* API Keys */}
+                    {PROVIDER_LIST.map(p => (
+                        <div key={p.id} className="space-y-2">
+                            <Label>{p.name} API Key</Label>
+                            <div className="relative">
+                                <Input
+                                    type={showKey === p.id ? 'text' : 'password'}
+                                    value={apiKeys[p.id]}
+                                    onChange={(e) => setApiKeys(prev => ({ ...prev, [p.id]: e.target.value }))}
+                                    placeholder={p.keyPlaceholder}
+                                    className="pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowKey(prev => prev === p.id ? null : p.id)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showKey === p.id ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+
+                    <p className="text-xs text-muted-foreground">
+                        Keys are stored locally in your browser. Only the active provider's key is used.
+                    </p>
 
                     <Button onClick={handleSave} className="w-full">
                         Save Changes

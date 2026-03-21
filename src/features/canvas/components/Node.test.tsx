@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Node } from "./Node";
-import type { ChatNode, OpenRouterModel } from "../types";
+import type { ChatNode, LLMModel } from "../types";
 
 // Mock heavy rendering deps — we're testing behavior, not markdown rendering
 vi.mock("react-markdown", () => ({
@@ -38,9 +38,9 @@ vi.mock("../../settings/components/ModelSelector", () => ({
   ),
 }));
 
-const mockModels: OpenRouterModel[] = [
-  { id: "google/gemini-pro", name: "Gemini Pro", context_length: 32000, pricing: { prompt: "0", completion: "0" } },
-  { id: "openai/gpt-4", name: "GPT-4", context_length: 8192, pricing: { prompt: "0.03", completion: "0.06" } },
+const mockModels: LLMModel[] = [
+  { id: "google/gemini-pro", name: "Gemini Pro" },
+  { id: "openai/gpt-4", name: "GPT-4" },
 ];
 
 const baseNode: ChatNode = {
