@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ChatNode, ChatSession, OpenRouterModel, Message } from '../types';
-import { fetchModels, chatCompletion } from '../services/openRouterService';
+import { ChatNode, ChatSession, LLMModel, Message, ProviderId } from '../types';
+import { fetchModels, chatCompletion } from '../services/chatService';
+import { PROVIDERS, DEFAULT_PROVIDER, apiKeyStorageKey, selectedProviderKey, decodeApiKey } from '../services/providers';
 import type { ViewState } from '../../auth/types';
 
 const NODE_WIDTH = 576;
@@ -68,7 +69,7 @@ function deriveTitle(nodes: ChatNode[]): string {
 export interface UseCanvasReturn {
     nodes: ChatNode[];
     setNodes: React.Dispatch<React.SetStateAction<ChatNode[]>>;
-    models: OpenRouterModel[];
+    models: LLMModel[];
     isSettingsOpen: boolean;
     setIsSettingsOpen: (isOpen: boolean) => void;
     addInitialNode: () => void;
@@ -85,16 +86,41 @@ export interface UseCanvasReturn {
     createSession: () => void;
     loadSession: (id: string) => void;
     deleteSession: (id: string) => void;
+    // Provider management
+    selectedProvider: ProviderId;
+    setSelectedProvider: (id: ProviderId) => void;
 }
 
 export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const [nodes, setNodes] = useState<ChatNode[]>([]);
-    const [models, setModels] = useState<OpenRouterModel[]>([]);
+    const [models, setModels] = useState<LLMModel[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [hasLoaded, setHasLoaded] = useState(false);
     const [sessions, setSessions] = useState<Omit<ChatSession, 'nodes'>[]>([]);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-    const lastUsedModelRef = useRef('google/gemini-pro');
+    const [selectedProvider, setSelectedProviderState] = useState<ProviderId>(DEFAULT_PROVIDER);
+
+    const lastUsedModelRef = useRef(PROVIDERS[DEFAULT_PROVIDER].defaultModel.id);
+
+    // Load selected provider from localStorage on user change
+    useEffect(() => {
+        if (currentUser) {
+            const stored = localStorage.getItem(selectedProviderKey(currentUser));
+            if (stored && stored in PROVIDERS) {
+                setSelectedProviderState(stored as ProviderId);
+                lastUsedModelRef.current = PROVIDERS[stored as ProviderId].defaultModel.id;
+            }
+        }
+    }, [currentUser]);
+
+    const setSelectedProvider = useCallback((id: ProviderId) => {
+        setSelectedProviderState(id);
+        if (currentUser) {
+            localStorage.setItem(selectedProviderKey(currentUser), id);
+        }
+        // Reset to default model for the new provider
+        lastUsedModelRef.current = PROVIDERS[id].defaultModel.id;
+    }, [currentUser]);
 
     // Keep last used model in sync
     useEffect(() => {
@@ -185,15 +211,16 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         });
     }, [nodes, currentUser, hasLoaded, activeSessionId]);
 
-    // Fetch models
+    // Fetch models when user or provider changes
     useEffect(() => {
         if (currentUser) {
-            const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`) || '';
-            fetchModels(apiKey).then(setModels);
+            const provider = PROVIDERS[selectedProvider];
+            const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
+            fetchModels(provider, apiKey, currentUser).then(setModels);
         } else {
             setModels([]);
         }
-    }, [currentUser]);
+    }, [currentUser, selectedProvider]);
 
     const addInitialNode = useCallback(() => {
         const centerX = (window.innerWidth - NODE_WIDTH) / 2;
@@ -398,9 +425,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     };
 
     const handleSendMessage = async (nodeId: string, text: string) => {
-        const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`);
+        const provider = PROVIDERS[selectedProvider];
+        const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
         if (!apiKey) {
-            alert('Please set your OpenRouter API Key in Settings first.');
+            alert(`Please set your ${provider.name} API Key in Settings first.`);
             setIsSettingsOpen(true);
             return;
         }
@@ -413,7 +441,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         try {
             const node = nodes.find(n => n.id === nodeId);
             const history = [...(node?.messages || []), userMsg];
-            const reply = await chatCompletion(apiKey, node?.model || 'google/gemini-pro', history);
+            const reply = await chatCompletion(provider, apiKey, node?.model || provider.defaultModel.id, history);
 
             const assistantMsg: Message = { role: 'assistant', content: reply };
             setNodes(prev => prev.map(n =>
@@ -426,9 +454,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     };
 
     const handleCompareMessage = async (nodeId: string, text: string, compareModels: [string, string]) => {
-        const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`);
+        const provider = PROVIDERS[selectedProvider];
+        const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
         if (!apiKey) {
-            alert('Please set your OpenRouter API Key in Settings first.');
+            alert(`Please set your ${provider.name} API Key in Settings first.`);
             setIsSettingsOpen(true);
             return;
         }
@@ -474,7 +503,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         // Fire both API requests simultaneously
         const requests = compareModels.map(async (model, i) => {
             try {
-                const reply = await chatCompletion(apiKey, model, history);
+                const reply = await chatCompletion(provider, apiKey, model, history);
                 const assistantMsg: Message = { role: 'assistant', content: reply };
                 setNodes(prev => prev.map(n =>
                     n.id === childIds[i] ? { ...n, messages: [...n.messages, assistantMsg], isThinking: false } : n
@@ -507,8 +536,9 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
     const refreshModels = () => {
         if (currentUser) {
-            const apiKey = localStorage.getItem(`openRouterApiKey_${currentUser}`) || '';
-            fetchModels(apiKey).then(setModels);
+            const provider = PROVIDERS[selectedProvider];
+            const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
+            fetchModels(provider, apiKey, currentUser).then(setModels);
         }
     };
 
@@ -537,5 +567,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         createSession,
         loadSession,
         deleteSession,
+        selectedProvider,
+        setSelectedProvider,
     };
 };

@@ -16,10 +16,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import type { OpenRouterModel } from '../../canvas/types';
+import type { LLMModel } from '../../canvas/types';
 
 interface ModelSelectorProps {
-  models: OpenRouterModel[];
+  models: LLMModel[];
   selectedModel: string;
   onSelect: (modelId: string) => void;
   isLoading: boolean;

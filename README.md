@@ -8,51 +8,26 @@
 
 Canvas AI allows you to break free from linear chat threads. Visualize your thoughts, branch conversations, and orchestrate multiple AI models on a single, infinite spatial interface.
 
-![Canvas AI Banner](./public/images/branching.png)
-
 ## Features
 
 - **Infinite Canvas**: Pan, scroll, and organize your thoughts spatially. No more getting lost in long, vertical history.
 - **Chat History & Sidebar**: A sleek, collapsible sidebar lets you seamlessly switch between, manage, and autosave up to 50 previous conversations.
 - **Branching Conversations**: Want to explore a tangent? Branch off any message node to create a new thread without losing context.
-- **Multi-Model Orchestration & Comparison**: Powered by **OpenRouter**. Use Google Gemini, Anthropic Claude, and OpenAI models in the same workspace. Pick *two* models at once to split-test a prompt side-by-side.
-- **Rich Text Rendering**:
-  - Full Markdown support
-  - Syntax highlighting for code blocks
-  - LaTeX math rendering ($E=mc^2$)
-- **Modern UI Components**: Built with **shadcn/ui** - a collection of beautiful, accessible, and customizable components powered by Radix UI and Tailwind CSS.
+
+  ![Node Branching](./public/images/branching-light.png)
+
+- **Model Duel**: Pick *two* models at once to split-test a prompt side-by-side.
+
+  ![Duel Mode](./public/images/Duel-light.png)
+
 - **Local & Secure**:
-  - **Bring Your Own Key**: You typically use your own OpenRouter API Key.
+  - **Bring Your Own Key**: You typically use your own OpenRouter, OpenAI, or Google API keys.
+
+    ![Settings BYOK](./public/images/Setting-light.png)
+
   - **Local Storage**: Your chat history is stored **only** in your browser's local storage.
   - **Authentication**: Powered by **Better Auth**, featuring robust local session management backed by PostgreSQL/Prisma, and rigorous NIST 800-63B password validation.
   - **Session Isolation**: Multiple users can share a device safely; data and chat histories are scoped to your login session.
-- **Professional Landing Page**:
-  - Modern, responsive design with dark/light mode toggle
-  - Pricing tiers (Individual Free, Cloud Pro Coming Soon)
-  - Waitlist signup modal for early access
-  - Contact form powered by Web3Forms
-
-## Architecture & Tech Stack
-
-Canvas AI follows a **hybrid feature-based architecture** that promotes scalability and maintainability:
-
-- **Feature-Based Structure**: Code is organized by domain (auth, canvas, landing, settings) rather than by file type
-- **Separation of Concerns**: Each feature contains its own components, hooks, services, and types
-- **Global UI Layer**: shadcn/ui components in `src/components/ui` provide consistent, reusable primitives
-- **TypeScript Strict Mode**: Full type safety across the entire codebase
-- **Tailwind CSS v4**: Utility-first styling with modern design tokens
-- **Vite**: Lightning-fast build tool with HMR for optimal developer experience
-
-For a detailed folder structure, see [docs/requirements.md](./docs/requirements.md#32-architecture).
-
-## Environment Variables
-
-The application uses environment variables for optional features:
-
-- **`VITE_WEB3FORMS_KEY`** (Optional): Access key for Web3Forms integration (contact form and waitlist)
-  - Get your key at [web3forms.com](https://web3forms.com/)
-  - Only needed if you want to test the contact/waitlist forms locally
-  - See `.env.example` for the template
 
 ## Getting Started
 
@@ -61,7 +36,7 @@ The application uses environment variables for optional features:
 - Node.js (v16 or higher)
 - npm or yarn
 - Vercel CLI (install via `npm i -g vercel`)
-- An [OpenRouter API Key](https://openrouter.ai/keys)
+- An API Key from OpenRouter, OpenAI, or Google
 
 ### Installation
 
@@ -78,15 +53,7 @@ The application uses environment variables for optional features:
     npm install
     ```
 
-3. **(Optional) Set up environment variables**
-
-    ```bash
-    cp .env.example .env.local
-    ```
-
-    Then edit `.env.local` and add your Web3Forms access key if you want to test the contact/waitlist forms.
-
-4. **Run the development server**
+3. **Run the development server**
 
     ```bash
     vercel dev
@@ -97,7 +64,7 @@ The application uses environment variables for optional features:
 ### Usage Guide
 
 1. **Sign Up**: Create a local account (this is a mock auth system for demo purposes).
-2. **Add API Key**: Click on the **Settings** (gear icon) and paste your OpenRouter API Key.
+2. **Add API Key**: Click on the **Settings** (gear icon) and configure your API keys for OpenRouter, OpenAI, or Google.
 3. **Start Chatting**:
     - Click the **"New Chat"** button in the sidebar or the **"+"** button to start a fresh canvas.
     - Type your message and hit send.

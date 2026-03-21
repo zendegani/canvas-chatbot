@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SettingsModal } from "./SettingsModal";
+import { PROVIDERS, encodeApiKey, decodeApiKey } from "../../canvas/services/providers";
 
 describe("SettingsModal", () => {
   const defaultProps = {
@@ -9,6 +10,8 @@ describe("SettingsModal", () => {
     onClose: vi.fn(),
     currentUser: "test@example.com",
     refreshModels: vi.fn(),
+    selectedProvider: 'openrouter' as const,
+    onProviderChange: vi.fn(),
   };
 
   beforeEach(() => {
@@ -27,11 +30,23 @@ describe("SettingsModal", () => {
     render(<SettingsModal {...defaultProps} />);
 
     expect(screen.getByText("Settings")).toBeInTheDocument();
-    expect(screen.getByText("OpenRouter API Key")).toBeInTheDocument();
+    expect(screen.getByText("AI Provider")).toBeInTheDocument();
+    // All three provider names should be visible as buttons
+    expect(screen.getByText("OpenRouter")).toBeInTheDocument();
+    expect(screen.getByText("OpenAI")).toBeInTheDocument();
+    expect(screen.getByText("Google AI")).toBeInTheDocument();
   });
 
-  it("loads existing API key from localStorage", () => {
-    localStorage.setItem("openRouterApiKey_test@example.com", "sk-or-existing");
+  it("renders API key inputs for all providers", () => {
+    render(<SettingsModal {...defaultProps} />);
+
+    expect(screen.getByText("OpenRouter API Key")).toBeInTheDocument();
+    expect(screen.getByText("OpenAI API Key")).toBeInTheDocument();
+    expect(screen.getByText("Google AI API Key")).toBeInTheDocument();
+  });
+
+  it("loads existing API key from localStorage (legacy cleartext)", () => {
+    localStorage.setItem("apiKey_openrouter_test@example.com", "sk-or-existing");
 
     render(<SettingsModal {...defaultProps} />);
 
@@ -39,7 +54,16 @@ describe("SettingsModal", () => {
     expect(input).toHaveValue("sk-or-existing");
   });
 
-  it("saves API key and closes on Save", async () => {
+  it("loads existing API key from localStorage (encoded)", () => {
+    localStorage.setItem("apiKey_openrouter_test@example.com", encodeApiKey("sk-or-encoded"));
+
+    render(<SettingsModal {...defaultProps} />);
+
+    const input = screen.getByPlaceholderText("sk-or-...");
+    expect(input).toHaveValue("sk-or-encoded");
+  });
+
+  it("saves API keys and closes on Save", async () => {
     const user = userEvent.setup();
     render(<SettingsModal {...defaultProps} />);
 
@@ -47,9 +71,20 @@ describe("SettingsModal", () => {
     await user.type(input, "sk-or-new-key");
     await user.click(screen.getByRole("button", { name: /save changes/i }));
 
-    expect(localStorage.getItem("openRouterApiKey_test@example.com")).toBe("sk-or-new-key");
+    const stored = localStorage.getItem("apiKey_openrouter_test@example.com")!;
+    expect(stored).not.toBe("sk-or-new-key");
+    expect(decodeApiKey(stored)).toBe("sk-or-new-key");
     expect(defaultProps.refreshModels).toHaveBeenCalled();
     expect(defaultProps.onClose).toHaveBeenCalled();
+  });
+
+  it("calls onProviderChange when provider button is clicked", async () => {
+    const user = userEvent.setup();
+    render(<SettingsModal {...defaultProps} />);
+
+    await user.click(screen.getByText("Google AI"));
+
+    expect(defaultProps.onProviderChange).toHaveBeenCalledWith("google");
   });
 
   it("renders clear data button in danger zone", () => {

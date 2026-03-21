@@ -2,18 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useCanvas } from './useCanvas';
 import { mockFetch } from '../../../test/setup';
+import { PROVIDERS } from '../services/providers';
 
-// Mock the openRouterService module
+// Mock the chatService module
 const mockChatCompletion = vi.fn().mockResolvedValue('Mocked response');
-vi.mock('../services/openRouterService', () => ({
+vi.mock('../services/chatService', () => ({
     fetchModels: vi.fn().mockResolvedValue([
-        { id: 'google/gemini-pro', name: 'Gemini Pro', context_length: 32000, pricing: { prompt: '0', completion: '0' } },
+        { id: 'google/gemma-3-27b-it:free', name: 'Google: Gemma 3 27B' },
     ]),
     chatCompletion: (...args: unknown[]) => mockChatCompletion(...args),
 }));
 
 describe('useCanvas', () => {
     const testUser = 'test@example.com';
+    const defaultProvider = PROVIDERS.openrouter;
+    const apiStorageKey = `apiKey_openrouter_${testUser}`;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -40,7 +43,7 @@ describe('useCanvas', () => {
             expect(result.current.nodes[0].y).toBe(184);
             expect(result.current.nodes[0].parentId).toBeNull();
             expect(result.current.nodes[0].messages).toEqual([]);
-            expect(result.current.nodes[0].model).toBe('google/gemini-pro');
+            expect(result.current.nodes[0].model).toBe(defaultProvider.defaultModel.id);
         });
 
         it('creates a new session when current session has nodes', async () => {
@@ -293,13 +296,13 @@ describe('useCanvas', () => {
             });
 
             expect(window.alert).toHaveBeenCalledWith(
-                'Please set your OpenRouter API Key in Settings first.'
+                `Please set your ${defaultProvider.name} API Key in Settings first.`
             );
             expect(result.current.isSettingsOpen).toBe(true);
         });
 
         it('appends user message and assistant reply', async () => {
-            localStorage.setItem(`openRouterApiKey_${testUser}`, 'test-key');
+            localStorage.setItem(apiStorageKey, 'test-key');
             const { result } = renderHook(() => useCanvas(testUser));
             await waitFor(() => expect(result.current.hasLoaded).toBe(true));
 
@@ -318,7 +321,7 @@ describe('useCanvas', () => {
         });
 
         it('handles API error gracefully', async () => {
-            localStorage.setItem(`openRouterApiKey_${testUser}`, 'test-key');
+            localStorage.setItem(apiStorageKey, 'test-key');
             mockChatCompletion.mockRejectedValue(new Error('Network error'));
 
             const { result } = renderHook(() => useCanvas(testUser));
@@ -357,12 +360,12 @@ describe('useCanvas', () => {
             });
 
             expect(window.alert).toHaveBeenCalledWith(
-                'Please set your OpenRouter API Key in Settings first.'
+                `Please set your ${defaultProvider.name} API Key in Settings first.`
             );
         });
 
         it('creates two child nodes with responses from different models', async () => {
-            localStorage.setItem(`openRouterApiKey_${testUser}`, 'test-key');
+            localStorage.setItem(apiStorageKey, 'test-key');
             mockChatCompletion
                 .mockResolvedValueOnce('Reply from A')
                 .mockResolvedValueOnce('Reply from B');
@@ -397,7 +400,7 @@ describe('useCanvas', () => {
         });
 
         it('blocks compare when it would exceed 10 nodes', async () => {
-            localStorage.setItem(`openRouterApiKey_${testUser}`, 'test-key');
+            localStorage.setItem(apiStorageKey, 'test-key');
             const { result } = renderHook(() => useCanvas(testUser));
             await waitFor(() => expect(result.current.hasLoaded).toBe(true));
 
@@ -424,7 +427,7 @@ describe('useCanvas', () => {
         });
 
         it('handles API error in one child gracefully', async () => {
-            localStorage.setItem(`openRouterApiKey_${testUser}`, 'test-key');
+            localStorage.setItem(apiStorageKey, 'test-key');
             mockChatCompletion
                 .mockResolvedValueOnce('Reply from A')
                 .mockRejectedValueOnce(new Error('Model B failed'));
@@ -657,6 +660,36 @@ describe('useCanvas', () => {
             rerender({ user: '' });
 
             await waitFor(() => expect(result.current.models).toHaveLength(0));
+        });
+    });
+
+    // ---------- provider management ----------
+
+    describe('provider management', () => {
+        it('defaults to openrouter provider', async () => {
+            const { result } = renderHook(() => useCanvas(testUser));
+            await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+
+            expect(result.current.selectedProvider).toBe('openrouter');
+        });
+
+        it('persists selected provider to localStorage', async () => {
+            const { result } = renderHook(() => useCanvas(testUser));
+            await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+
+            act(() => result.current.setSelectedProvider('google'));
+
+            expect(result.current.selectedProvider).toBe('google');
+            expect(localStorage.getItem(`selectedProvider_${testUser}`)).toBe('google');
+        });
+
+        it('restores selected provider on re-mount', async () => {
+            localStorage.setItem(`selectedProvider_${testUser}`, 'openai');
+
+            const { result } = renderHook(() => useCanvas(testUser));
+            await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+
+            expect(result.current.selectedProvider).toBe('openai');
         });
     });
 });

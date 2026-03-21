@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Sparkles, Home as HomeIcon, Sun, Moon, Zap, Layers, Monitor, MessageSquare, Target, Check, Mail, Github, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Home as HomeIcon, Sun, Moon, Zap, Layers, Monitor, MessageSquare, Target, Swords, KeyRound } from 'lucide-react';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 
 const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
@@ -15,74 +15,6 @@ interface LandingPageProps {
     setIsDarkMode: (isDark: boolean) => void;
     onGetStarted: () => void;
 }
-
-const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setIsSubmitting(true);
-        const toastId = toast.loading("Sending...");
-
-        const formData = new FormData(event.target as HTMLFormElement);
-        formData.append("access_key", WEB3FORMS_KEY);
-
-        try {
-            const response = await fetch("https://api.web3forms.com/submit", {
-                method: "POST",
-                body: formData
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                toast.success("Success! You've been added to the waitlist.", { id: toastId });
-                (event.target as HTMLFormElement).reset();
-                setTimeout(() => {
-                    onClose();
-                }, 1500);
-            } else {
-                console.log("Error", data);
-                toast.error(data.message || "Something went wrong. Please try again.", { id: toastId });
-            }
-        } catch (error) {
-            toast.error("Network error. Please try again.", { id: toastId });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-primary/10 text-primary">
-                        <Sparkles size={24} />
-                    </div>
-                    <DialogTitle className="text-center text-2xl">Join the Waitlist</DialogTitle>
-                    <DialogDescription className="text-center">
-                        Get early access to Cloud Pro features including collaboration and flagship models.
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={onSubmit} className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" name="name" placeholder="Your Name" required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input id="email" name="email" type="email" placeholder="Your Email" required />
-                    </div>
-                    <textarea name="message" className="hidden" defaultValue="Requesting access to Cloud Pro Waitlist"></textarea>
-
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? "Joining..." : "Join Waitlist"}
-                    </Button>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
-};
 
 const ContactForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -167,12 +99,13 @@ const ImageLightbox = ({ isOpen, onClose, src, alt }: { isOpen: boolean; onClose
 };
 
 export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkMode, onGetStarted }) => {
-    const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
     const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
+
+    const branchingImg = isDarkMode ? '/images/branching-dark.png' : '/images/branching-light.png';
+    const duelImg = isDarkMode ? '/images/Duel-dark.png' : '/images/Duel-light.png';
 
     return (
         <div id="top" className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] scroll-smooth selection:bg-[var(--accent-primary)]/30">
-            <WaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
             <ImageLightbox
                 isOpen={lightboxImage !== null}
                 onClose={() => setLightboxImage(null)}
@@ -190,7 +123,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     <a href="#top" className="hover:opacity-100 transition-opacity flex items-center gap-1.5"><HomeIcon size={14} /> Home</a>
                     <a href="#overview" className="hover:opacity-100 transition-opacity">Overview</a>
                     <a href="#product" className="hover:opacity-100 transition-opacity">Product</a>
-                    <a href="#pricing" className="hover:opacity-100 transition-opacity">Pricing</a>
                     <a href="#contact" className="hover:opacity-100 transition-opacity">Contact</a>
                 </div>
                 <div className="flex items-center gap-4">
@@ -243,15 +175,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
             {/* Overview Section */}
             <section id="overview" className="py-32 px-6 max-w-7xl mx-auto">
 
+                {/* Row 1 header */}
+                <div className="mb-12">
+                    <span className="text-[var(--accent-primary)] font-bold tracking-widest text-sm uppercase mb-2 block">INNOVATION</span>
+                    <h3 className="text-3xl md:text-4xl font-bold mb-4">A New Way to Interact with AI</h3>
+                    <p className="opacity-60 text-lg leading-relaxed max-w-2xl">
+                        Stop juggling tabs. Master parallel thought with the help of Canvas AI.
+                    </p>
+                </div>
+
+                {/* Row 1: Boxes left, Branching image right */}
                 <div className="grid md:grid-cols-2 gap-20 items-center">
                     <div className="space-y-8">
-                        <div>
-                            <span className="text-[var(--accent-primary)] font-bold tracking-widest text-sm uppercase mb-2 block">INNOVATION</span>
-                            <h3 className="text-3xl md:text-4xl font-bold mb-4">A New Way to Interact with AI</h3>
-                            <p className="opacity-60 text-lg leading-relaxed mb-8">
-                                Stop juggling tabs. Master parallel thought with the help of Canvas AI.
-                            </p>
-                        </div>
                         <div className="p-8 rounded-3xl bg-card border border-border hover:border-primary/30 transition-all">
                             <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
                                 <Layers className="text-[var(--accent-primary)]" /> Dynamic Branching
@@ -272,11 +207,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     <div className="relative">
                         <div className="absolute inset-0 bg-[var(--accent-primary)]/20 blur-[100px] rounded-full"></div>
                         <img
-                            src="/images/branching.png"
+                            src={branchingImg}
                             className="relative rounded-3xl border border-zinc-500/20 shadow-2xl w-full cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
                             alt="Canvas AI Branching Feature"
-                            onClick={() => setLightboxImage({ src: '/images/branching.png', alt: 'Canvas AI Branching Feature' })}
+                            onClick={() => setLightboxImage({ src: branchingImg, alt: 'Canvas AI Branching Feature' })}
                         />
+                    </div>
+                </div>
+
+                {/* Row 2: Duel image left, Boxes right (mirrored) */}
+                <div className="grid md:grid-cols-2 gap-20 items-center mt-20">
+                    <div className="relative">
+                        <div className="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full"></div>
+                        <img
+                            src={duelImg}
+                            className="relative rounded-3xl border border-zinc-500/20 shadow-2xl w-full cursor-zoom-in hover:scale-[1.02] transition-transform duration-300"
+                            alt="Canvas AI Model Duel Feature"
+                            onClick={() => setLightboxImage({ src: duelImg, alt: 'Canvas AI Model Duel Feature' })}
+                        />
+                    </div>
+                    <div className="space-y-8">
+                        <div className="p-8 rounded-3xl bg-card border border-border hover:border-primary/30 transition-all">
+                            <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                <Swords className="text-emerald-500" /> Model Duel
+                            </h3>
+                            <p className="opacity-60 text-lg leading-relaxed">
+                                Pick two models at once and split-test any prompt side-by-side. Instantly compare reasoning, tone, and quality.
+                            </p>
+                        </div>
+                        <div className="p-8 rounded-3xl bg-card border border-border hover:border-primary/30 transition-all">
+                            <h3 className="text-2xl font-bold mb-4 flex items-center gap-3">
+                                <KeyRound className="text-amber-500" /> Bring Your Own Key
+                            </h3>
+                            <p className="opacity-60 text-lg leading-relaxed">
+                                Connect your own API keys from OpenRouter, OpenAI, or Google. Full control over your models and costs.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -291,13 +257,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     <div className="grid md:grid-cols-3 gap-8">
                         {[
                             {
-                                title: "Instant Snapshots",
-                                desc: "Save any conversation state instantly and return to it later. Ideal for A/B testing prompts and paths.",
-                                icon: <Sparkles className="text-yellow-500" />
+                                title: "Model Duel",
+                                desc: "Pick two models and split-test any prompt side-by-side. Compare reasoning, tone, and quality instantly.",
+                                icon: <Swords className="text-emerald-500" />
                             },
                             {
                                 title: "Multi-Model Hub",
-                                desc: "Access hundreds of models via OpenRouter to balance speed, cost, and reasoning.",
+                                desc: "Access hundreds of models from OpenRouter, OpenAI, and Google to balance speed, cost, and reasoning.",
                                 icon: <Zap className="text-[var(--accent-primary)]" />
                             },
                             {
@@ -311,14 +277,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                                 icon: <Layers className="text-indigo-500" />
                             },
                             {
-                                title: "Keyboard Mastery",
-                                desc: "Navigate your canvas at the speed of thought with optimized shortcuts and hotkeys.",
-                                icon: <Monitor className="text-emerald-500" />
-                            },
-                            {
                                 title: "Infinite 2D Canvas",
                                 desc: "Scale your orchestration on an endless spatial workspace for complex multi-step reasoning tasks.",
                                 icon: <MessageSquare className="text-orange-500" />
+                            },
+                            {
+                                title: "Instant Snapshots",
+                                desc: "Save any conversation state instantly and return to it later. Ideal for A/B testing prompts and paths.",
+                                icon: <Sparkles className="text-yellow-500" />
                             }
                         ].map((feature, i) => (
                             <Card key={i} className="group p-2 rounded-[40px] border-primary/10 hover:border-primary/40 transition-all duration-500 overflow-hidden">
@@ -330,50 +296,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                             </Card>
                         ))}
                     </div>
-                </div>
-            </section>
-
-            {/* Pricing Section */}
-            <section id="pricing" className="py-32 px-6 max-w-6xl mx-auto text-center">
-                <h2 className="text-4xl md:text-5xl font-bold mb-16">Simple. Transparent. Built for You.</h2>
-                <div className="grid md:grid-cols-2 gap-12">
-                    {/* Individual / Free (Blue Style) */}
-                    {/* Free Plan */}
-                    <Card className="rounded-[50px] border-primary/20 text-left hover:scale-[1.02] transition-transform duration-500">
-                        <CardContent className="p-12">
-                            <h3 className="text-2xl font-bold mb-2">Free</h3>
-                            <p className="opacity-80 mb-8">For personal use and exploration.</p>
-                            <div className="text-6xl font-black mb-8">€0</div>
-                            <ul className="space-y-6 mb-12">
-                                {["Up to 10 nodes per canvas", "OpenRouter Integration", "Local Persistent Storage"].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 font-medium">
-                                        <Check size={20} className="text-primary" /> {item}
-                                    </li>
-                                ))}
-                            </ul>
-                            <Button onClick={onGetStarted} variant="outline" className="w-full py-6 text-lg rounded-2xl font-bold">Get started</Button>
-                        </CardContent>
-                    </Card>
-
-                    {/* Cloud Pro (Zinc Style) */}
-                    {/* Cloud Pro (Highlighted) */}
-                    {/* Cloud Pro (Highlighted) */}
-                    <Card className="rounded-[50px] bg-primary border-primary text-primary-foreground text-left relative overflow-hidden shadow-2xl shadow-primary/20 hover:scale-[1.02] transition-transform duration-500">
-                        <CardContent className="p-12">
-                            <div className="absolute top-8 right-8 bg-white/20 backdrop-blur-md border border-white/30 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest text-white">Coming Soon</div>
-                            <h3 className="text-2xl font-bold mb-2 text-white">Cloud Pro</h3>
-                            <p className="opacity-80 mb-8 text-white">For professional teams and researchers.</p>
-                            <div className="text-6xl font-black mb-8 text-white">€20 <span className="text-sm font-normal opacity-50">/ month</span></div>
-                            <ul className="space-y-6 mb-12 text-white">
-                                {["Up to 50 nodes per canvas", "Access to flagships models", "Collaborative Canvases"].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 font-medium opacity-90">
-                                        <Check size={20} className="text-white" /> {item}
-                                    </li>
-                                ))}
-                            </ul>
-                            <Button onClick={() => setIsWaitlistOpen(true)} className="w-full py-6 bg-white text-primary hover:bg-white/90 rounded-2xl font-bold text-lg shadow-xl">Join Waitlist</Button>
-                        </CardContent>
-                    </Card>
                 </div>
             </section>
 
@@ -393,9 +315,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                 <div className="mb-4 font-bold text-lg flex items-center justify-center gap-2">
                     <Sparkles size={18} /> Canvas AI
                 </div>
-                <p>© 2025 Canvas AI Project. Built for the modern orchestrator.</p>
+                <p>© {new Date().getFullYear()} Canvas AI Project. Built for the modern orchestrator.</p>
             </footer>
         </div>
     );
 };
-

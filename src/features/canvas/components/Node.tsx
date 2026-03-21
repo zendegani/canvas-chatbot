@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { X, Plus, Minus, Send, Link as LinkIcon, Loader2, BrainCircuit } from 'lucide-react';
-import { ChatNode, OpenRouterModel } from '../types';
+import { ChatNode, LLMModel } from '../types';
 import { ModelSelector } from '../../settings/components/ModelSelector';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -34,7 +34,7 @@ SyntaxHighlighter.registerLanguage('css', css);
 
 interface NodeProps {
   node: ChatNode;
-  models: OpenRouterModel[];
+  models: LLMModel[];
   onDelete: (id: string) => void;
   onBranch: (id: string, direction: 'right' | 'bottom') => void;
   onSendMessage: (id: string, text: string) => void;

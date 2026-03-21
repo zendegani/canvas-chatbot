@@ -24,12 +24,22 @@ export interface ChatSession {
     updatedAt: number;
 }
 
-export interface OpenRouterModel {
+export type ProviderId = 'openrouter' | 'openai' | 'google';
+
+export interface ProviderConfig {
+    id: ProviderId;
+    name: string;
+    baseUrl: string;
+    keyPlaceholder: string;
+    defaultModel: LLMModel;
+}
+
+export interface LLMModel {
     id: string;
     name: string;
     description?: string;
-    context_length: number;
-    pricing: {
+    context_length?: number;
+    pricing?: {
         prompt: string;
         completion: string;
     };
