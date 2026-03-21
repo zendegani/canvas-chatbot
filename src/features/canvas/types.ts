@@ -31,7 +31,6 @@ export interface ProviderConfig {
     name: string;
     baseUrl: string;
     keyPlaceholder: string;
-    modelsEndpoint?: string;
     defaultModel: LLMModel;
 }
 

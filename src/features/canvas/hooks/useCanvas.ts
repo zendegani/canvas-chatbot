@@ -216,7 +216,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         if (currentUser) {
             const provider = PROVIDERS[selectedProvider];
             const apiKey = localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)) || '';
-            fetchModels(provider, apiKey).then(setModels);
+            fetchModels(provider, apiKey, currentUser).then(setModels);
         } else {
             setModels([]);
         }
@@ -538,7 +538,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         if (currentUser) {
             const provider = PROVIDERS[selectedProvider];
             const apiKey = localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)) || '';
-            fetchModels(provider, apiKey).then(setModels);
+            fetchModels(provider, apiKey, currentUser).then(setModels);
         }
     };
 

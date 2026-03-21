@@ -1,28 +1,39 @@
 import type { ProviderId, ProviderConfig } from '../types';
 
+function envDefault(key: string, fallback: string): string {
+    return import.meta.env[key] || fallback;
+}
+
 export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
     openrouter: {
         id: 'openrouter',
         name: 'OpenRouter',
         baseUrl: 'https://openrouter.ai/api/v1',
         keyPlaceholder: 'sk-or-...',
-        modelsEndpoint: '/models',
-        defaultModel: { id: 'google/gemma-3-27b-it:free', name: 'Google: Gemma 3 27B' },
+        defaultModel: {
+            id: envDefault('VITE_DEFAULT_MODEL_OPENROUTER', 'google/gemma-3-27b-it:free'),
+            name: 'Default',
+        },
     },
     openai: {
         id: 'openai',
         name: 'OpenAI',
         baseUrl: 'https://api.openai.com/v1',
         keyPlaceholder: 'sk-...',
-        modelsEndpoint: '/models',
-        defaultModel: { id: 'gpt-5.4-mini', name: 'GPT-5.4 Mini' },
+        defaultModel: {
+            id: envDefault('VITE_DEFAULT_MODEL_OPENAI', 'gpt-5.4-mini'),
+            name: 'Default',
+        },
     },
     google: {
         id: 'google',
         name: 'Google AI',
         baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
         keyPlaceholder: 'AIza...',
-        defaultModel: { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash' },
+        defaultModel: {
+            id: envDefault('VITE_DEFAULT_MODEL_GOOGLE', 'gemini-3-flash-preview'),
+            name: 'Default',
+        },
     },
 };
 
