@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.2.0-beta] - Unreleased
+## [0.2.0-beta] - 2026-03-21
 
 ### Added
 
@@ -17,20 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-Model Comparison**: Select a second AI model directly on a node and split-test prompts. The interface elegantly forks into two side-by-side children requesting from both models simultaneously.
 - **Multi-Provider Support**: Direct integration for OpenAI and Google alongside OpenRouter, giving users full BYOK flexibility.
 - **Dynamic Model Fetching**: The app now dynamically fetches, filters, and caches valid AI models for the active provider.
-- **Auth Dashboard**: Integrated the Better Auth Dashboard plugin for streamlined session and user management.
 
 ### Changed
 
 - Refactored `localStorage` architecture from a single monolithic chat array to isolated, per-session data storage.
 - The previous top action bar actions (Settings, Clear Data, Logout) have been migrated into the unified Sidebar interface.
 - Connection line visualizations improved: bezier control points use dynamic midpoint calculations to seamlessly draw paths above or below parent nodes.
-- **UX Update**: The Sidebar is now set to expand by default.
 
 ### Fixed
 
 - **Vercel Build Issues**: Pinned `camelcase` versions to circumvent ESM/CJS compilation errors during Vercel builds.
 - **Better Auth Dashboard**: Accurately mapped the configuration required API key for proper plugin initialization.
-- **Landing Page Check**: Waitlist forms correctly map to the `subject` field rather than `message`.
 
 ---
 
