@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatNode, ChatSession, LLMModel, Message, ProviderId } from '../types';
 import { fetchModels, chatCompletion } from '../services/chatService';
-import { PROVIDERS, DEFAULT_PROVIDER, apiKeyStorageKey, selectedProviderKey } from '../services/providers';
+import { PROVIDERS, DEFAULT_PROVIDER, apiKeyStorageKey, selectedProviderKey, decodeApiKey } from '../services/providers';
 import type { ViewState } from '../../auth/types';
 
 const NODE_WIDTH = 576;
@@ -215,7 +215,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     useEffect(() => {
         if (currentUser) {
             const provider = PROVIDERS[selectedProvider];
-            const apiKey = localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)) || '';
+            const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
             fetchModels(provider, apiKey, currentUser).then(setModels);
         } else {
             setModels([]);
@@ -426,7 +426,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
     const handleSendMessage = async (nodeId: string, text: string) => {
         const provider = PROVIDERS[selectedProvider];
-        const apiKey = localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser));
+        const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
         if (!apiKey) {
             alert(`Please set your ${provider.name} API Key in Settings first.`);
             setIsSettingsOpen(true);
@@ -455,7 +455,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
     const handleCompareMessage = async (nodeId: string, text: string, compareModels: [string, string]) => {
         const provider = PROVIDERS[selectedProvider];
-        const apiKey = localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser));
+        const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
         if (!apiKey) {
             alert(`Please set your ${provider.name} API Key in Settings first.`);
             setIsSettingsOpen(true);
@@ -537,7 +537,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const refreshModels = () => {
         if (currentUser) {
             const provider = PROVIDERS[selectedProvider];
-            const apiKey = localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)) || '';
+            const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
             fetchModels(provider, apiKey, currentUser).then(setModels);
         }
     };

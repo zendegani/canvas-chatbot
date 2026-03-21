@@ -46,6 +46,24 @@ export function apiKeyStorageKey(providerId: ProviderId, user: string): string {
     return `apiKey_${providerId}_${user}`;
 }
 
+const API_KEY_ENC_PREFIX = 'enc:';
+
+/** Encode an API key so it is not stored as clear text in localStorage. */
+export function encodeApiKey(plain: string): string {
+    if (!plain) return '';
+    try { return API_KEY_ENC_PREFIX + btoa(plain); }
+    catch { return API_KEY_ENC_PREFIX + plain; }
+}
+
+/** Decode a previously-encoded API key. Handles legacy clear-text values transparently. */
+export function decodeApiKey(stored: string | null): string {
+    if (!stored) return '';
+    if (!stored.startsWith(API_KEY_ENC_PREFIX)) return stored;
+    const encoded = stored.substring(API_KEY_ENC_PREFIX.length);
+    try { return atob(encoded); }
+    catch { return encoded; }
+}
+
 /** localStorage key for selected provider of a given user */
 export function selectedProviderKey(user: string): string {
     return `selectedProvider_${user}`;

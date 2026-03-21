@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { ProviderId } from '../../canvas/types';
-import { PROVIDERS, PROVIDER_LIST, apiKeyStorageKey, selectedProviderKey, DEFAULT_PROVIDER } from '../../canvas/services/providers';
+import { PROVIDERS, PROVIDER_LIST, apiKeyStorageKey, selectedProviderKey, DEFAULT_PROVIDER, encodeApiKey, decodeApiKey } from '../../canvas/services/providers';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -28,7 +28,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         if (isOpen && currentUser) {
             const loaded: Record<ProviderId, string> = { openrouter: '', openai: '', google: '' };
             for (const p of PROVIDER_LIST) {
-                loaded[p.id] = localStorage.getItem(apiKeyStorageKey(p.id, currentUser)) || '';
+                loaded[p.id] = decodeApiKey(localStorage.getItem(apiKeyStorageKey(p.id, currentUser)));
             }
             setApiKeys(loaded);
             setShowKey(null);
@@ -40,7 +40,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         for (const p of PROVIDER_LIST) {
             const key = apiKeys[p.id].trim();
             if (key) {
-                localStorage.setItem(apiKeyStorageKey(p.id, currentUser), key);
+                localStorage.setItem(apiKeyStorageKey(p.id, currentUser), encodeApiKey(key));
             } else {
                 localStorage.removeItem(apiKeyStorageKey(p.id, currentUser));
             }
