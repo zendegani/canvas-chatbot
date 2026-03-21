@@ -73,7 +73,7 @@ const WaitlistModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                         <Label htmlFor="email">Email</Label>
                         <Input id="email" name="email" type="email" placeholder="Your Email" required />
                     </div>
-                    <textarea name="message" className="hidden" defaultValue="Requesting access to Cloud Pro Waitlist"></textarea>
+                    <textarea name="subject" className="hidden" defaultValue="Requesting access to Cloud Pro Waitlist"></textarea>
 
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
                         {isSubmitting ? "Joining..." : "Join Waitlist"}
