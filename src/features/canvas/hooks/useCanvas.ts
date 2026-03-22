@@ -43,10 +43,37 @@ function deleteSessionData(user: string, id: string) {
 }
 
 function generateId(): string {
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID();
+    if (typeof crypto !== 'undefined') {
+        if (typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+        if (typeof crypto.getRandomValues === 'function') {
+            // Fallback: generate a UUIDv4-compatible string using secure random bytes
+            const bytes = new Uint8Array(16);
+            crypto.getRandomValues(bytes);
+
+            // Per RFC 4122 section 4.4, set version (4) and variant (10)
+            bytes[6] = (bytes[6] & 0x0f) | 0x40;
+            bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+            const hex: string[] = [];
+            for (let i = 0; i < bytes.length; i++) {
+                hex.push(bytes[i].toString(16).padStart(2, '0'));
+            }
+
+            return (
+                hex[0] + hex[1] + hex[2] + hex[3] + '-' +
+                hex[4] + hex[5] + '-' +
+                hex[6] + hex[7] + '-' +
+                hex[8] + hex[9] + '-' +
+                hex[10] + hex[11] + hex[12] + hex[13] + hex[14] + hex[15]
+            );
+        }
     }
-    return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    // As a last resort, fall back to a simple timestamp-based ID without Math.random.
+    // This avoids insecure randomness but may be more predictable; it is only used
+    // when no secure crypto API is available.
+    return 'session-' + Date.now().toString(36);
 }
 
 function deriveTitle(nodes: ChatNode[]): string {
@@ -227,7 +254,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
 
         const newNode: ChatNode = {
-            id: Math.random().toString(36).substr(2, 9),
+            id: generateId(),
             parentId: null,
             x: centerX,
             y: centerY,
@@ -296,7 +323,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
 
         const initialNode: ChatNode = {
-            id: Math.random().toString(36).substr(2, 9),
+            id: generateId(),
             parentId: null,
             x: centerX,
             y: centerY,
@@ -412,7 +439,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             }
 
             const newNode: ChatNode = {
-                id: Math.random().toString(36).substr(2, 9),
+                id: generateId(),
                 parentId: parentId,
                 x: newX,
                 y: newY,
@@ -476,7 +503,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const GAP = 25;
 
         // Position children side-by-side above the parent's top-center
-        const childIds = [Math.random().toString(36).substr(2, 9), Math.random().toString(36).substr(2, 9)];
+        const childIds = [generateId(), generateId()];
         const children: ChatNode[] = compareModels.map((model, i) => {
             const offsetX = i === 0
                 ? parent.x - NODE_WIDTH / 2 - GAP / 2
