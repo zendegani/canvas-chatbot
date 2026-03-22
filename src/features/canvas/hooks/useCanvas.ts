@@ -254,7 +254,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
 
         const newNode: ChatNode = {
-            id: Math.random().toString(36).substr(2, 9),
+            id: generateId(),
             parentId: null,
             x: centerX,
             y: centerY,
@@ -323,7 +323,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const centerY = (window.innerHeight - NODE_HEIGHT) / 2;
 
         const initialNode: ChatNode = {
-            id: Math.random().toString(36).substr(2, 9),
+            id: generateId(),
             parentId: null,
             x: centerX,
             y: centerY,
@@ -439,7 +439,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             }
 
             const newNode: ChatNode = {
-                id: Math.random().toString(36).substr(2, 9),
+                id: generateId(),
                 parentId: parentId,
                 x: newX,
                 y: newY,
@@ -503,7 +503,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const GAP = 25;
 
         // Position children side-by-side above the parent's top-center
-        const childIds = [Math.random().toString(36).substr(2, 9), Math.random().toString(36).substr(2, 9)];
+        const childIds = [generateId(), generateId()];
         const children: ChatNode[] = compareModels.map((model, i) => {
             const offsetX = i === 0
                 ? parent.x - NODE_WIDTH / 2 - GAP / 2
