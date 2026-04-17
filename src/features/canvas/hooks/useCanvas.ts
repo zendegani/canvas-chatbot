@@ -500,9 +500,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
         const history = [...parent.messages, userMsg];
         const parentW = parent.width || NODE_WIDTH;
+        const parentH = parent.height || NODE_HEIGHT;
         const GAP = 25;
 
-        // Position children side-by-side above the parent's top-center
+        // Position children side-by-side below the parent
         const childIds = [generateId(), generateId()];
         const children: ChatNode[] = compareModels.map((model, i) => {
             const offsetX = i === 0
@@ -513,7 +514,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                 id: childIds[i],
                 parentId: nodeId,
                 x: offsetX,
-                y: parent.y - NODE_HEIGHT - 50,
+                y: parent.y + parentH + 50,
                 model,
                 messages: [...history],
                 startIndex: history.length - 1, // Show only the user msg + upcoming response
