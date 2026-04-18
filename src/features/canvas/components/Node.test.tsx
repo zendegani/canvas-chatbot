@@ -60,6 +60,8 @@ describe("Node", () => {
     onBranch: vi.fn(),
     onSendMessage: vi.fn(),
     onCompareMessage: vi.fn(),
+    onMergeDuel: vi.fn(),
+    canMerge: false,
     onUpdateModel: vi.fn(),
     onDragStart: vi.fn(),
     isMobile: false,

@@ -22,6 +22,7 @@ interface CanvasProps {
     handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => void;
     handleCompareMessage: (nodeId: string, text: string, models: string[]) => void;
+    handleMergeDuel: (parentId: string) => void;
     updateNodeSize: (id: string, width: number, height: number) => void;
     isMobile: boolean;
     isDarkMode: boolean;
@@ -49,6 +50,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     handleBranch,
     handleSendMessage,
     handleCompareMessage,
+    handleMergeDuel,
     updateNodeSize,
     isMobile,
     isDarkMode,
@@ -148,19 +150,13 @@ export const Canvas: React.FC<CanvasProps> = ({
 
                             <div className="relative w-full h-full pointer-events-none" style={{ transform: `translate(${panOffset.x}px, ${panOffset.y}px)` }}>
 
-                                {nodes.map(node => {
-                                    if (!node.parentId) return null;
-                                    const parent = nodes.find(n => n.id === node.parentId);
-                                    if (!parent) return null;
-
-                                    // Dynamic connection logic (Shortest Path)
+                                {(() => {
                                     const getConnectionPoints = (source: ChatNode, target: ChatNode) => {
                                         const sourceW = source.width || NODE_WIDTH;
                                         const sourceH = source.height || NODE_HEIGHT;
                                         const targetW = target.width || NODE_WIDTH;
                                         const targetH = target.height || NODE_HEIGHT;
 
-                                        // Anchor points
                                         const anchors = {
                                             source: {
                                                 right: { x: source.x + sourceW, y: source.y + sourceH / 2 },
@@ -176,7 +172,6 @@ export const Canvas: React.FC<CanvasProps> = ({
                                             }
                                         };
 
-                                        // If child is positioned below the parent, force bottom→top
                                         if (target.y >= source.y + sourceH) {
                                             return {
                                                 startX: anchors.source.bottom.x,
@@ -202,8 +197,6 @@ export const Canvas: React.FC<CanvasProps> = ({
                                         for (const combo of combinations) {
                                             const start = anchors.source[combo.s as keyof typeof anchors.source];
                                             const end = anchors.target[combo.t as keyof typeof anchors.target];
-
-                                            // Euclidean distance
                                             const dist = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
 
                                             if (dist < minDistance) {
@@ -220,22 +213,57 @@ export const Canvas: React.FC<CanvasProps> = ({
                                         return bestConnection;
                                     };
 
-                                    const { startX, startY, endX, endY, orientation } = getConnectionPoints(parent, node);
+                                    const lines: React.ReactNode[] = [];
 
-                                    return <ConnectionLine
-                                        key={`${parent.id}-${node.id}`}
-                                        startX={startX}
-                                        startY={startY}
-                                        endX={endX}
-                                        endY={endY}
-                                        orientation={orientation}
-                                    />;
-                                })}
+                                    nodes.forEach(node => {
+                                        // Merge nodes: draw lines from each merge parent
+                                        if (node.mergeParentIds && node.mergeParentIds.length > 0) {
+                                            node.mergeParentIds.forEach(mpId => {
+                                                const mp = nodes.find(n => n.id === mpId);
+                                                if (!mp) return;
+                                                const pts = getConnectionPoints(mp, node);
+                                                lines.push(
+                                                    <ConnectionLine
+                                                        key={`merge-${mpId}-${node.id}`}
+                                                        startX={pts.startX}
+                                                        startY={pts.startY}
+                                                        endX={pts.endX}
+                                                        endY={pts.endY}
+                                                        orientation={pts.orientation}
+                                                    />
+                                                );
+                                            });
+                                            return;
+                                        }
+
+                                        // Regular parent connection
+                                        if (!node.parentId) return;
+                                        const parent = nodes.find(n => n.id === node.parentId);
+                                        if (!parent) return;
+                                        const pts = getConnectionPoints(parent, node);
+                                        lines.push(
+                                            <ConnectionLine
+                                                key={`${parent.id}-${node.id}`}
+                                                startX={pts.startX}
+                                                startY={pts.startY}
+                                                endX={pts.endX}
+                                                endY={pts.endY}
+                                                orientation={pts.orientation}
+                                            />
+                                        );
+                                    });
+
+                                    return lines;
+                                })()}
                                 {nodes.map(node => {
-                                    const hasChildren = nodes.some(n => n.parentId === node.id);
+                                    const childNodes = nodes.filter(n => n.parentId === node.id);
+                                    const hasChildren = childNodes.length > 0;
                                     const siblingCount = node.parentId
                                         ? nodes.filter(n => n.parentId === node.parentId).length
                                         : 0;
+                                    // Show merge button if this node has 2+ children and none of them already have a merge child
+                                    const hasMergeChild = nodes.some(n => n.mergeParentIds && n.mergeParentIds.some(id => childNodes.some(c => c.id === id)));
+                                    const canMerge = childNodes.length >= 2 && !hasMergeChild;
                                     return (
                                         <div key={node.id} className="pointer-events-auto">
                                             <Node
@@ -246,6 +274,8 @@ export const Canvas: React.FC<CanvasProps> = ({
                                                 onBranch={handleBranch}
                                                 onSendMessage={handleSendMessage}
                                                 onCompareMessage={handleCompareMessage}
+                                                onMergeDuel={handleMergeDuel}
+                                                canMerge={canMerge}
                                                 onUpdateModel={(id, m) => setNodes(prev => prev.map(n => n.id === id ? { ...n, model: m } : n))}
                                                 onDragStart={handleNodeDragStart}
                                                 isMobile={isMobile}

@@ -39,6 +39,8 @@ interface NodeProps {
   onBranch: (id: string, direction: 'right' | 'bottom') => void;
   onSendMessage: (id: string, text: string) => void;
   onCompareMessage: (id: string, text: string, models: string[]) => void;
+  onMergeDuel: (parentId: string) => void;
+  canMerge: boolean;
   onUpdateModel: (id: string, model: string) => void;
   onDragStart: (id: string, e: React.MouseEvent) => void;
   isMobile: boolean;
@@ -54,6 +56,8 @@ export const Node: React.FC<NodeProps> = ({
   onBranch,
   onSendMessage,
   onCompareMessage,
+  onMergeDuel,
+  canMerge,
   onUpdateModel,
   onDragStart,
   isMobile,
@@ -156,17 +160,30 @@ export const Node: React.FC<NodeProps> = ({
             </Button>
           )}
         </div>
-        {!hasChildren && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(node.id)}
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-            title="Delete this node"
-          >
-            <X size={16} />
-          </Button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {canMerge && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onMergeDuel(node.id)}
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+              title="Merge & summarize duel responses"
+            >
+              <img src="/merge-arrow-icon.png" alt="Merge" className="h-4 w-4 dark:invert opacity-60" />
+            </Button>
+          )}
+          {!hasChildren && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(node.id)}
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              title="Delete this node"
+            >
+              <X size={16} />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Messages */}
