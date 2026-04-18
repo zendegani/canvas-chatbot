@@ -38,7 +38,7 @@ interface NodeProps {
   onDelete: (id: string) => void;
   onBranch: (id: string, direction: 'right' | 'bottom') => void;
   onSendMessage: (id: string, text: string) => void;
-  onCompareMessage: (id: string, text: string, models: [string, string]) => void;
+  onCompareMessage: (id: string, text: string, models: string[]) => void;
   onUpdateModel: (id: string, model: string) => void;
   onDragStart: (id: string, e: React.MouseEvent) => void;
   isMobile: boolean;
@@ -60,7 +60,7 @@ export const Node: React.FC<NodeProps> = ({
   onResize
 }) => {
   const [inputText, setInputText] = useState('');
-  const [secondModel, setSecondModel] = useState<string | null>(null);
+  const [extraModels, setExtraModels] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -80,9 +80,9 @@ export const Node: React.FC<NodeProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || node.isThinking) return;
-    if (secondModel) {
-      onCompareMessage(node.id, inputText, [node.model, secondModel]);
-      setSecondModel(null);
+    if (extraModels.length > 0) {
+      onCompareMessage(node.id, inputText, [node.model, ...extraModels]);
+      setExtraModels([]);
     } else {
       onSendMessage(node.id, inputText);
     }
@@ -113,23 +113,37 @@ export const Node: React.FC<NodeProps> = ({
             onSelect={(m) => onUpdateModel(node.id, m)}
             isLoading={models.length === 0}
           />
-          {secondModel && (
+          {extraModels.map((m, i) => (
             <ModelSelector
+              key={i}
               models={models}
-              selectedModel={secondModel}
-              onSelect={setSecondModel}
+              selectedModel={m}
+              onSelect={(val) => setExtraModels(prev => prev.map((v, j) => j === i ? val : v))}
               isLoading={models.length === 0}
             />
+          ))}
+          {extraModels.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setExtraModels(prev => prev.slice(0, -1))}
+              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+              title="Remove last comparison model"
+            >
+              <Minus size={14} />
+            </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSecondModel(prev => prev ? null : (models[0]?.id || 'google/gemini-pro'))}
-            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
-            title={secondModel ? 'Remove comparison model' : 'Add model to compare'}
-          >
-            {secondModel ? <Minus size={14} /> : <Plus size={14} />}
-          </Button>
+          {extraModels.length < 2 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setExtraModels(prev => [...prev, models[0]?.id || 'google/gemini-pro'])}
+              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
+              title="Add model to compare"
+            >
+              <Plus size={14} />
+            </Button>
+          )}
         </div>
         {!hasChildren && (
           <Button

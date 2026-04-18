@@ -21,7 +21,7 @@ interface CanvasProps {
     onGoHome: () => void;
     handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => void;
-    handleCompareMessage: (nodeId: string, text: string, models: [string, string]) => void;
+    handleCompareMessage: (nodeId: string, text: string, models: string[]) => void;
     updateNodeSize: (id: string, width: number, height: number) => void;
     isMobile: boolean;
     isDarkMode: boolean;

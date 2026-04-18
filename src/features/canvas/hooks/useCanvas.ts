@@ -102,7 +102,7 @@ export interface UseCanvasReturn {
     addInitialNode: () => void;
     handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
-    handleCompareMessage: (nodeId: string, text: string, compareModels: [string, string]) => Promise<void>;
+    handleCompareMessage: (nodeId: string, text: string, compareModels: string[]) => Promise<void>;
     clearData: (setView: (view: ViewState) => void) => void;
     hasLoaded: boolean;
     refreshModels: () => void;
@@ -480,7 +480,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     };
 
-    const handleCompareMessage = async (nodeId: string, text: string, compareModels: [string, string]) => {
+    const handleCompareMessage = async (nodeId: string, text: string, compareModels: string[]) => {
         const provider = PROVIDERS[selectedProvider];
         const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
         if (!apiKey) {
@@ -489,7 +489,8 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             return;
         }
 
-        if (nodes.length + 2 > 10) {
+        const count = compareModels.length;
+        if (nodes.length + count > 10) {
             alert('Not enough room — maximum of 10 nodes reached.');
             return;
         }
@@ -503,32 +504,29 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const parentH = parent.height || NODE_HEIGHT;
         const GAP = 25;
 
-        // Position children side-by-side below the parent
-        const childIds = [generateId(), generateId()];
-        const children: ChatNode[] = compareModels.map((model, i) => {
-            const offsetX = i === 0
-                ? parent.x - NODE_WIDTH / 2 - GAP / 2
-                : parent.x + parentW / 2 + GAP / 2;
+        // Position children side-by-side below the parent, centered
+        const childIds = compareModels.map(() => generateId());
+        const totalWidth = count * NODE_WIDTH + (count - 1) * GAP;
+        const startX = parent.x + parentW / 2 - totalWidth / 2;
 
-            return {
-                id: childIds[i],
-                parentId: nodeId,
-                x: offsetX,
-                y: parent.y + parentH + 50,
-                model,
-                messages: [...history],
-                startIndex: history.length - 1, // Show only the user msg + upcoming response
-                isThinking: true,
-            };
-        });
+        const children: ChatNode[] = compareModels.map((model, i) => ({
+            id: childIds[i],
+            parentId: nodeId,
+            x: startX + i * (NODE_WIDTH + GAP),
+            y: parent.y + parentH + 50,
+            model,
+            messages: [...history],
+            startIndex: history.length - 1,
+            isThinking: true,
+        }));
 
-        // Add user message to parent + create both children
+        // Add user message to parent + create all children
         setNodes(prev => [
             ...prev.map(n => n.id === nodeId ? { ...n, messages: [...n.messages, userMsg] } : n),
             ...children,
         ]);
 
-        // Fire both API requests simultaneously
+        // Fire all API requests simultaneously
         const requests = compareModels.map(async (model, i) => {
             try {
                 const reply = await chatCompletion(provider, apiKey, model, history);
