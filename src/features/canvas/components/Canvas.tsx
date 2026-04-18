@@ -176,6 +176,17 @@ export const Canvas: React.FC<CanvasProps> = ({
                                             }
                                         };
 
+                                        // If child is positioned below the parent, force bottom→top
+                                        if (target.y >= source.y + sourceH) {
+                                            return {
+                                                startX: anchors.source.bottom.x,
+                                                startY: anchors.source.bottom.y,
+                                                endX: anchors.target.top.x,
+                                                endY: anchors.target.top.y,
+                                                orientation: 'vertical' as const,
+                                            };
+                                        }
+
                                         let minDistance = Infinity;
                                         let bestConnection = {
                                             startX: 0, startY: 0, endX: 0, endY: 0, orientation: 'horizontal' as 'horizontal' | 'vertical'

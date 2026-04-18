@@ -506,7 +506,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
         // Position children side-by-side below the parent, centered
         const childIds = compareModels.map(() => generateId());
-        const childWidth = count >= 3 ? 420 : NODE_WIDTH;
+        const childWidth = count >= 3 ? 480 : NODE_WIDTH;
         const totalWidth = count * childWidth + (count - 1) * GAP;
         const startX = parent.x + parentW / 2 - totalWidth / 2;
 
@@ -515,6 +515,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             parentId: nodeId,
             x: startX + i * (childWidth + GAP),
             y: parent.y + parentH + 50,
+            width: childWidth,
             model,
             messages: [...history],
             startIndex: history.length - 1,

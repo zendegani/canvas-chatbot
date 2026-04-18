@@ -97,7 +97,7 @@ export const Node: React.FC<NodeProps> = ({
       className={cn(
         "absolute flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0",
         siblingCount >= 3
-          ? "w-80 md:w-[420px]"
+          ? "w-80 md:w-[480px]"
           : extraModels.length >= 2
             ? "w-80 md:w-[680px]"
             : "w-80 md:w-[576px]"
