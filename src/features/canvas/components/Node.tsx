@@ -43,6 +43,7 @@ interface NodeProps {
   canMerge: boolean;
   onUpdateModel: (id: string, model: string) => void;
   onDragStart: (id: string, e: React.MouseEvent) => void;
+  onResizeStart: (id: string, e: React.MouseEvent) => void;
   isMobile: boolean;
   hasChildren: boolean;
   onResize: (id: string, width: number, height: number) => void;
@@ -60,6 +61,7 @@ export const Node: React.FC<NodeProps> = ({
   canMerge,
   onUpdateModel,
   onDragStart,
+  onResizeStart,
   isMobile,
   hasChildren,
   onResize,
@@ -100,17 +102,21 @@ export const Node: React.FC<NodeProps> = ({
       ref={cardRef}
       className={cn(
         "absolute flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0",
-        siblingCount >= 3
-          ? "w-80 md:w-[480px]"
-          : extraModels.length >= 2
-            ? "w-80 md:w-[680px]"
-            : "w-80 md:w-[576px]"
+        !node.width && (
+          siblingCount >= 3
+            ? "w-80 md:w-[480px]"
+            : extraModels.length >= 2
+              ? "w-80 md:w-[680px]"
+              : "w-80 md:w-[576px]"
+        )
       )}
       style={{
         left: node.x,
         top: node.y,
+        ...(node.width ? { width: node.width } : {}),
+        ...(node.height ? { height: node.height } : {}),
         zIndex: 10,
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' // Slightly softer shadow than before
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
       }}
     >
       {/* Header */}
@@ -189,7 +195,7 @@ export const Node: React.FC<NodeProps> = ({
       {/* Messages */}
       <div
         ref={scrollRef}
-        className="flex-1 max-h-72 overflow-y-auto p-4 space-y-4 text-sm bg-card/50"
+        className={cn("flex-1 overflow-y-auto p-4 space-y-4 text-sm bg-card/50 min-h-0", !node.height && "max-h-72")}
       >
         {(() => {
           const visibleMessages = node.messages.slice(node.startIndex || 0);
@@ -309,6 +315,18 @@ export const Node: React.FC<NodeProps> = ({
             <Send size={16} />
           </Button>
         </form>
+      </div>
+
+      {/* Resize Handle */}
+      <div
+        onMouseDown={(e) => onResizeStart(node.id, e)}
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize z-20"
+        title="Resize"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" className="text-muted-foreground/40">
+          <path d="M14 14L8 14L14 8Z" fill="currentColor" />
+          <path d="M14 14L11 14L14 11Z" fill="currentColor" opacity="0.6" />
+        </svg>
       </div>
     </Card>
   );

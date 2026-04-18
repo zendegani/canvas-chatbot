@@ -66,6 +66,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
     const [isPanning, setIsPanning] = useState(false);
     const [draggedNode, setDraggedNode] = useState<{ id: string; startX: number; startY: number; mouseX: number; mouseY: number } | null>(null);
+    const [resizingNode, setResizingNode] = useState<{ id: string; startW: number; startH: number; mouseX: number; mouseY: number } | null>(null);
 
     const onMouseDown = (e: React.MouseEvent) => {
         if (e.button !== 0 && e.button !== 1) return;
@@ -80,6 +81,12 @@ export const Canvas: React.FC<CanvasProps> = ({
                 x: prev.x + e.movementX,
                 y: prev.y + e.movementY
             }));
+        } else if (resizingNode) {
+            const dx = e.clientX - resizingNode.mouseX;
+            const dy = e.clientY - resizingNode.mouseY;
+            const newW = Math.max(320, resizingNode.startW + dx);
+            const newH = Math.max(200, resizingNode.startH + dy);
+            updateNodeSize(resizingNode.id, newW, newH);
         } else if (draggedNode) {
             const dx = e.clientX - draggedNode.mouseX;
             const dy = e.clientY - draggedNode.mouseY;
@@ -94,6 +101,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     const onMouseUp = () => {
         setIsPanning(false);
         setDraggedNode(null);
+        setResizingNode(null);
     };
 
     const handleNodeDragStart = (id: string, e: React.MouseEvent) => {
@@ -105,6 +113,19 @@ export const Canvas: React.FC<CanvasProps> = ({
             startY: node.y,
             mouseX: e.clientX,
             mouseY: e.clientY
+        });
+    };
+
+    const handleNodeResizeStart = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const node = nodes.find(n => n.id === id);
+        if (!node) return;
+        setResizingNode({
+            id,
+            startW: node.width || NODE_WIDTH,
+            startH: node.height || NODE_HEIGHT,
+            mouseX: e.clientX,
+            mouseY: e.clientY,
         });
     };
 
@@ -278,6 +299,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                                                 canMerge={canMerge}
                                                 onUpdateModel={(id, m) => setNodes(prev => prev.map(n => n.id === id ? { ...n, model: m } : n))}
                                                 onDragStart={handleNodeDragStart}
+                                                onResizeStart={handleNodeResizeStart}
                                                 isMobile={isMobile}
                                                 onResize={updateNodeSize}
                                                 siblingCount={siblingCount}

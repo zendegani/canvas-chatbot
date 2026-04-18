@@ -64,6 +64,7 @@ describe("Node", () => {
     canMerge: false,
     onUpdateModel: vi.fn(),
     onDragStart: vi.fn(),
+    onResizeStart: vi.fn(),
     isMobile: false,
     hasChildren: false,
     onResize: vi.fn(),
