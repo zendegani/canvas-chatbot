@@ -37,6 +37,7 @@ const App: React.FC = () => {
     handleBranch,
     handleSendMessage,
     handleCompareMessage,
+    handleMergeDuel,
     clearData,
     hasLoaded,
     refreshModels,
@@ -159,6 +160,7 @@ const App: React.FC = () => {
             handleBranch={handleBranch}
             handleSendMessage={handleSendMessage}
             handleCompareMessage={handleCompareMessage}
+            handleMergeDuel={handleMergeDuel}
             isMobile={isMobile}
             isDarkMode={isDarkMode}
             setIsDarkMode={setIsDarkMode}

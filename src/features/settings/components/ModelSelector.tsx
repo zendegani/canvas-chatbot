@@ -23,9 +23,10 @@ interface ModelSelectorProps {
   selectedModel: string;
   onSelect: (modelId: string) => void;
   isLoading: boolean;
+  compact?: boolean;
 }
 
-export const ModelSelector: React.FC<ModelSelectorProps> = ({ models, selectedModel, onSelect, isLoading }) => {
+export const ModelSelector: React.FC<ModelSelectorProps> = ({ models, selectedModel, onSelect, isLoading, compact }) => {
   const [open, setOpen] = useState(false);
 
   const activeModelName = useMemo(() => {
@@ -44,13 +45,16 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ models, selectedMo
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between h-9 text-xs font-medium"
+          className={cn(
+            "justify-between h-9 text-xs font-medium",
+            compact ? "w-[180px]" : "w-[200px]"
+          )}
         >
           <span className="truncate">{activeModelName || "Select model..."}</span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className={cn(compact ? "w-[200px]" : "w-[200px]", "p-0")}>
         <Command>
           <CommandInput placeholder="Search models..." className="h-9 text-xs" />
           <CommandList>

@@ -38,12 +38,16 @@ interface NodeProps {
   onDelete: (id: string) => void;
   onBranch: (id: string, direction: 'right' | 'bottom') => void;
   onSendMessage: (id: string, text: string) => void;
-  onCompareMessage: (id: string, text: string, models: [string, string]) => void;
+  onCompareMessage: (id: string, text: string, models: string[]) => void;
+  onMergeDuel: (parentId: string) => void;
+  canMerge: boolean;
   onUpdateModel: (id: string, model: string) => void;
   onDragStart: (id: string, e: React.MouseEvent) => void;
+  onResizeStart: (id: string, e: React.MouseEvent) => void;
   isMobile: boolean;
   hasChildren: boolean;
   onResize: (id: string, width: number, height: number) => void;
+  siblingCount?: number;
 }
 
 export const Node: React.FC<NodeProps> = ({
@@ -53,14 +57,18 @@ export const Node: React.FC<NodeProps> = ({
   onBranch,
   onSendMessage,
   onCompareMessage,
+  onMergeDuel,
+  canMerge,
   onUpdateModel,
   onDragStart,
+  onResizeStart,
   isMobile,
   hasChildren,
-  onResize
+  onResize,
+  siblingCount = 0,
 }) => {
   const [inputText, setInputText] = useState('');
-  const [secondModel, setSecondModel] = useState<string | null>(null);
+  const [extraModels, setExtraModels] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -80,9 +88,9 @@ export const Node: React.FC<NodeProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || node.isThinking) return;
-    if (secondModel) {
-      onCompareMessage(node.id, inputText, [node.model, secondModel]);
-      setSecondModel(null);
+    if (extraModels.length > 0) {
+      onCompareMessage(node.id, inputText, [node.model, ...extraModels]);
+      setExtraModels([]);
     } else {
       onSendMessage(node.id, inputText);
     }
@@ -92,12 +100,23 @@ export const Node: React.FC<NodeProps> = ({
   return (
     <Card
       ref={cardRef}
-      className="absolute w-80 md:w-[576px] flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0"
+      className={cn(
+        "absolute flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0",
+        !node.userResized && (
+          siblingCount >= 3
+            ? "w-80 md:w-[480px]"
+            : extraModels.length >= 2
+              ? "w-80 md:w-[680px]"
+              : "w-80 md:w-[576px]"
+        )
+      )}
       style={{
         left: node.x,
         top: node.y,
+        ...(node.userResized && node.width ? { width: node.width } : {}),
+        ...(node.userResized && node.height ? { height: node.height } : {}),
         zIndex: 10,
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' // Slightly softer shadow than before
+        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
       }}
     >
       {/* Header */}
@@ -112,42 +131,71 @@ export const Node: React.FC<NodeProps> = ({
             selectedModel={node.model}
             onSelect={(m) => onUpdateModel(node.id, m)}
             isLoading={models.length === 0}
+            compact={extraModels.length >= 2}
           />
-          {secondModel && (
+          {extraModels.map((m, i) => (
             <ModelSelector
+              key={i}
               models={models}
-              selectedModel={secondModel}
-              onSelect={setSecondModel}
+              selectedModel={m}
+              onSelect={(val) => setExtraModels(prev => prev.map((v, j) => j === i ? val : v))}
               isLoading={models.length === 0}
+              compact={extraModels.length >= 2}
             />
+          ))}
+          {extraModels.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setExtraModels(prev => prev.slice(0, -1))}
+              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+              title="Remove last comparison model"
+            >
+              <Minus size={14} />
+            </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSecondModel(prev => prev ? null : (models[0]?.id || 'google/gemini-pro'))}
-            className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
-            title={secondModel ? 'Remove comparison model' : 'Add model to compare'}
-          >
-            {secondModel ? <Minus size={14} /> : <Plus size={14} />}
-          </Button>
+          {extraModels.length < 2 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setExtraModels(prev => [...prev, models[0]?.id || 'google/gemini-pro'])}
+              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
+              title="Add model to compare"
+            >
+              <Plus size={14} />
+            </Button>
+          )}
         </div>
-        {!hasChildren && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(node.id)}
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-            title="Delete this node"
-          >
-            <X size={16} />
-          </Button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {canMerge && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onMergeDuel(node.id)}
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+              title="Merge & summarize duel responses"
+            >
+              <img src="/merge-arrow-icon.png" alt="Merge" className="h-4 w-4 dark:invert opacity-60" />
+            </Button>
+          )}
+          {!hasChildren && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(node.id)}
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              title="Delete this node"
+            >
+              <X size={16} />
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Messages */}
       <div
         ref={scrollRef}
-        className="flex-1 max-h-72 overflow-y-auto p-4 space-y-4 text-sm bg-card/50"
+        className={cn("flex-1 overflow-y-auto p-4 space-y-4 text-sm bg-card/50 min-h-0", !node.userResized && "max-h-72")}
       >
         {(() => {
           const visibleMessages = node.messages.slice(node.startIndex || 0);
@@ -267,6 +315,18 @@ export const Node: React.FC<NodeProps> = ({
             <Send size={16} />
           </Button>
         </form>
+      </div>
+
+      {/* Resize Handle */}
+      <div
+        onMouseDown={(e) => onResizeStart(node.id, e)}
+        className="absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize z-20"
+        title="Resize"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" className="text-muted-foreground/40">
+          <path d="M14 14L8 14L14 8Z" fill="currentColor" />
+          <path d="M14 14L11 14L14 11Z" fill="currentColor" opacity="0.6" />
+        </svg>
       </div>
     </Card>
   );

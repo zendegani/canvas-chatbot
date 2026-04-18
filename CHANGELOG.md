@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0-beta] - 2026-04-18
+
+### Added
+
+- **Multi-Model Duel**: Expanded the split-test comparison feature to allow 'dueling' 2 or 3 models simultaneously, breaking the previous two-model limit.
+- **Merge Duel Functionality**: Added the ability to automatically synthesize and summarize responses from multiple child models into a single, unified node to easily evaluate differences and agreements.
+- **Dynamic Node Layout**: The canvas now intelligently auto-adjusts widths, spacing, and connection lines to seamlessly accommodate any number of side-by-side models.
+
+### Changed
+
+- Updated `tsconfig.json` mappings for cleaner feature-based module resolution (`@/*`).
+
+---
+
 ## [0.2.0-beta] - 2026-03-21
 
 ### Added

@@ -102,7 +102,8 @@ export interface UseCanvasReturn {
     addInitialNode: () => void;
     handleBranch: (parentId: string, direction?: 'right' | 'bottom') => void;
     handleSendMessage: (nodeId: string, text: string) => Promise<void>;
-    handleCompareMessage: (nodeId: string, text: string, compareModels: [string, string]) => Promise<void>;
+    handleCompareMessage: (nodeId: string, text: string, compareModels: string[]) => Promise<void>;
+    handleMergeDuel: (parentId: string) => Promise<void>;
     clearData: (setView: (view: ViewState) => void) => void;
     hasLoaded: boolean;
     refreshModels: () => void;
@@ -480,7 +481,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     };
 
-    const handleCompareMessage = async (nodeId: string, text: string, compareModels: [string, string]) => {
+    const handleCompareMessage = async (nodeId: string, text: string, compareModels: string[]) => {
         const provider = PROVIDERS[selectedProvider];
         const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
         if (!apiKey) {
@@ -489,7 +490,8 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             return;
         }
 
-        if (nodes.length + 2 > 10) {
+        const count = compareModels.length;
+        if (nodes.length + count > 10) {
             alert('Not enough room — maximum of 10 nodes reached.');
             return;
         }
@@ -500,34 +502,34 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
         const history = [...parent.messages, userMsg];
         const parentW = parent.width || NODE_WIDTH;
+        const parentH = parent.height || NODE_HEIGHT;
         const GAP = 25;
 
-        // Position children side-by-side above the parent's top-center
-        const childIds = [generateId(), generateId()];
-        const children: ChatNode[] = compareModels.map((model, i) => {
-            const offsetX = i === 0
-                ? parent.x - NODE_WIDTH / 2 - GAP / 2
-                : parent.x + parentW / 2 + GAP / 2;
+        // Position children side-by-side below the parent, centered
+        const childIds = compareModels.map(() => generateId());
+        const childWidth = count >= 3 ? 480 : NODE_WIDTH;
+        const totalWidth = count * childWidth + (count - 1) * GAP;
+        const startX = parent.x + parentW / 2 - totalWidth / 2;
 
-            return {
-                id: childIds[i],
-                parentId: nodeId,
-                x: offsetX,
-                y: parent.y - NODE_HEIGHT - 50,
-                model,
-                messages: [...history],
-                startIndex: history.length - 1, // Show only the user msg + upcoming response
-                isThinking: true,
-            };
-        });
+        const children: ChatNode[] = compareModels.map((model, i) => ({
+            id: childIds[i],
+            parentId: nodeId,
+            x: startX + i * (childWidth + GAP),
+            y: parent.y + parentH + 50,
+            width: childWidth,
+            model,
+            messages: [...history],
+            startIndex: history.length - 1,
+            isThinking: true,
+        }));
 
-        // Add user message to parent + create both children
+        // Add user message to parent + create all children
         setNodes(prev => [
             ...prev.map(n => n.id === nodeId ? { ...n, messages: [...n.messages, userMsg] } : n),
             ...children,
         ]);
 
-        // Fire both API requests simultaneously
+        // Fire all API requests simultaneously
         const requests = compareModels.map(async (model, i) => {
             try {
                 const reply = await chatCompletion(provider, apiKey, model, history);
@@ -544,6 +546,81 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         });
 
         await Promise.allSettled(requests);
+    };
+
+    const handleMergeDuel = async (parentId: string) => {
+        const provider = PROVIDERS[selectedProvider];
+        const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
+        if (!apiKey) {
+            alert(`Please set your ${provider.name} API Key in Settings first.`);
+            setIsSettingsOpen(true);
+            return;
+        }
+
+        const parent = nodes.find(n => n.id === parentId);
+        if (!parent) return;
+
+        const children = nodes.filter(n => n.parentId === parentId);
+        if (children.length < 2) return;
+
+        // Check if all children have at least one assistant response
+        const childResponses = children.map(child => {
+            const lastAssistant = [...child.messages].reverse().find(m => m.role === 'assistant');
+            return { model: child.model, response: lastAssistant?.content };
+        }).filter(c => c.response);
+
+        if (childResponses.length < 2) {
+            alert('Wait for at least 2 models to respond before merging.');
+            return;
+        }
+
+        if (nodes.length + 1 > 10) {
+            alert('Not enough room — maximum of 10 nodes reached.');
+            return;
+        }
+
+        // Build the merge prompt
+        const summaryPrompt = childResponses.map((c, i) =>
+            `**Model ${i + 1} (${c.model}):**\n${c.response}`
+        ).join('\n\n---\n\n');
+
+        const userContent = `Compare and summarize the following responses from ${childResponses.length} different models to the question: "${parent.messages[parent.messages.length - 1]?.content || 'the conversation'}"\n\n${summaryPrompt}\n\nProvide a concise comparison highlighting key differences, agreements, and which response is most helpful or accurate.`;
+
+        const mergeId = generateId();
+
+        // Position merge node centered below all children
+        const minX = Math.min(...children.map(c => c.x));
+        const maxX = Math.max(...children.map(c => c.x + (c.width || NODE_WIDTH)));
+        const maxY = Math.max(...children.map(c => c.y + (c.height || NODE_HEIGHT)));
+        const mergeX = (minX + maxX) / 2 - NODE_WIDTH / 2;
+        const mergeY = maxY + 50;
+
+        const mergeNode: ChatNode = {
+            id: mergeId,
+            parentId: children[0].id,
+            mergeParentIds: children.map(c => c.id),
+            x: mergeX,
+            y: mergeY,
+            model: parent.model,
+            messages: [{ role: 'user', content: userContent }],
+            startIndex: 0,
+            isThinking: true,
+        };
+
+        setNodes(prev => [...prev, mergeNode]);
+
+        try {
+            const reply = await chatCompletion(provider, apiKey, parent.model, [{ role: 'user', content: userContent }]);
+            const assistantMsg: Message = { role: 'assistant', content: reply };
+            setNodes(prev => prev.map(n =>
+                n.id === mergeId ? { ...n, messages: [...n.messages, assistantMsg], isThinking: false } : n
+            ));
+        } catch (error: any) {
+            const errorMsg: Message = { role: 'assistant', content: `Error: ${error.message}` };
+            setNodes(prev => prev.map(n =>
+                n.id === mergeId ? { ...n, messages: [...n.messages, errorMsg], isThinking: false } : n
+            ));
+        }
     };
 
     const clearData = (setView: (view: ViewState) => void) => {
@@ -585,6 +662,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         handleBranch,
         handleSendMessage,
         handleCompareMessage,
+        handleMergeDuel,
         clearData,
         hasLoaded,
         refreshModels,

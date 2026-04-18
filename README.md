@@ -16,7 +16,7 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
 
   ![Node Branching](./public/images/branching-light.png)
 
-- **Model Duel**: Pick *two* models at once to split-test a prompt side-by-side.
+- **Model Duel**: Pick *multiple* models at once to split-test a prompt side-by-side, and visually merge their results together.
 
   ![Duel Mode](./public/images/Duel-light.png)
 

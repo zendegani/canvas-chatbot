@@ -21,9 +21,11 @@ export const ConnectionLine: React.FC<ConnectionLineProps> = ({ startX, startY, 
     cp2y = endY;
   } else {
     const midY = (startY + endY) / 2;
-    cp1x = startX;
+    // Add slight horizontal curve when nearly vertical to avoid degenerate bezier
+    const curveOffset = Math.abs(endX - startX) < 2 ? 20 : 0;
+    cp1x = startX + curveOffset;
     cp1y = midY;
-    cp2x = endX;
+    cp2x = endX - curveOffset;
     cp2y = midY;
   }
 
