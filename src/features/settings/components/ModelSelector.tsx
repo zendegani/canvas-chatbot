@@ -47,7 +47,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ models, selectedMo
           aria-expanded={open}
           className={cn(
             "justify-between h-9 text-xs font-medium",
-            compact ? "w-[140px]" : "w-[200px]"
+            compact ? "w-[180px]" : "w-[200px]"
           )}
         >
           <span className="truncate">{activeModelName || "Select model..."}</span>
