@@ -68,6 +68,11 @@ export const Canvas: React.FC<CanvasProps> = ({
     const [draggedNode, setDraggedNode] = useState<{ id: string; startX: number; startY: number; mouseX: number; mouseY: number } | null>(null);
     const [resizingNode, setResizingNode] = useState<{ id: string; startW: number; startH: number; mouseX: number; mouseY: number } | null>(null);
 
+    // Reset pan when switching sessions
+    React.useEffect(() => {
+        setPanOffset({ x: 0, y: 0 });
+    }, [activeSessionId]);
+
     const onMouseDown = (e: React.MouseEvent) => {
         if (e.button !== 0 && e.button !== 1) return;
         if (e.target === canvasRef.current) {
