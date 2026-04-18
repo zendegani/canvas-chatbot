@@ -102,7 +102,7 @@ export const Node: React.FC<NodeProps> = ({
       ref={cardRef}
       className={cn(
         "absolute flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0",
-        !node.width && (
+        !node.userResized && (
           siblingCount >= 3
             ? "w-80 md:w-[480px]"
             : extraModels.length >= 2
@@ -113,8 +113,8 @@ export const Node: React.FC<NodeProps> = ({
       style={{
         left: node.x,
         top: node.y,
-        ...(node.width ? { width: node.width } : {}),
-        ...(node.height ? { height: node.height } : {}),
+        ...(node.userResized && node.width ? { width: node.width } : {}),
+        ...(node.userResized && node.height ? { height: node.height } : {}),
         zIndex: 10,
         boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
       }}
@@ -195,7 +195,7 @@ export const Node: React.FC<NodeProps> = ({
       {/* Messages */}
       <div
         ref={scrollRef}
-        className={cn("flex-1 overflow-y-auto p-4 space-y-4 text-sm bg-card/50 min-h-0", !node.height && "max-h-72")}
+        className={cn("flex-1 overflow-y-auto p-4 space-y-4 text-sm bg-card/50 min-h-0", !node.userResized && "max-h-72")}
       >
         {(() => {
           const visibleMessages = node.messages.slice(node.startIndex || 0);

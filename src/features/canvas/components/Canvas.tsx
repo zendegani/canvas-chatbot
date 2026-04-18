@@ -91,7 +91,9 @@ export const Canvas: React.FC<CanvasProps> = ({
             const dy = e.clientY - resizingNode.mouseY;
             const newW = Math.max(320, resizingNode.startW + dx);
             const newH = Math.max(200, resizingNode.startH + dy);
-            updateNodeSize(resizingNode.id, newW, newH);
+            setNodes(prev => prev.map(n =>
+                n.id === resizingNode.id ? { ...n, width: newW, height: newH, userResized: true } : n
+            ));
         } else if (draggedNode) {
             const dx = e.clientX - draggedNode.mouseX;
             const dy = e.clientY - draggedNode.mouseY;

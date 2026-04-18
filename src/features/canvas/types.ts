@@ -14,6 +14,7 @@ export interface ChatNode {
     startIndex?: number; // Index in messages array where this branch's own messages start
     width?: number;
     height?: number;
+    userResized?: boolean;
     mergeParentIds?: string[]; // IDs of nodes that merge into this node (for duel summaries)
 }
 
