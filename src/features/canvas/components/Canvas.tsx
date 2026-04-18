@@ -222,6 +222,9 @@ export const Canvas: React.FC<CanvasProps> = ({
                                 })}
                                 {nodes.map(node => {
                                     const hasChildren = nodes.some(n => n.parentId === node.id);
+                                    const siblingCount = node.parentId
+                                        ? nodes.filter(n => n.parentId === node.parentId).length
+                                        : 0;
                                     return (
                                         <div key={node.id} className="pointer-events-auto">
                                             <Node
@@ -236,6 +239,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                                                 onDragStart={handleNodeDragStart}
                                                 isMobile={isMobile}
                                                 onResize={updateNodeSize}
+                                                siblingCount={siblingCount}
                                             />
                                         </div>
                                     );

@@ -44,6 +44,7 @@ interface NodeProps {
   isMobile: boolean;
   hasChildren: boolean;
   onResize: (id: string, width: number, height: number) => void;
+  siblingCount?: number;
 }
 
 export const Node: React.FC<NodeProps> = ({
@@ -57,7 +58,8 @@ export const Node: React.FC<NodeProps> = ({
   onDragStart,
   isMobile,
   hasChildren,
-  onResize
+  onResize,
+  siblingCount = 0,
 }) => {
   const [inputText, setInputText] = useState('');
   const [extraModels, setExtraModels] = useState<string[]>([]);
@@ -92,7 +94,14 @@ export const Node: React.FC<NodeProps> = ({
   return (
     <Card
       ref={cardRef}
-      className="absolute w-80 md:w-[576px] flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0"
+      className={cn(
+        "absolute flex flex-col shadow-2xl border-primary/20 hover:border-primary/50 py-0 gap-0",
+        siblingCount >= 3
+          ? "w-80 md:w-[420px]"
+          : extraModels.length >= 2
+            ? "w-80 md:w-[680px]"
+            : "w-80 md:w-[576px]"
+      )}
       style={{
         left: node.x,
         top: node.y,
@@ -112,6 +121,7 @@ export const Node: React.FC<NodeProps> = ({
             selectedModel={node.model}
             onSelect={(m) => onUpdateModel(node.id, m)}
             isLoading={models.length === 0}
+            compact={extraModels.length >= 2}
           />
           {extraModels.map((m, i) => (
             <ModelSelector
@@ -120,6 +130,7 @@ export const Node: React.FC<NodeProps> = ({
               selectedModel={m}
               onSelect={(val) => setExtraModels(prev => prev.map((v, j) => j === i ? val : v))}
               isLoading={models.length === 0}
+              compact={extraModels.length >= 2}
             />
           ))}
           {extraModels.length > 0 && (

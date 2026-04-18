@@ -506,13 +506,14 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
         // Position children side-by-side below the parent, centered
         const childIds = compareModels.map(() => generateId());
-        const totalWidth = count * NODE_WIDTH + (count - 1) * GAP;
+        const childWidth = count >= 3 ? 420 : NODE_WIDTH;
+        const totalWidth = count * childWidth + (count - 1) * GAP;
         const startX = parent.x + parentW / 2 - totalWidth / 2;
 
         const children: ChatNode[] = compareModels.map((model, i) => ({
             id: childIds[i],
             parentId: nodeId,
-            x: startX + i * (NODE_WIDTH + GAP),
+            x: startX + i * (childWidth + GAP),
             y: parent.y + parentH + 50,
             model,
             messages: [...history],
