@@ -115,7 +115,11 @@ describe("Node", () => {
   });
 
   it("shows loading spinner when isThinking", () => {
-    const node: ChatNode = { ...baseNode, isThinking: true };
+    const node: ChatNode = { 
+      ...baseNode, 
+      isThinking: true,
+      messages: [{ role: "assistant", content: "" }]
+    };
     render(<Node {...defaultProps} node={node} />);
 
     // The Loader2 icon from lucide is rendered with animate-spin

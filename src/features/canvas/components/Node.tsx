@@ -218,48 +218,47 @@ export const Node: React.FC<NodeProps> = ({
                 {msg.role === 'user' ? (
                   <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                 ) : (
-                  <ErrorBoundary>
-                    <div className="prose prose-invert prose-xs max-w-none dark:prose-invert">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm, remarkMath]}
-                        rehypePlugins={[rehypeKatex]}
-                        components={{
-                          code({ node, className, children, style, ref, ...props }) {
-                            const match = /language-(\w+)/.exec(className || '')
-                            return match ? (
-                              <SyntaxHighlighter
-                                {...props}
-                                style={vscDarkPlus}
-                                language={match[1]}
-                                PreTag="div"
-                                className="rounded-md !my-0"
-                              >
-                                {String(children).replace(/\n$/, '')}
-                              </SyntaxHighlighter>
-                            ) : (
-                              <code {...props} className={cn("bg-muted px-1 py-0.5 rounded font-mono text-xs", className)}>
-                                {children}
-                              </code>
-                            )
-                          }
-                        }}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
+                  msg.content ? (
+                    <ErrorBoundary>
+                      <div className="prose prose-invert prose-xs max-w-none dark:prose-invert">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm, remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                          components={{
+                            code({ node, className, children, style, ref, ...props }) {
+                              const match = /language-(\w+)/.exec(className || '')
+                              return match ? (
+                                <SyntaxHighlighter
+                                  {...props}
+                                  style={vscDarkPlus}
+                                  language={match[1]}
+                                  PreTag="div"
+                                  className="rounded-md !my-0"
+                                >
+                                  {String(children).replace(/\n$/, '')}
+                                </SyntaxHighlighter>
+                              ) : (
+                                <code {...props} className={cn("bg-muted px-1 py-0.5 rounded font-mono text-xs", className)}>
+                                  {children}
+                                </code>
+                              )
+                            }
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    </ErrorBoundary>
+                  ) : (
+                    <div className="flex items-center h-5">
+                      <Loader2 size={16} className="animate-spin text-muted-foreground" />
                     </div>
-                  </ErrorBoundary>
+                  )
                 )}
               </div>
             </div>
           ));
         })()}
-        {node.isThinking && (
-          <div className="flex items-start">
-            <div className="bg-muted/50 px-3 py-2 rounded-xl rounded-tl-none border">
-              <Loader2 size={16} className="animate-spin text-muted-foreground" />
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Branching Buttons */}
