@@ -168,8 +168,8 @@ export async function fetchModels(
 }
 
 /**
- * Sends a chat completion request using the OpenAI-compatible format.
- * Works with OpenRouter, OpenAI, and Google AI (via compatibility layer).
+ * Sends a chat completion request via the server-side AI SDK proxy.
+ * The server streams text back; we collect all chunks and return the full string.
  */
 export async function chatCompletion(
     provider: ProviderConfig,
@@ -181,37 +181,35 @@ export async function chatCompletion(
         throw new Error(`API Key is missing. Please add your ${provider.name} API Key in settings.`);
     }
 
-    const headers: Record<string, string> = {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-    };
-
-    // OpenRouter requires these extra headers
-    if (provider.id === 'openrouter') {
-        headers['HTTP-Referer'] = window.location.origin;
-        headers['X-Title'] = 'Canvas AI';
-    }
-
-    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
+    const response = await fetch('/api/chat', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+            provider: provider.id,
+            apiKey,
             model: modelId,
-            messages: messages.map(m => ({
-                role: m.role,
-                content: m.content,
-            })),
+            messages: messages.map(m => ({ role: m.role, content: m.content })),
         }),
     });
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-            (errorData as { error?: { message?: string } }).error?.message
-            || `API Error: ${response.statusText}`
-        );
+        const errorText = await response.text().catch(() => '');
+        throw new Error(errorText || `API Error: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return (data as { choices?: { message?: { content?: string } }[] }).choices?.[0]?.message?.content || '';
+    // Read the text stream and collect all chunks
+    const reader = response.body?.getReader();
+    if (!reader) {
+        throw new Error('No response body');
+    }
+
+    const decoder = new TextDecoder();
+    let text = '';
+    for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        text += decoder.decode(value, { stream: true });
+    }
+
+    return text;
 }

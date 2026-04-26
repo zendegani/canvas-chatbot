@@ -194,6 +194,24 @@ describe('chatService', () => {
     });
 
     describe('chatCompletion', () => {
+        // Helper to create a mock ReadableStream from text
+        function mockStreamResponse(text: string, ok = true, status = 200) {
+            const encoder = new TextEncoder();
+            const stream = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(encoder.encode(text));
+                    controller.close();
+                },
+            });
+            global.fetch = vi.fn().mockResolvedValue({
+                ok,
+                status,
+                statusText: ok ? 'OK' : 'Error',
+                body: stream,
+                text: () => Promise.resolve(text),
+            });
+        }
+
         it('throws error when no API key is provided', async () => {
             const provider = PROVIDERS.openrouter;
             await expect(chatCompletion(provider, '', 'model-id', [])).rejects.toThrow(
@@ -201,11 +219,8 @@ describe('chatService', () => {
             );
         });
 
-        it('returns assistant message on success', async () => {
-            const mockResponse = {
-                choices: [{ message: { content: 'Hello! How can I help you?' } }],
-            };
-            mockFetch(mockResponse);
+        it('posts to /api/chat with correct payload', async () => {
+            mockStreamResponse('Hello! How can I help you?');
 
             const provider = PROVIDERS.openai;
             const result = await chatCompletion(provider, 'valid-key', 'gpt-5.4-mini', [
@@ -214,52 +229,36 @@ describe('chatService', () => {
 
             expect(result).toBe('Hello! How can I help you?');
             expect(global.fetch).toHaveBeenCalledWith(
-                `${provider.baseUrl}/chat/completions`,
+                '/api/chat',
                 expect.objectContaining({
                     method: 'POST',
-                    headers: expect.objectContaining({
-                        Authorization: 'Bearer valid-key',
-                        'Content-Type': 'application/json',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        provider: 'openai',
+                        apiKey: 'valid-key',
+                        model: 'gpt-5.4-mini',
+                        messages: [{ role: 'user', content: 'Hello' }],
                     }),
                 })
             );
         });
 
-        it('includes OpenRouter-specific headers for openrouter provider', async () => {
-            mockFetch({ choices: [{ message: { content: 'Hi' } }] });
+        it('sends provider id in payload for all providers', async () => {
+            mockStreamResponse('Hi');
 
             const provider = PROVIDERS.openrouter;
             await chatCompletion(provider, 'valid-key', 'model-id', [
                 { role: 'user', content: 'Hello' },
             ]);
 
-            expect(global.fetch).toHaveBeenCalledWith(
-                expect.any(String),
-                expect.objectContaining({
-                    headers: expect.objectContaining({
-                        'HTTP-Referer': expect.any(String),
-                        'X-Title': 'Canvas AI',
-                    }),
-                })
-            );
-        });
-
-        it('does NOT include OpenRouter-specific headers for other providers', async () => {
-            mockFetch({ choices: [{ message: { content: 'Hi' } }] });
-
-            const provider = PROVIDERS.google;
-            await chatCompletion(provider, 'valid-key', 'model-id', [
-                { role: 'user', content: 'Hello' },
-            ]);
-
-            const callArgs = vi.mocked(global.fetch).mock.calls[0][1] as RequestInit;
-            const headers = callArgs.headers as Record<string, string>;
-            expect(headers['HTTP-Referer']).toBeUndefined();
-            expect(headers['X-Title']).toBeUndefined();
+            const callArgs = vi.mocked(global.fetch).mock.calls[0];
+            const body = JSON.parse(callArgs[1]?.body as string);
+            expect(body.provider).toBe('openrouter');
+            expect(body.apiKey).toBe('valid-key');
         });
 
         it('throws error on API failure', async () => {
-            mockFetch({ error: { message: 'Rate limit exceeded' } }, false, 429);
+            mockStreamResponse('Rate limit exceeded', false, 429);
 
             const provider = PROVIDERS.openai;
             await expect(
@@ -267,15 +266,30 @@ describe('chatService', () => {
             ).rejects.toThrow('Rate limit exceeded');
         });
 
-        it('returns empty string when no choices in response', async () => {
-            mockFetch({ choices: [] });
+        it('collects multi-chunk stream into full text', async () => {
+            const encoder = new TextEncoder();
+            const stream = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(encoder.encode('Hello'));
+                    controller.enqueue(encoder.encode(' World'));
+                    controller.enqueue(encoder.encode('!'));
+                    controller.close();
+                },
+            });
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                status: 200,
+                statusText: 'OK',
+                body: stream,
+            });
 
             const provider = PROVIDERS.openai;
             const result = await chatCompletion(provider, 'valid-key', 'model-id', [
                 { role: 'user', content: 'Hello' },
             ]);
 
-            expect(result).toBe('');
+            expect(result).toBe('Hello World!');
         });
     });
+
 });
