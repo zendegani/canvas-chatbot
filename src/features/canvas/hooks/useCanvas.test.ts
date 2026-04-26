@@ -10,7 +10,13 @@ vi.mock('../services/chatService', () => ({
     fetchModels: vi.fn().mockResolvedValue([
         { id: 'google/gemma-3-27b-it:free', name: 'Google: Gemma 3 27B' },
     ]),
-    chatCompletion: (...args: unknown[]) => mockChatCompletion(...args),
+    chatCompletion: (...args: unknown[]) => {
+        const onChunk = args[4] as ((text: string) => void) | undefined;
+        return mockChatCompletion(...args).then((text: string) => {
+            onChunk?.(text);
+            return text;
+        });
+    },
 }));
 
 describe('useCanvas', () => {

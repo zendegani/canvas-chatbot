@@ -290,6 +290,33 @@ describe('chatService', () => {
 
             expect(result).toBe('Hello World!');
         });
+
+        it('calls onChunk with accumulated text on each stream chunk', async () => {
+            const encoder = new TextEncoder();
+            const stream = new ReadableStream({
+                start(controller) {
+                    controller.enqueue(encoder.encode('Hello'));
+                    controller.enqueue(encoder.encode(' World'));
+                    controller.close();
+                },
+            });
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                status: 200,
+                statusText: 'OK',
+                body: stream,
+            });
+
+            const chunks: string[] = [];
+            const provider = PROVIDERS.openai;
+            await chatCompletion(
+                provider, 'valid-key', 'model-id',
+                [{ role: 'user', content: 'Hi' }],
+                (accumulated) => chunks.push(accumulated),
+            );
+
+            expect(chunks).toEqual(['Hello', 'Hello World']);
+        });
     });
 
 });

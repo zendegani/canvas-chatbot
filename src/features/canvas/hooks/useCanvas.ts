@@ -462,22 +462,37 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
 
         const userMsg: Message = { role: 'user', content: text };
+        const node = nodes.find(n => n.id === nodeId);
+        const history = [...(node?.messages || []), userMsg];
+
+        // Add user message + empty assistant placeholder for streaming
         setNodes(prev => prev.map(n =>
-            n.id === nodeId ? { ...n, messages: [...n.messages, userMsg], isThinking: true } : n
+            n.id === nodeId
+                ? { ...n, messages: [...n.messages, userMsg, { role: 'assistant' as const, content: '' }], isThinking: true }
+                : n
         ));
 
         try {
-            const node = nodes.find(n => n.id === nodeId);
-            const history = [...(node?.messages || []), userMsg];
-            const reply = await chatCompletion(provider, apiKey, node?.model || provider.defaultModel.id, history);
-
-            const assistantMsg: Message = { role: 'assistant', content: reply };
+            await chatCompletion(provider, apiKey, node?.model || provider.defaultModel.id, history, (accumulated) => {
+                setNodes(prev => prev.map(n => {
+                    if (n.id !== nodeId) return n;
+                    const msgs = [...n.messages];
+                    msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
+                    return { ...n, messages: msgs };
+                }));
+            });
             setNodes(prev => prev.map(n =>
-                n.id === nodeId ? { ...n, messages: [...n.messages, assistantMsg], isThinking: false } : n
+                n.id === nodeId ? { ...n, isThinking: false } : n
             ));
         } catch (error: any) {
+            setNodes(prev => prev.map(n => {
+                if (n.id !== nodeId) return n;
+                const msgs = [...n.messages];
+                const last = msgs[msgs.length - 1];
+                if (last?.role === 'assistant' && !last.content) msgs.pop();
+                return { ...n, messages: msgs, isThinking: false };
+            }));
             alert(`Error: ${error.message}`);
-            setNodes(prev => prev.map(n => n.id === nodeId ? { ...n, isThinking: false } : n));
         }
     };
 
@@ -511,6 +526,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const totalWidth = count * childWidth + (count - 1) * GAP;
         const startX = parent.x + parentW / 2 - totalWidth / 2;
 
+        // Include empty assistant placeholder in each child for streaming
         const children: ChatNode[] = compareModels.map((model, i) => ({
             id: childIds[i],
             parentId: nodeId,
@@ -518,7 +534,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             y: parent.y + parentH + 50,
             width: childWidth,
             model,
-            messages: [...history],
+            messages: [...history, { role: 'assistant' as const, content: '' }],
             startIndex: history.length - 1,
             isThinking: true,
         }));
@@ -529,19 +545,27 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             ...children,
         ]);
 
-        // Fire all API requests simultaneously
+        // Fire all API requests simultaneously with streaming
         const requests = compareModels.map(async (model, i) => {
             try {
-                const reply = await chatCompletion(provider, apiKey, model, history);
-                const assistantMsg: Message = { role: 'assistant', content: reply };
+                await chatCompletion(provider, apiKey, model, history, (accumulated) => {
+                    setNodes(prev => prev.map(n => {
+                        if (n.id !== childIds[i]) return n;
+                        const msgs = [...n.messages];
+                        msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
+                        return { ...n, messages: msgs };
+                    }));
+                });
                 setNodes(prev => prev.map(n =>
-                    n.id === childIds[i] ? { ...n, messages: [...n.messages, assistantMsg], isThinking: false } : n
+                    n.id === childIds[i] ? { ...n, isThinking: false } : n
                 ));
             } catch (error: any) {
-                const errorMsg: Message = { role: 'assistant', content: `Error: ${error.message}` };
-                setNodes(prev => prev.map(n =>
-                    n.id === childIds[i] ? { ...n, messages: [...n.messages, errorMsg], isThinking: false } : n
-                ));
+                setNodes(prev => prev.map(n => {
+                    if (n.id !== childIds[i]) return n;
+                    const msgs = [...n.messages];
+                    msgs[msgs.length - 1] = { role: 'assistant', content: `Error: ${error.message}` };
+                    return { ...n, messages: msgs, isThinking: false };
+                }));
             }
         });
 
@@ -602,7 +626,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             x: mergeX,
             y: mergeY,
             model: parent.model,
-            messages: [{ role: 'user', content: userContent }],
+            messages: [
+                { role: 'user', content: userContent },
+                { role: 'assistant', content: '' },
+            ],
             startIndex: 0,
             isThinking: true,
         };
@@ -610,16 +637,24 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         setNodes(prev => [...prev, mergeNode]);
 
         try {
-            const reply = await chatCompletion(provider, apiKey, parent.model, [{ role: 'user', content: userContent }]);
-            const assistantMsg: Message = { role: 'assistant', content: reply };
+            await chatCompletion(provider, apiKey, parent.model, [{ role: 'user', content: userContent }], (accumulated) => {
+                setNodes(prev => prev.map(n => {
+                    if (n.id !== mergeId) return n;
+                    const msgs = [...n.messages];
+                    msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
+                    return { ...n, messages: msgs };
+                }));
+            });
             setNodes(prev => prev.map(n =>
-                n.id === mergeId ? { ...n, messages: [...n.messages, assistantMsg], isThinking: false } : n
+                n.id === mergeId ? { ...n, isThinking: false } : n
             ));
         } catch (error: any) {
-            const errorMsg: Message = { role: 'assistant', content: `Error: ${error.message}` };
-            setNodes(prev => prev.map(n =>
-                n.id === mergeId ? { ...n, messages: [...n.messages, errorMsg], isThinking: false } : n
-            ));
+            setNodes(prev => prev.map(n => {
+                if (n.id !== mergeId) return n;
+                const msgs = [...n.messages];
+                msgs[msgs.length - 1] = { role: 'assistant', content: `Error: ${error.message}` };
+                return { ...n, messages: msgs, isThinking: false };
+            }));
         }
     };
 
