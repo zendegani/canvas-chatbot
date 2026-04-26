@@ -170,12 +170,14 @@ export async function fetchModels(
 /**
  * Sends a chat completion request via the server-side AI SDK proxy.
  * The server streams text back; we collect all chunks and return the full string.
+ * If `onChunk` is provided, it is called with the accumulated text after each chunk.
  */
 export async function chatCompletion(
     provider: ProviderConfig,
     apiKey: string,
     modelId: string,
     messages: Message[],
+    onChunk?: (accumulatedText: string) => void,
 ): Promise<string> {
     if (!apiKey) {
         throw new Error(`API Key is missing. Please add your ${provider.name} API Key in settings.`);
@@ -209,6 +211,7 @@ export async function chatCompletion(
         const { done, value } = await reader.read();
         if (done) break;
         text += decoder.decode(value, { stream: true });
+        onChunk?.(text);
     }
 
     return text;
