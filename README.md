@@ -1,6 +1,6 @@
 # Canvas AI
 
-[![Node.js CI](https://github.com/zendegani/canvas-chatbot/actions/workflows/node.js.yml/badge.svg?event=pull_request)](https://github.com/zendegani/canvas-chatbot/actions/workflows/node.js.yml)
+[![Node.js CI](https://github.com/zendegani/canvas-chatbot/actions/workflows/node.js.yml/badge.svg)](https://github.com/zendegani/canvas-chatbot/actions/workflows/node.js.yml)
 ![Coverage](./badges/coverage-total.svg)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/zendegani/canvas-chatbot/blob/main/LICENSE)
 
