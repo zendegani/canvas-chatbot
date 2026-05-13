@@ -289,7 +289,7 @@ export const Node: React.FC<NodeProps> = ({
       <div className="px-3 pb-3 pt-1 rounded-b-xl">
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-1 rounded-2xl px-3 py-2 transition-colors ring-1 ring-transparent focus-within:ring-primary/30"
+          className="flex flex-col gap-1 rounded-2xl px-3 py-2 bg-muted/50 dark:bg-input/30 transition-colors ring-1 ring-transparent focus-within:ring-primary/30"
         >
           <Textarea
             value={inputText}
@@ -303,7 +303,7 @@ export const Node: React.FC<NodeProps> = ({
             disabled={node.isThinking}
             placeholder="Ask anything..."
             rows={1}
-            className="border-0 bg-transparent shadow-none px-0 py-1 min-h-0 max-h-48 resize-none focus-visible:ring-0 focus-visible:border-transparent placeholder:text-muted-foreground/60 leading-relaxed"
+            className="border-0 bg-transparent dark:bg-transparent shadow-none px-0 py-1 min-h-0 max-h-48 resize-none focus-visible:ring-0 focus-visible:border-transparent placeholder:text-muted-foreground/60 leading-relaxed"
           />
           <div className="flex items-center justify-between">
             <Button
