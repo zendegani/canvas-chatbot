@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatNode, ChatSession, LLMModel, Message, ProviderId } from '../types';
 import { fetchModels, chatCompletion } from '../services/chatService';
-import { PROVIDERS, DEFAULT_PROVIDER, apiKeyStorageKey, selectedProviderKey, decodeApiKey } from '../services/providers';
+import { PROVIDERS, DEFAULT_PROVIDER, apiKeyStorageKey, selectedProviderKey, decodeApiKey, tavilyKeyStorageKey } from '../services/providers';
 import type { ViewState } from '../../auth/types';
 
 const NODE_WIDTH = 576;
@@ -117,6 +117,9 @@ export interface UseCanvasReturn {
     // Provider management
     selectedProvider: ProviderId;
     setSelectedProvider: (id: ProviderId) => void;
+    // Tavily web-search tool
+    hasTavilyKey: boolean;
+    toggleNodeSearch: (id: string) => void;
 }
 
 export const useCanvas = (currentUser: string): UseCanvasReturn => {
@@ -127,6 +130,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const [sessions, setSessions] = useState<Omit<ChatSession, 'nodes'>[]>([]);
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
     const [selectedProvider, setSelectedProviderState] = useState<ProviderId>(DEFAULT_PROVIDER);
+    const [hasTavilyKey, setHasTavilyKey] = useState(false);
 
     const lastUsedModelRef = useRef(PROVIDERS[DEFAULT_PROVIDER].defaultModel.id);
 
@@ -245,8 +249,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             const provider = PROVIDERS[selectedProvider];
             const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
             fetchModels(provider, apiKey, currentUser).then(setModels);
+            setHasTavilyKey(!!decodeApiKey(localStorage.getItem(tavilyKeyStorageKey(currentUser))));
         } else {
             setModels([]);
+            setHasTavilyKey(false);
         }
     }, [currentUser, selectedProvider]);
 
@@ -447,6 +453,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                 model: parent.model,
                 messages: [...parent.messages],
                 startIndex: parent.messages.length,
+                searchEnabled: parent.searchEnabled,
             };
             return [...prevNodes, newNode];
         });
@@ -464,6 +471,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         const userMsg: Message = { role: 'user', content: text };
         const node = nodes.find(n => n.id === nodeId);
         const history = [...(node?.messages || []), userMsg];
+        const tavilyKey = node?.searchEnabled
+            ? decodeApiKey(localStorage.getItem(tavilyKeyStorageKey(currentUser)))
+            : '';
+        const tools = tavilyKey ? { tavily: { apiKey: tavilyKey } } : undefined;
 
         // Add user message + empty assistant placeholder for streaming
         setNodes(prev => prev.map(n =>
@@ -480,7 +491,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                     msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
                     return { ...n, messages: msgs };
                 }));
-            });
+            }, tools);
             setNodes(prev => prev.map(n =>
                 n.id === nodeId ? { ...n, isThinking: false } : n
             ));
@@ -516,6 +527,10 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         if (!parent) return;
 
         const history = [...parent.messages, userMsg];
+        const tavilyKey = parent.searchEnabled
+            ? decodeApiKey(localStorage.getItem(tavilyKeyStorageKey(currentUser)))
+            : '';
+        const tools = tavilyKey ? { tavily: { apiKey: tavilyKey } } : undefined;
         const parentW = parent.width || NODE_WIDTH;
         const parentH = parent.height || NODE_HEIGHT;
         const GAP = 25;
@@ -537,6 +552,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             messages: [...history, { role: 'assistant' as const, content: '' }],
             startIndex: history.length - 1,
             isThinking: true,
+            searchEnabled: parent.searchEnabled,
         }));
 
         // Add user message to parent + create all children
@@ -555,7 +571,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                         msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
                         return { ...n, messages: msgs };
                     }));
-                });
+                }, tools);
                 setNodes(prev => prev.map(n =>
                     n.id === childIds[i] ? { ...n, isThinking: false } : n
                 ));
@@ -678,8 +694,13 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             const provider = PROVIDERS[selectedProvider];
             const apiKey = decodeApiKey(localStorage.getItem(apiKeyStorageKey(selectedProvider, currentUser)));
             fetchModels(provider, apiKey, currentUser).then(setModels);
+            setHasTavilyKey(!!decodeApiKey(localStorage.getItem(tavilyKeyStorageKey(currentUser))));
         }
     };
+
+    const toggleNodeSearch = useCallback((nodeId: string) => {
+        setNodes(prev => prev.map(n => n.id === nodeId ? { ...n, searchEnabled: !n.searchEnabled } : n));
+    }, []);
 
     const updateNodeSize = (id: string, width: number, height: number) => {
         setNodes(prev => prev.map(n =>
@@ -709,5 +730,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         deleteSession,
         selectedProvider,
         setSelectedProvider,
+        hasTavilyKey,
+        toggleNodeSearch,
     };
 };

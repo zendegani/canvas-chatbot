@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { X, Plus, Minus, Send, Link as LinkIcon, Loader2, BrainCircuit } from 'lucide-react';
+import { X, Plus, Minus, Send, Link as LinkIcon, Loader2, BrainCircuit, Globe } from 'lucide-react';
 import { ChatNode, LLMModel } from '../types';
 import { ModelSelector } from '../../settings/components/ModelSelector';
 import ReactMarkdown from 'react-markdown';
@@ -48,6 +48,8 @@ interface NodeProps {
   hasChildren: boolean;
   onResize: (id: string, width: number, height: number) => void;
   siblingCount?: number;
+  onToggleSearch: (id: string) => void;
+  hasTavilyKey: boolean;
 }
 
 export const Node: React.FC<NodeProps> = ({
@@ -66,6 +68,8 @@ export const Node: React.FC<NodeProps> = ({
   hasChildren,
   onResize,
   siblingCount = 0,
+  onToggleSearch,
+  hasTavilyKey,
 }) => {
   const [inputText, setInputText] = useState('');
   const [extraModels, setExtraModels] = useState<string[]>([]);
@@ -306,16 +310,40 @@ export const Node: React.FC<NodeProps> = ({
             className="border-0 bg-transparent dark:bg-transparent shadow-none px-0 py-1 min-h-0 max-h-48 resize-none focus-visible:ring-0 focus-visible:border-transparent placeholder:text-muted-foreground/60 leading-relaxed"
           />
           <div className="flex items-center justify-between">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              disabled
-              className="h-7 w-7 rounded-full text-muted-foreground/70 hover:text-foreground shrink-0"
-              title="Attach file (Not implemented yet)"
-            >
-              <LinkIcon size={15} />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled
+                className="h-7 w-7 rounded-full text-muted-foreground/70 hover:text-foreground shrink-0"
+                title="Attach file (Not implemented yet)"
+              >
+                <LinkIcon size={15} />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onToggleSearch(node.id)}
+                disabled={!hasTavilyKey}
+                aria-pressed={!!node.searchEnabled}
+                className={cn(
+                  "h-7 w-7 rounded-full shrink-0 transition-colors",
+                  node.searchEnabled
+                    ? "bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
+                    : "text-muted-foreground/70 hover:text-foreground",
+                  !hasTavilyKey && "opacity-40 cursor-not-allowed"
+                )}
+                title={
+                  hasTavilyKey
+                    ? (node.searchEnabled ? 'Web search on' : 'Enable web search')
+                    : 'Add a Tavily API key in Settings to enable web search'
+                }
+              >
+                <Globe size={15} />
+              </Button>
+            </div>
             <Button
               type="submit"
               size="icon"

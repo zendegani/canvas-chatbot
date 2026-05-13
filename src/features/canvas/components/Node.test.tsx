@@ -68,6 +68,8 @@ describe("Node", () => {
     isMobile: false,
     hasChildren: false,
     onResize: vi.fn(),
+    onToggleSearch: vi.fn(),
+    hasTavilyKey: false,
   };
 
   beforeEach(() => {
@@ -226,5 +228,30 @@ describe("Node", () => {
 
     expect(screen.queryByText("Hidden parent message")).not.toBeInTheDocument();
     expect(screen.getByText("Visible branch message")).toBeInTheDocument();
+  });
+
+  describe("search toggle", () => {
+    it("is disabled when no Tavily key is configured", () => {
+      render(<Node {...defaultProps} hasTavilyKey={false} />);
+      const btn = screen.getByTitle(/Add a Tavily API key/i);
+      expect(btn).toBeDisabled();
+      expect(btn).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("calls onToggleSearch with the node id when clicked", async () => {
+      const user = userEvent.setup();
+      const onToggleSearch = vi.fn();
+      render(<Node {...defaultProps} hasTavilyKey={true} onToggleSearch={onToggleSearch} />);
+      await user.click(screen.getByTitle(/Enable web search/i));
+      expect(onToggleSearch).toHaveBeenCalledWith("node-1");
+    });
+
+    it("reflects active state when node.searchEnabled is true", () => {
+      const node: ChatNode = { ...baseNode, searchEnabled: true };
+      render(<Node {...defaultProps} node={node} hasTavilyKey={true} />);
+      const btn = screen.getByTitle(/Web search on/i);
+      expect(btn).toHaveAttribute("aria-pressed", "true");
+      expect(btn).not.toBeDisabled();
+    });
   });
 });

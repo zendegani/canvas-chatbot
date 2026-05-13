@@ -68,3 +68,8 @@ export function decodeApiKey(stored: string | null): string {
 export function selectedProviderKey(user: string): string {
     return `selectedProvider_${user}`;
 }
+
+/** localStorage key for the Tavily web-search API key of a given user */
+export function tavilyKeyStorageKey(user: string): string {
+    return `tavilyKey_${user}`;
+}

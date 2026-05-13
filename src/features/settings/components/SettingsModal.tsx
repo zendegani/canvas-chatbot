@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import type { ProviderId } from '../../canvas/types';
-import { PROVIDERS, PROVIDER_LIST, apiKeyStorageKey, selectedProviderKey, DEFAULT_PROVIDER, encodeApiKey, decodeApiKey } from '../../canvas/services/providers';
+import { PROVIDERS, PROVIDER_LIST, apiKeyStorageKey, selectedProviderKey, DEFAULT_PROVIDER, encodeApiKey, decodeApiKey, tavilyKeyStorageKey } from '../../canvas/services/providers';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -22,7 +22,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const [apiKeys, setApiKeys] = useState<Record<ProviderId, string>>({
         openrouter: '', openai: '', google: '',
     });
-    const [showKey, setShowKey] = useState<ProviderId | null>(null);
+    const [tavilyKey, setTavilyKey] = useState('');
+    const [showKey, setShowKey] = useState<ProviderId | 'tavily' | null>(null);
 
     useEffect(() => {
         if (isOpen && currentUser) {
@@ -31,6 +32,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 loaded[p.id] = decodeApiKey(localStorage.getItem(apiKeyStorageKey(p.id, currentUser)));
             }
             setApiKeys(loaded);
+            setTavilyKey(decodeApiKey(localStorage.getItem(tavilyKeyStorageKey(currentUser))));
             setShowKey(null);
         }
     }, [isOpen, currentUser]);
@@ -45,6 +47,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 localStorage.removeItem(apiKeyStorageKey(p.id, currentUser));
             }
         }
+        const tav = tavilyKey.trim();
+        if (tav) {
+            localStorage.setItem(tavilyKeyStorageKey(currentUser), encodeApiKey(tav));
+        } else {
+            localStorage.removeItem(tavilyKeyStorageKey(currentUser));
+        }
         refreshModels();
         onClose();
     };
@@ -55,6 +63,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             for (const p of PROVIDER_LIST) {
                 localStorage.removeItem(apiKeyStorageKey(p.id, currentUser));
             }
+            localStorage.removeItem(tavilyKeyStorageKey(currentUser));
             window.location.reload();
         }
     };
@@ -112,6 +121,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             </div>
                         </div>
                     ))}
+
+                    {/* Tavily (web search) key */}
+                    <div className="space-y-2 pt-2 border-t">
+                        <Label>Tavily API Key <span className="font-normal text-muted-foreground">(web search)</span></Label>
+                        <div className="relative">
+                            <Input
+                                type={showKey === 'tavily' ? 'text' : 'password'}
+                                value={tavilyKey}
+                                onChange={(e) => setTavilyKey(e.target.value)}
+                                placeholder="tvly-..."
+                                className="pr-10"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowKey(prev => prev === 'tavily' ? null : 'tavily')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                                {showKey === 'tavily' ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Optional. Enables the per-node Search tool. Get a key at tavily.com.
+                        </p>
+                    </div>
 
                     <p className="text-xs text-muted-foreground">
                         Keys are stored locally in your browser. Only the active provider's key is used.

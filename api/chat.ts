@@ -1,4 +1,5 @@
-import { streamText } from 'ai';
+import { streamText, tool, stepCountIs } from 'ai';
+import { z } from 'zod';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
@@ -12,7 +13,12 @@ interface ChatRequest {
     apiKey: string;
     model: string;
     messages: { role: 'user' | 'assistant' | 'system'; content: string }[];
+    tools?: {
+        tavily?: { apiKey: string };
+    };
 }
+
+const TAVILY_MAX_STEPS = 5;
 
 function createModel(provider: ProviderId, apiKey: string, modelId: string) {
     switch (provider) {
@@ -31,6 +37,46 @@ function createModel(provider: ProviderId, apiKey: string, modelId: string) {
     }
 }
 
+function buildTavilyTool(tavilyKey: string) {
+    return tool({
+        description:
+            'Search the web for current, factual information. Use when the user asks about recent events, ' +
+            'specific facts you may not know, or anything that benefits from up-to-date sources.',
+        inputSchema: z.object({
+            query: z.string().describe('The search query.'),
+            max_results: z.number().int().min(1).max(10).optional().describe('How many results to return. Default 5.'),
+        }),
+        execute: async ({ query, max_results = 5 }) => {
+            const res = await fetch('https://api.tavily.com/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    api_key: tavilyKey,
+                    query,
+                    max_results,
+                    search_depth: 'basic',
+                }),
+            });
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                return { error: `Tavily error ${res.status}: ${text || res.statusText}` };
+            }
+            const data = await res.json() as {
+                results?: Array<{ title: string; url: string; content: string }>;
+                answer?: string;
+            };
+            return {
+                answer: data.answer,
+                results: (data.results ?? []).map(r => ({
+                    title: r.title,
+                    url: r.url,
+                    content: r.content,
+                })),
+            };
+        },
+    });
+}
+
 export default async function handler(req: Request): Promise<Response> {
     if (req.method !== 'POST') {
         return new Response('Method not allowed', { status: 405 });
@@ -43,7 +89,7 @@ export default async function handler(req: Request): Promise<Response> {
         return new Response('Invalid JSON', { status: 400 });
     }
 
-    const { provider, apiKey, model, messages } = body;
+    const { provider, apiKey, model, messages, tools: requestedTools } = body;
     if (!provider || !apiKey || !model || !Array.isArray(messages)) {
         return new Response('Missing required fields: provider, apiKey, model, messages', { status: 400 });
     }
@@ -52,9 +98,19 @@ export default async function handler(req: Request): Promise<Response> {
         return new Response(`Unknown provider: ${provider}`, { status: 400 });
     }
 
+    const tavilyKey = requestedTools?.tavily?.apiKey;
+    const useTools = typeof tavilyKey === 'string' && tavilyKey.length > 0;
+
     try {
         const aiModel = createModel(provider, apiKey, model);
-        const result = streamText({ model: aiModel, messages });
+        const result = useTools
+            ? streamText({
+                model: aiModel,
+                messages,
+                tools: { tavilySearch: buildTavilyTool(tavilyKey!) },
+                stopWhen: stepCountIs(TAVILY_MAX_STEPS),
+            })
+            : streamText({ model: aiModel, messages });
         return result.toTextStreamResponse();
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';

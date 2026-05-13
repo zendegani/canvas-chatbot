@@ -291,6 +291,35 @@ describe('chatService', () => {
             expect(result).toBe('Hello World!');
         });
 
+        it('includes tools.tavily.apiKey in the request body when passed', async () => {
+            mockStreamResponse('ok');
+
+            const provider = PROVIDERS.openrouter;
+            await chatCompletion(
+                provider,
+                'valid-key',
+                'model-id',
+                [{ role: 'user', content: 'What is happening today?' }],
+                undefined,
+                { tavily: { apiKey: 'tvly-secret' } },
+            );
+
+            const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1]?.body as string);
+            expect(body.tools).toEqual({ tavily: { apiKey: 'tvly-secret' } });
+        });
+
+        it('omits tools field when not passed', async () => {
+            mockStreamResponse('ok');
+
+            const provider = PROVIDERS.openrouter;
+            await chatCompletion(provider, 'valid-key', 'model-id', [
+                { role: 'user', content: 'Hi' },
+            ]);
+
+            const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1]?.body as string);
+            expect(body.tools).toBeUndefined();
+        });
+
         it('calls onChunk with accumulated text on each stream chunk', async () => {
             const encoder = new TextEncoder();
             const stream = new ReadableStream({
