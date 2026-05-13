@@ -285,34 +285,39 @@ export const Node: React.FC<NodeProps> = ({
         </>
       )}
 
-      {/* Input */}
-      <div className="p-3 border-t bg-muted/30 rounded-b-xl">
-        <form onSubmit={handleSubmit} className="flex gap-2 items-center">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            disabled
-            className="h-9 w-9 text-muted-foreground shrink-0"
-            title="Attach file (Not implemented yet)"
-          >
-            <LinkIcon size={18} />
-          </Button>
+      {/* Composer */}
+      <div className="p-3 pt-2 rounded-b-xl">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-1 rounded-2xl bg-muted/40 border border-border/40 px-3 py-2 transition-colors focus-within:border-primary/40 focus-within:bg-muted/60"
+        >
           <Input
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             disabled={node.isThinking}
             placeholder="Ask anything..."
-            className="flex-1 bg-background"
+            className="border-0 bg-transparent shadow-none px-0 h-8 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
           />
-          <Button
-            type="submit"
-            size="icon"
-            disabled={!inputText.trim() || node.isThinking}
-            className="h-9 w-9 shrink-0 shadow-sm"
-          >
-            <Send size={16} />
-          </Button>
+          <div className="flex items-center justify-between">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              disabled
+              className="h-7 w-7 rounded-full text-muted-foreground/70 hover:text-foreground shrink-0"
+              title="Attach file (Not implemented yet)"
+            >
+              <LinkIcon size={15} />
+            </Button>
+            <Button
+              type="submit"
+              size="icon"
+              disabled={!inputText.trim() || node.isThinking}
+              className="h-7 w-7 rounded-full shrink-0 shadow-sm disabled:opacity-40"
+            >
+              <Send size={13} />
+            </Button>
+          </div>
         </form>
       </div>
 
