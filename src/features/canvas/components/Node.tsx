@@ -20,7 +20,7 @@ import 'katex/dist/katex.min.css';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 SyntaxHighlighter.registerLanguage('tsx', tsx);
@@ -286,17 +286,24 @@ export const Node: React.FC<NodeProps> = ({
       )}
 
       {/* Composer */}
-      <div className="p-3 pt-2 rounded-b-xl">
+      <div className="px-3 pb-3 pt-1 rounded-b-xl">
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-1 rounded-2xl bg-muted/40 border border-border/40 px-3 py-2 transition-colors focus-within:border-primary/40 focus-within:bg-muted/60"
+          className="flex flex-col gap-1 rounded-2xl px-3 py-2 transition-colors ring-1 ring-transparent focus-within:ring-primary/30"
         >
-          <Input
+          <Textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
             disabled={node.isThinking}
             placeholder="Ask anything..."
-            className="border-0 bg-transparent shadow-none px-0 h-8 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+            rows={1}
+            className="border-0 bg-transparent shadow-none px-0 py-1 min-h-0 max-h-48 resize-none focus-visible:ring-0 focus-visible:border-transparent placeholder:text-muted-foreground/60 leading-relaxed"
           />
           <div className="flex items-center justify-between">
             <Button
