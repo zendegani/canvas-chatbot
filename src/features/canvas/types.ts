@@ -16,6 +16,7 @@ export interface ChatNode {
     height?: number;
     userResized?: boolean;
     mergeParentIds?: string[]; // IDs of nodes that merge into this node (for duel summaries)
+    searchEnabled?: boolean; // Per-node toggle for the Tavily web-search tool
 }
 
 export interface ChatSession {

@@ -172,12 +172,17 @@ export async function fetchModels(
  * The server streams text back; we collect all chunks and return the full string.
  * If `onChunk` is provided, it is called with the accumulated text after each chunk.
  */
+export interface ChatTools {
+    tavily?: { apiKey: string };
+}
+
 export async function chatCompletion(
     provider: ProviderConfig,
     apiKey: string,
     modelId: string,
     messages: Message[],
     onChunk?: (accumulatedText: string) => void,
+    tools?: ChatTools,
 ): Promise<string> {
     if (!apiKey) {
         throw new Error(`API Key is missing. Please add your ${provider.name} API Key in settings.`);
@@ -191,6 +196,7 @@ export async function chatCompletion(
             apiKey,
             model: modelId,
             messages: messages.map(m => ({ role: m.role, content: m.content })),
+            ...(tools ? { tools } : {}),
         }),
     });
 
