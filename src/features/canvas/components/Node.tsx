@@ -85,7 +85,7 @@ export const Node: React.FC<NodeProps> = ({
     }
   }, [node.messages, node.isThinking]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!inputText.trim() || node.isThinking) return;
     if (extraModels.length > 0) {
@@ -195,7 +195,7 @@ export const Node: React.FC<NodeProps> = ({
       {/* Messages */}
       <div
         ref={scrollRef}
-        className={cn("flex-1 overflow-y-auto p-4 space-y-4 text-sm bg-card/50 min-h-0", !node.userResized && "max-h-72")}
+        className={cn("overflow-y-auto p-4 space-y-4 text-sm bg-card/50", node.userResized ? "flex-1 min-h-0" : "min-h-42 max-h-96")}
       >
         {(() => {
           const visibleMessages = node.messages.slice(node.startIndex || 0);
