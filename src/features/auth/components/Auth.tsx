@@ -1,8 +1,9 @@
 import React from "react";
-import { Sparkles, Sun, Moon } from "lucide-react";
+import { Sparkles, Sun, Moon, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "./LoginForm";
 import { SignupForm } from "./SignupForm";
+import type { ThemeMode } from "@/hooks/useTheme";
 
 interface AuthProps {
   view: "signup" | "login";
@@ -10,9 +11,17 @@ interface AuthProps {
   onLogin: (email: string, password: string) => Promise<void>;
   onSignup: (name: string, email: string, password: string) => Promise<void>;
   onSocialLogin: (provider: "google" | "github") => Promise<void>;
-  isDarkMode: boolean;
-  setIsDarkMode: (isDark: boolean) => void;
+  themeMode: ThemeMode;
+  cycleTheme: () => void;
 }
+
+const themeIcon = (mode: ThemeMode, size = 20) =>
+  mode === 'system' ? <Monitor size={size} /> : mode === 'dark' ? <Moon size={size} /> : <Sun size={size} />;
+
+const themeLabel = (mode: ThemeMode) =>
+  mode === 'system' ? 'Theme: system (click for light)' :
+  mode === 'light' ? 'Theme: light (click for dark)' :
+  'Theme: dark (click for system)';
 
 export const Auth: React.FC<AuthProps> = ({
   view,
@@ -20,8 +29,8 @@ export const Auth: React.FC<AuthProps> = ({
   onLogin,
   onSignup,
   onSocialLogin,
-  isDarkMode,
-  setIsDarkMode,
+  themeMode,
+  cycleTheme,
 }) => {
   return (
     <div className="min-h-svh flex flex-col items-center justify-center bg-muted p-6 md:p-10 relative">
@@ -29,11 +38,12 @@ export const Auth: React.FC<AuthProps> = ({
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => setIsDarkMode(!isDarkMode)}
+        onClick={cycleTheme}
         className="absolute top-6 right-6 rounded-full hover:bg-zinc-500/10"
-        aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+        aria-label={themeLabel(themeMode)}
+        title={themeLabel(themeMode)}
       >
-        {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        {themeIcon(themeMode)}
       </Button>
 
       <div className="w-full max-w-sm md:max-w-4xl flex flex-col items-center gap-6">
