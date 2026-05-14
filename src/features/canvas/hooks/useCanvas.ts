@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ChatNode, ChatSession, LLMModel, Message, ProviderId } from '../types';
 import { fetchModels, chatCompletion } from '../services/chatService';
-import { PROVIDERS, DEFAULT_PROVIDER, apiKeyStorageKey, selectedProviderKey, decodeApiKey, tavilyKeyStorageKey } from '../services/providers';
+import { PROVIDERS, DEFAULT_PROVIDER, apiKeyStorageKey, selectedProviderKey, decodeApiKey, tavilyKeyStorageKey, loadPhoenixConfig } from '../services/providers';
 import type { ViewState } from '../../auth/types';
 
 const NODE_WIDTH = 576;
@@ -485,6 +485,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             ? decodeApiKey(localStorage.getItem(tavilyKeyStorageKey(currentUser)))
             : '';
         const tools = tavilyKey ? { tavily: { apiKey: tavilyKey } } : undefined;
+        const phoenix = loadPhoenixConfig(currentUser) ?? undefined;
 
         // Add user message + empty assistant placeholder for streaming
         setNodes(prev => prev.map(n =>
@@ -504,7 +505,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                     msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
                     return { ...n, messages: msgs };
                 }));
-            }, tools, controller.signal);
+            }, tools, controller.signal, phoenix);
             // Safety net: if the stream closed without producing any text or error
             // (provider returned 200 + empty body), surface that to the user.
             setNodes(prev => prev.map(n => {
@@ -558,6 +559,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
             ? decodeApiKey(localStorage.getItem(tavilyKeyStorageKey(currentUser)))
             : '';
         const tools = tavilyKey ? { tavily: { apiKey: tavilyKey } } : undefined;
+        const phoenix = loadPhoenixConfig(currentUser) ?? undefined;
         const parentW = parent.width || NODE_WIDTH;
         const parentH = parent.height || NODE_HEIGHT;
         const GAP = 25;
@@ -601,7 +603,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                         msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
                         return { ...n, messages: msgs };
                     }));
-                }, tools, controller.signal);
+                }, tools, controller.signal, phoenix);
                 setNodes(prev => prev.map(n => {
                     if (n.id !== childId) return n;
                     const msgs = [...n.messages];
@@ -699,6 +701,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         abortControllersRef.current.set(mergeId, controller);
 
         try {
+            const phoenix = loadPhoenixConfig(currentUser) ?? undefined;
             await chatCompletion(provider, apiKey, parent.model, [{ role: 'user', content: userContent }], (accumulated) => {
                 setNodes(prev => prev.map(n => {
                     if (n.id !== mergeId) return n;
@@ -706,7 +709,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                     msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
                     return { ...n, messages: msgs };
                 }));
-            }, undefined, controller.signal);
+            }, undefined, controller.signal, phoenix);
             setNodes(prev => prev.map(n => {
                 if (n.id !== mergeId) return n;
                 const msgs = [...n.messages];
