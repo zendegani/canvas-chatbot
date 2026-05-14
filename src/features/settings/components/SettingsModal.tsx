@@ -35,7 +35,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     isOpen, onClose, currentUser, refreshModels, selectedProvider, onProviderChange, onClearChatHistory,
 }) => {
     const [apiKeys, setApiKeys] = useState<Record<ProviderId, string>>({
-        openrouter: '', openai: '', google: '',
+        openrouter: '', openai: '', google: '', minimax: '',
     });
     const [tavilyKey, setTavilyKey] = useState('');
     const [minimaxGroupId, setMinimaxGroupId] = useState('');
@@ -46,7 +46,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
     useEffect(() => {
         if (isOpen && currentUser) {
-            const loaded: Record<ProviderId, string> = { openrouter: '', openai: '', google: '' };
+            const loaded: Record<ProviderId, string> = { openrouter: '', openai: '', google: '', minimax: '' };
             for (const p of PROVIDER_LIST) {
                 loaded[p.id] = decodeApiKey(localStorage.getItem(apiKeyStorageKey(p.id, currentUser)));
             }
