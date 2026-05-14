@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Settings, Eye, EyeOff, ExternalLink, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Trash2, MessageSquareDashed, Settings, Eye, EyeOff, ExternalLink, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,12 +25,13 @@ interface SettingsModalProps {
     refreshModels: () => void;
     selectedProvider: ProviderId;
     onProviderChange: (id: ProviderId) => void;
+    onClearChatHistory: () => void;
 }
 
 type PhoenixStatus = 'idle' | 'checking' | 'ok' | 'error';
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
-    isOpen, onClose, currentUser, refreshModels, selectedProvider, onProviderChange,
+    isOpen, onClose, currentUser, refreshModels, selectedProvider, onProviderChange, onClearChatHistory,
 }) => {
     const [apiKeys, setApiKeys] = useState<Record<ProviderId, string>>({
         openrouter: '', openai: '', google: '',
@@ -78,16 +79,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         onClose();
     };
 
+    const handleClearChatHistory = () => {
+        if (!confirm('Delete all chat sessions and nodes for this account? API keys and other settings are kept.')) return;
+        onClearChatHistory();
+        onClose();
+    };
+
     const handleClearData = () => {
-        if (confirm('Are you sure you want to clear all your data? This cannot be undone.')) {
-            localStorage.removeItem(`canvasNodes_${currentUser}`);
-            for (const p of PROVIDER_LIST) {
-                localStorage.removeItem(apiKeyStorageKey(p.id, currentUser));
-            }
-            localStorage.removeItem(tavilyKeyStorageKey(currentUser));
-            savePhoenixConfig(currentUser, null);
-            window.location.reload();
+        if (!confirm('Clear all app data (keys, sessions, settings)? This cannot be undone.')) return;
+        onClearChatHistory();
+        for (const p of PROVIDER_LIST) {
+            localStorage.removeItem(apiKeyStorageKey(p.id, currentUser));
         }
+        localStorage.removeItem(tavilyKeyStorageKey(currentUser));
+        savePhoenixConfig(currentUser, null);
+        window.location.reload();
     };
 
     const testPhoenix = async () => {
@@ -131,7 +137,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <TabsTrigger value="llm">LLM Providers</TabsTrigger>
                         <TabsTrigger value="tools">Tools</TabsTrigger>
                         <TabsTrigger value="tracing">Tracing</TabsTrigger>
-                        <TabsTrigger value="danger" className="data-[state=active]:text-destructive">Danger</TabsTrigger>
+                        <TabsTrigger value="data">Data</TabsTrigger>
                     </TabsList>
 
                     {/* ─── LLM Providers ─────────────────────────────────────────── */}
@@ -277,19 +283,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         </div>
                     </TabsContent>
 
-                    {/* ─── Danger ───────────────────────────────────────────────── */}
-                    <TabsContent value="danger" className="space-y-4 min-h-[420px]">
-                        <p className="text-xs text-muted-foreground">
-                            Irreversible actions. Clearing wipes all locally-stored API keys, Tavily key, Phoenix config,
-                            and canvas sessions for this account, then reloads the app.
-                        </p>
-                        <Button
-                            variant="destructive"
-                            onClick={handleClearData}
-                            className="w-full gap-2 bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 shadow-none"
-                        >
-                            <Trash2 size={18} /> Clear All App Data
-                        </Button>
+                    {/* ─── Data ─────────────────────────────────────────────────── */}
+                    <TabsContent value="data" className="space-y-4 min-h-[420px]">
+                        <div className="space-y-2">
+                            <Label>Chat history</Label>
+                            <p className="text-xs text-muted-foreground">
+                                Deletes all canvas sessions and nodes for this account. API keys and other settings are kept.
+                            </p>
+                            <Button
+                                variant="outline"
+                                onClick={handleClearChatHistory}
+                                className="w-full gap-2"
+                            >
+                                <MessageSquareDashed size={18} /> Clear chat history
+                            </Button>
+                        </div>
+
+                        <div className="pt-4 border-t space-y-2">
+                            <Label className="text-destructive">Everything</Label>
+                            <p className="text-xs text-muted-foreground">
+                                Wipes API keys, Tavily key, Phoenix config, and chat history for this account, then reloads the app.
+                            </p>
+                            <Button
+                                variant="destructive"
+                                onClick={handleClearData}
+                                className="w-full gap-2 bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 shadow-none"
+                            >
+                                <Trash2 size={18} /> Clear all app data
+                            </Button>
+                        </div>
                     </TabsContent>
                 </Tabs>
 

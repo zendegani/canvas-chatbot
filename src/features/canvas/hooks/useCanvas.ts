@@ -105,6 +105,7 @@ export interface UseCanvasReturn {
     handleCompareMessage: (nodeId: string, text: string, compareModels: string[]) => Promise<void>;
     handleMergeDuel: (parentId: string) => Promise<void>;
     clearData: (setView: (view: ViewState) => void) => void;
+    clearChatHistory: () => void;
     hasLoaded: boolean;
     refreshModels: () => void;
     updateNodeSize: (id: string, width: number, height: number) => void;
@@ -736,19 +737,26 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         }
     };
 
+    const wipeChatHistoryStorage = () => {
+        sessions.forEach(s => deleteSessionData(currentUser, s.id));
+        localStorage.removeItem(sessionIndexKey(currentUser));
+        localStorage.removeItem(activeSessionKey(currentUser));
+        localStorage.removeItem(legacyNodesKey(currentUser));
+        localStorage.removeItem('canvasNodes');
+        setNodes([]);
+        setSessions([]);
+        setActiveSessionId(null);
+    };
+
     const clearData = (setView: (view: ViewState) => void) => {
         if (window.confirm('Are you sure you want to clear all data and reset the canvas?')) {
-            // Clear all canvas sessions (auth is managed by Better-Auth)
-            sessions.forEach(s => deleteSessionData(currentUser, s.id));
-            localStorage.removeItem(sessionIndexKey(currentUser));
-            localStorage.removeItem(activeSessionKey(currentUser));
-            localStorage.removeItem(legacyNodesKey(currentUser));
-            localStorage.removeItem('canvasNodes');
-            setNodes([]);
-            setSessions([]);
-            setActiveSessionId(null);
+            wipeChatHistoryStorage();
             setView('landing');
         }
+    };
+
+    const clearChatHistory = () => {
+        wipeChatHistoryStorage();
     };
 
     const refreshModels = () => {
@@ -782,6 +790,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         handleCompareMessage,
         handleMergeDuel,
         clearData,
+        clearChatHistory,
         hasLoaded,
         refreshModels,
         updateNodeSize,
