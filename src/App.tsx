@@ -40,6 +40,7 @@ const App: React.FC = () => {
     handleCompareMessage,
     handleMergeDuel,
     clearData,
+    clearChatHistory,
     hasLoaded,
     refreshModels,
     updateNodeSize,
@@ -166,6 +167,7 @@ const App: React.FC = () => {
             refreshModels={refreshModels}
             selectedProvider={selectedProvider}
             onProviderChange={setSelectedProvider}
+            onClearChatHistory={clearChatHistory}
           />
         </>
       )}

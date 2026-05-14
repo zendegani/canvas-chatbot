@@ -12,6 +12,7 @@ describe("SettingsModal", () => {
     refreshModels: vi.fn(),
     selectedProvider: 'openrouter' as const,
     onProviderChange: vi.fn(),
+    onClearChatHistory: vi.fn(),
   };
 
   beforeEach(() => {
@@ -87,16 +88,14 @@ describe("SettingsModal", () => {
     expect(defaultProps.onProviderChange).toHaveBeenCalledWith("google");
   });
 
-  it("renders clear data button in the Danger tab", async () => {
+  it("renders clear chat-history and clear-all buttons in the Data tab", async () => {
     const user = userEvent.setup();
     render(<SettingsModal {...defaultProps} />);
 
-    // Danger tab trigger is always present
-    const dangerTab = screen.getByRole("tab", { name: /danger/i });
-    expect(dangerTab).toBeInTheDocument();
+    const dataTab = screen.getByRole("tab", { name: /data/i });
+    await user.click(dataTab);
 
-    // Content only appears once the tab is active
-    await user.click(dangerTab);
+    expect(screen.getByRole("button", { name: /clear chat history/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /clear all app data/i })).toBeInTheDocument();
   });
 });
