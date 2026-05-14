@@ -19,13 +19,13 @@ import { OpenInferenceSimpleSpanProcessor } from '@arizeai/openinference-vercel'
 
 declare global {
     // eslint-disable-next-line no-var
-    var __phoenixOtelStarted: boolean | undefined;
+    var __phoenixProvider: NodeTracerProvider | undefined;
 }
 
 const COLLECTOR_ENDPOINT = process.env.PHOENIX_COLLECTOR_ENDPOINT;
 const SERVICE_NAME = process.env.PHOENIX_PROJECT_NAME || 'canvas-ai';
 
-if (!globalThis.__phoenixOtelStarted && COLLECTOR_ENDPOINT) {
+if (!globalThis.__phoenixProvider && COLLECTOR_ENDPOINT) {
     diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR);
 
     const headers: Record<string, string> = {};
@@ -49,6 +49,15 @@ if (!globalThis.__phoenixOtelStarted && COLLECTOR_ENDPOINT) {
     });
 
     provider.register();
-    globalThis.__phoenixOtelStarted = true;
+    globalThis.__phoenixProvider = provider;
     console.log(`[phoenix] tracing enabled → ${COLLECTOR_ENDPOINT} (project: ${SERVICE_NAME})`);
+}
+
+/**
+ * Call before returning from a serverless function. With SimpleSpanProcessor +
+ * async OTLP fetch, the function can finish before the exporter actually sends
+ * spans to Phoenix; forceFlush ensures pending spans are awaited.
+ */
+export async function flushTraces(): Promise<void> {
+    await globalThis.__phoenixProvider?.forceFlush();
 }

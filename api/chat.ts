@@ -1,5 +1,5 @@
 // MUST come first: registers OTel tracing before `ai` is imported.
-import './_lib/instrumentation';
+import { flushTraces } from './_lib/instrumentation';
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { streamText, tool, stepCountIs } from 'ai';
@@ -165,10 +165,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             res.write(chunk);
         }
         console.log('[chat] stream done');
+        await flushTraces();
         res.end();
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('[chat] sync error:', message);
+        await flushTraces();
         if (!res.headersSent) {
             res.status(502).send(message);
         } else {
