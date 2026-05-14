@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
-import { X, Plus, Minus, Send, Link as LinkIcon, Loader2, BrainCircuit, Globe } from 'lucide-react';
+import { X, Plus, Minus, Send, Link as LinkIcon, Loader2, BrainCircuit, Globe, Square } from 'lucide-react';
 import { ChatNode, LLMModel } from '../types';
 import { ModelSelector } from '../../settings/components/ModelSelector';
 import ReactMarkdown from 'react-markdown';
@@ -50,6 +50,7 @@ interface NodeProps {
   siblingCount?: number;
   onToggleSearch: (id: string) => void;
   hasTavilyKey: boolean;
+  onStopMessage: (id: string) => void;
 }
 
 export const Node: React.FC<NodeProps> = ({
@@ -70,6 +71,7 @@ export const Node: React.FC<NodeProps> = ({
   siblingCount = 0,
   onToggleSearch,
   hasTavilyKey,
+  onStopMessage,
 }) => {
   const [inputText, setInputText] = useState('');
   const [extraModels, setExtraModels] = useState<string[]>([]);
@@ -344,14 +346,29 @@ export const Node: React.FC<NodeProps> = ({
                 <Globe size={15} />
               </Button>
             </div>
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!inputText.trim() || node.isThinking}
-              className="h-7 w-7 rounded-full shrink-0 shadow-sm disabled:opacity-40"
-            >
-              <Send size={13} />
-            </Button>
+            {node.isThinking ? (
+              <Button
+                type="button"
+                size="icon"
+                variant="secondary"
+                onClick={() => onStopMessage(node.id)}
+                title="Stop generating"
+                aria-label="Stop generating"
+                className="h-7 w-7 rounded-full shrink-0 shadow-sm"
+              >
+                <Square size={11} fill="currentColor" />
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                size="icon"
+                disabled={!inputText.trim()}
+                className="h-7 w-7 rounded-full shrink-0 shadow-sm disabled:opacity-40"
+                aria-label="Send"
+              >
+                <Send size={13} />
+              </Button>
+            )}
           </div>
         </form>
       </div>

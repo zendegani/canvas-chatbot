@@ -70,6 +70,7 @@ describe("Node", () => {
     onResize: vi.fn(),
     onToggleSearch: vi.fn(),
     hasTavilyKey: false,
+    onStopMessage: vi.fn(),
   };
 
   beforeEach(() => {
@@ -134,11 +135,8 @@ describe("Node", () => {
 
     const input = screen.getByPlaceholderText("Ask anything...");
     await user.type(input, "Hello AI");
-    await user.click(screen.getByRole("button", { name: "" })); // Send button with icon
+    await user.click(screen.getByLabelText("Send"));
 
-    // Find the submit button (it has Send icon)
-    const form = input.closest("form")!;
-    // Actually, let's submit via Enter key
     expect(defaultProps.onSendMessage).toHaveBeenCalledWith("node-1", "Hello AI");
   });
 
@@ -228,6 +226,24 @@ describe("Node", () => {
 
     expect(screen.queryByText("Hidden parent message")).not.toBeInTheDocument();
     expect(screen.getByText("Visible branch message")).toBeInTheDocument();
+  });
+
+  describe("stop button", () => {
+    it("shows Stop instead of Send while isThinking", () => {
+      const node: ChatNode = { ...baseNode, isThinking: true };
+      render(<Node {...defaultProps} node={node} />);
+      expect(screen.getByLabelText("Stop generating")).toBeInTheDocument();
+      expect(screen.queryByLabelText("Send")).not.toBeInTheDocument();
+    });
+
+    it("calls onStopMessage with the node id when Stop is clicked", async () => {
+      const user = userEvent.setup();
+      const onStopMessage = vi.fn();
+      const node: ChatNode = { ...baseNode, isThinking: true };
+      render(<Node {...defaultProps} node={node} onStopMessage={onStopMessage} />);
+      await user.click(screen.getByLabelText("Stop generating"));
+      expect(onStopMessage).toHaveBeenCalledWith("node-1");
+    });
   });
 
   describe("search toggle", () => {

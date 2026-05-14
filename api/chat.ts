@@ -109,9 +109,35 @@ export default async function handler(req: Request): Promise<Response> {
                 messages,
                 tools: { tavilySearch: buildTavilyTool(tavilyKey!) },
                 stopWhen: stepCountIs(TAVILY_MAX_STEPS),
+                abortSignal: req.signal,
             })
-            : streamText({ model: aiModel, messages });
-        return result.toTextStreamResponse();
+            : streamText({ model: aiModel, messages, abortSignal: req.signal });
+
+        // Wrap textStream to surface mid-stream errors (rate-limit, credit, etc.)
+        // back to the client as visible text instead of silently closing the body.
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream<Uint8Array>({
+            async start(controller) {
+                try {
+                    for await (const chunk of result.textStream) {
+                        controller.enqueue(encoder.encode(chunk));
+                    }
+                } catch (err: unknown) {
+                    if ((err as { name?: string })?.name === 'AbortError') {
+                        // Client aborted — don't write an error message.
+                    } else {
+                        const msg = err instanceof Error ? err.message : 'Unknown error';
+                        controller.enqueue(encoder.encode(`\n\n**⚠️ Error:** ${msg}`));
+                    }
+                } finally {
+                    controller.close();
+                }
+            },
+        });
+
+        return new Response(stream, {
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+        });
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         return new Response(message, { status: 502 });

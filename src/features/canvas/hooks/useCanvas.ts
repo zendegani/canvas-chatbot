@@ -120,6 +120,8 @@ export interface UseCanvasReturn {
     // Tavily web-search tool
     hasTavilyKey: boolean;
     toggleNodeSearch: (id: string) => void;
+    // Stop an in-flight message stream for a node
+    stopNode: (id: string) => void;
 }
 
 export const useCanvas = (currentUser: string): UseCanvasReturn => {
@@ -133,6 +135,14 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
     const [hasTavilyKey, setHasTavilyKey] = useState(false);
 
     const lastUsedModelRef = useRef(PROVIDERS[DEFAULT_PROVIDER].defaultModel.id);
+    // AbortController per in-flight node id (supports a Stop button)
+    const abortControllersRef = useRef<Map<string, AbortController>>(new Map());
+
+    const stopNode = useCallback((nodeId: string) => {
+        const controllers = abortControllersRef.current;
+        controllers.get(nodeId)?.abort();
+        controllers.delete(nodeId);
+    }, []);
 
     // Load selected provider from localStorage on user change
     useEffect(() => {
@@ -483,6 +493,9 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                 : n
         ));
 
+        const controller = new AbortController();
+        abortControllersRef.current.set(nodeId, controller);
+
         try {
             await chatCompletion(provider, apiKey, node?.model || provider.defaultModel.id, history, (accumulated) => {
                 setNodes(prev => prev.map(n => {
@@ -491,19 +504,25 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                     msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
                     return { ...n, messages: msgs };
                 }));
-            }, tools);
+            }, tools, controller.signal);
             setNodes(prev => prev.map(n =>
                 n.id === nodeId ? { ...n, isThinking: false } : n
             ));
         } catch (error: any) {
+            const aborted = error?.name === 'AbortError';
             setNodes(prev => prev.map(n => {
                 if (n.id !== nodeId) return n;
                 const msgs = [...n.messages];
                 const last = msgs[msgs.length - 1];
-                if (last?.role === 'assistant' && !last.content) msgs.pop();
+                if (last?.role === 'assistant' && !last.content) {
+                    // Nothing streamed yet
+                    if (aborted) msgs.pop();
+                    else msgs[msgs.length - 1] = { role: 'assistant', content: `**⚠️ Error:** ${error.message}` };
+                }
                 return { ...n, messages: msgs, isThinking: false };
             }));
-            alert(`Error: ${error.message}`);
+        } finally {
+            abortControllersRef.current.delete(nodeId);
         }
     };
 
@@ -563,25 +582,34 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
         // Fire all API requests simultaneously with streaming
         const requests = compareModels.map(async (model, i) => {
+            const childId = childIds[i];
+            const controller = new AbortController();
+            abortControllersRef.current.set(childId, controller);
             try {
                 await chatCompletion(provider, apiKey, model, history, (accumulated) => {
                     setNodes(prev => prev.map(n => {
-                        if (n.id !== childIds[i]) return n;
+                        if (n.id !== childId) return n;
                         const msgs = [...n.messages];
                         msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
                         return { ...n, messages: msgs };
                     }));
-                }, tools);
+                }, tools, controller.signal);
                 setNodes(prev => prev.map(n =>
-                    n.id === childIds[i] ? { ...n, isThinking: false } : n
+                    n.id === childId ? { ...n, isThinking: false } : n
                 ));
             } catch (error: any) {
+                const aborted = error?.name === 'AbortError';
                 setNodes(prev => prev.map(n => {
-                    if (n.id !== childIds[i]) return n;
+                    if (n.id !== childId) return n;
                     const msgs = [...n.messages];
-                    msgs[msgs.length - 1] = { role: 'assistant', content: `Error: ${error.message}` };
+                    const last = msgs[msgs.length - 1];
+                    if (last?.role === 'assistant' && !last.content && !aborted) {
+                        msgs[msgs.length - 1] = { role: 'assistant', content: `**⚠️ Error:** ${error.message}` };
+                    }
                     return { ...n, messages: msgs, isThinking: false };
                 }));
+            } finally {
+                abortControllersRef.current.delete(childId);
             }
         });
 
@@ -652,6 +680,9 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
 
         setNodes(prev => [...prev, mergeNode]);
 
+        const controller = new AbortController();
+        abortControllersRef.current.set(mergeId, controller);
+
         try {
             await chatCompletion(provider, apiKey, parent.model, [{ role: 'user', content: userContent }], (accumulated) => {
                 setNodes(prev => prev.map(n => {
@@ -660,17 +691,23 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                     msgs[msgs.length - 1] = { role: 'assistant', content: accumulated };
                     return { ...n, messages: msgs };
                 }));
-            });
+            }, undefined, controller.signal);
             setNodes(prev => prev.map(n =>
                 n.id === mergeId ? { ...n, isThinking: false } : n
             ));
         } catch (error: any) {
+            const aborted = error?.name === 'AbortError';
             setNodes(prev => prev.map(n => {
                 if (n.id !== mergeId) return n;
                 const msgs = [...n.messages];
-                msgs[msgs.length - 1] = { role: 'assistant', content: `Error: ${error.message}` };
+                const last = msgs[msgs.length - 1];
+                if (last?.role === 'assistant' && !last.content && !aborted) {
+                    msgs[msgs.length - 1] = { role: 'assistant', content: `**⚠️ Error:** ${error.message}` };
+                }
                 return { ...n, messages: msgs, isThinking: false };
             }));
+        } finally {
+            abortControllersRef.current.delete(mergeId);
         }
     };
 
@@ -732,5 +769,6 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
         setSelectedProvider,
         hasTavilyKey,
         toggleNodeSearch,
+        stopNode,
     };
 };
