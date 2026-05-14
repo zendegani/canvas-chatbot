@@ -39,7 +39,6 @@ const App: React.FC = () => {
     handleSendMessage,
     handleCompareMessage,
     handleMergeDuel,
-    clearData,
     clearChatHistory,
     hasLoaded,
     refreshModels,
@@ -138,7 +137,11 @@ const App: React.FC = () => {
             models={models}
             setNodes={setNodes}
             onAddInitialNode={addInitialNode}
-            onClearData={() => clearData(setView)}
+            onClearChatHistory={() => {
+              if (confirm('Delete all chat sessions for this account? Settings and API keys are kept.')) {
+                clearChatHistory();
+              }
+            }}
             onLogout={handleLogout}
             onOpenSettings={() => setIsSettingsOpen(true)}
             onGoHome={() => setView('landing')}

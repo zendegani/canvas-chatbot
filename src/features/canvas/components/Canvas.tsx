@@ -16,7 +16,7 @@ interface CanvasProps {
     models: LLMModel[];
     setNodes: React.Dispatch<React.SetStateAction<ChatNode[]>>;
     onAddInitialNode: () => void;
-    onClearData: () => void;
+    onClearChatHistory: () => void;
     onLogout: () => void;
     onOpenSettings: () => void;
     onGoHome: () => void;
@@ -47,7 +47,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     models,
     setNodes,
     onAddInitialNode,
-    onClearData,
+    onClearChatHistory,
     onLogout,
     onOpenSettings,
     onGoHome,
@@ -154,7 +154,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                     currentUser={currentUser}
                     onGoHome={onGoHome}
                     onOpenSettings={onOpenSettings}
-                    onClearData={onClearData}
+                    onClearChatHistory={onClearChatHistory}
                     onLogout={onLogout}
                     sessions={sessions}
                     activeSessionId={activeSessionId}

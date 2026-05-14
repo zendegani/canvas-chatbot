@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Settings, Trash2, Plus, X, History, ChevronRight } from 'lucide-react';
+import { Sparkles, Settings, MessageSquareDashed, Plus, X, History, ChevronRight } from 'lucide-react';
 import { ChatSession } from '../types';
 import {
     Collapsible,
@@ -30,7 +30,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
     currentUser: string;
     onGoHome: () => void;
     onOpenSettings: () => void;
-    onClearData: () => void;
+    onClearChatHistory: () => void;
     onLogout: () => void;
     sessions: Omit<ChatSession, 'nodes'>[];
     activeSessionId: string | null;
@@ -43,7 +43,7 @@ export function AppSidebar({
     currentUser,
     onGoHome,
     onOpenSettings,
-    onClearData,
+    onClearChatHistory,
     onLogout,
     sessions,
     activeSessionId,
@@ -151,12 +151,11 @@ export function AppSidebar({
                             </SidebarMenuItem>
                             <SidebarMenuItem>
                                 <SidebarMenuButton
-                                    onClick={onClearData}
-                                    tooltip="Clear All Data"
-                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={onClearChatHistory}
+                                    tooltip="Clear Chat History"
                                 >
-                                    <Trash2 />
-                                    <span>Clear All Data</span>
+                                    <MessageSquareDashed />
+                                    <span>Clear Chat History</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                         </SidebarMenu>
