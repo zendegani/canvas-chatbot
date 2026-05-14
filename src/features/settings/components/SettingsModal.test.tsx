@@ -30,8 +30,8 @@ describe("SettingsModal", () => {
     render(<SettingsModal {...defaultProps} />);
 
     expect(screen.getByText("Settings")).toBeInTheDocument();
-    expect(screen.getByText("AI Provider")).toBeInTheDocument();
-    // All three provider names should be visible as buttons
+    expect(screen.getByText("Active provider")).toBeInTheDocument();
+    // All three provider names should be visible as buttons in the LLM tab (active by default)
     expect(screen.getByText("OpenRouter")).toBeInTheDocument();
     expect(screen.getByText("OpenAI")).toBeInTheDocument();
     expect(screen.getByText("Google AI")).toBeInTheDocument();

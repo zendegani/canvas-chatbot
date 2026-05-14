@@ -181,6 +181,12 @@ export interface ChatTools {
     tavily?: { apiKey: string };
 }
 
+export interface PhoenixHeaders {
+    endpoint: string;
+    apiKey?: string;
+    project?: string;
+}
+
 export async function chatCompletion(
     provider: ProviderConfig,
     apiKey: string,
@@ -189,14 +195,22 @@ export async function chatCompletion(
     onChunk?: (accumulatedText: string) => void,
     tools?: ChatTools,
     signal?: AbortSignal,
+    phoenix?: PhoenixHeaders,
 ): Promise<string> {
     if (!apiKey) {
         throw new Error(`API Key is missing. Please add your ${provider.name} API Key in settings.`);
     }
 
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (phoenix?.endpoint) {
+        headers['X-Phoenix-Endpoint'] = phoenix.endpoint;
+        if (phoenix.apiKey) headers['X-Phoenix-Api-Key'] = phoenix.apiKey;
+        if (phoenix.project) headers['X-Phoenix-Project'] = phoenix.project;
+    }
+
     const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
             provider: provider.id,
             apiKey,

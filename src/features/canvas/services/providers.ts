@@ -73,3 +73,45 @@ export function selectedProviderKey(user: string): string {
 export function tavilyKeyStorageKey(user: string): string {
     return `tavilyKey_${user}`;
 }
+
+export interface PhoenixConfig {
+    endpoint: string;
+    apiKey?: string;
+    project?: string;
+}
+
+/** localStorage key for the user's Phoenix tracing config */
+export function phoenixConfigStorageKey(user: string): string {
+    return `phoenixConfig_${user}`;
+}
+
+export function loadPhoenixConfig(user: string): PhoenixConfig | null {
+    if (!user) return null;
+    const raw = localStorage.getItem(phoenixConfigStorageKey(user));
+    if (!raw) return null;
+    try {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.endpoint === 'string' && parsed.endpoint.trim()) {
+            return {
+                endpoint: parsed.endpoint.trim(),
+                apiKey: typeof parsed.apiKey === 'string' ? parsed.apiKey : undefined,
+                project: typeof parsed.project === 'string' ? parsed.project : undefined,
+            };
+        }
+    } catch { /* fall through */ }
+    return null;
+}
+
+export function savePhoenixConfig(user: string, config: PhoenixConfig | null): void {
+    if (!user) return;
+    const key = phoenixConfigStorageKey(user);
+    if (!config || !config.endpoint.trim()) {
+        localStorage.removeItem(key);
+        return;
+    }
+    localStorage.setItem(key, JSON.stringify({
+        endpoint: config.endpoint.trim(),
+        apiKey: config.apiKey?.trim() || undefined,
+        project: config.project?.trim() || undefined,
+    }));
+}

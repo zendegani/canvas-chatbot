@@ -1,5 +1,5 @@
-// MUST come first: registers OTel tracing before `ai` is imported.
-import { flushTraces } from './_lib/instrumentation';
+// MUST come first: sets up the OTel module-load order before `ai` is imported.
+import { flushTraces, getTracerFor, resolvePhoenixConfig } from './_lib/instrumentation';
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { streamText, tool, stepCountIs } from 'ai';
@@ -121,6 +121,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const controller = new AbortController();
     req.on('close', () => controller.abort());
 
+    // Phoenix tracing — headers from client win, env vars are the fallback.
+    const phoenixConfig = resolvePhoenixConfig({
+        endpoint: firstHeader(req.headers['x-phoenix-endpoint']),
+        apiKey: firstHeader(req.headers['x-phoenix-api-key']),
+        project: firstHeader(req.headers['x-phoenix-project']),
+    });
+
     try {
         console.log('[chat] creating model & streamText…');
         const aiModel = createModel(provider, apiKey, model);
@@ -131,11 +138,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             console.error(`[chat:${provider}/${model}]`, msg);
         };
 
-        const telemetry = {
-            isEnabled: !!process.env.PHOENIX_COLLECTOR_ENDPOINT,
-            functionId: `chat.${provider}`,
-            metadata: { provider, model },
-        };
+        const telemetry = phoenixConfig
+            ? {
+                isEnabled: true,
+                tracer: getTracerFor(phoenixConfig),
+                functionId: `chat.${provider}`,
+                metadata: { provider, model },
+            }
+            : { isEnabled: false };
 
         const result = useTools
             ? streamText({
@@ -165,16 +175,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
             res.write(chunk);
         }
         console.log('[chat] stream done');
-        await flushTraces();
+        await flushTraces(phoenixConfig);
         res.end();
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         console.error('[chat] sync error:', message);
-        await flushTraces();
+        await flushTraces(phoenixConfig);
         if (!res.headersSent) {
             res.status(502).send(message);
         } else {
             res.end();
         }
     }
+}
+
+function firstHeader(value: string | string[] | undefined): string | undefined {
+    if (Array.isArray(value)) return value[0];
+    return value;
 }
