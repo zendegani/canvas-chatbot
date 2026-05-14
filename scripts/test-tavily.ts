@@ -44,9 +44,27 @@ function pickModel() {
         return { model: g('gemini-2.0-flash'), label: 'google:gemini-2.0-flash' };
     }
     if (process.env.MINIMAX_API_KEY) {
-        // MiniMax exposes an OpenAI-compatible endpoint.
-        const mm = createOpenAI({ apiKey: process.env.MINIMAX_API_KEY, baseURL: 'https://api.minimax.io/v1' });
-        return { model: mm('MiniMax-M2.7'), label: 'minimax:MiniMax-M2.7' };
+        const groupId = process.env.MINIMAX_GROUP_ID;
+        if (!groupId) {
+            console.error('❌ MINIMAX_GROUP_ID is required alongside MINIMAX_API_KEY.');
+            process.exit(1);
+        }
+        // MiniMax's native chat endpoint takes OpenAI-shaped JSON, but the path
+        // is /v1/text/chatcompletion_v2 and it needs ?GroupId=<id>.
+        const wrappedFetch: typeof fetch = (input, init) => {
+            let url = typeof input === 'string'
+                ? input
+                : input instanceof URL ? input.toString() : input.url;
+            url = url.replace('/v1/chat/completions', '/v1/text/chatcompletion_v2');
+            url += (url.includes('?') ? '&' : '?') + `GroupId=${encodeURIComponent(groupId)}`;
+            return fetch(url, init);
+        };
+        const mm = createOpenAI({
+            apiKey: process.env.MINIMAX_API_KEY,
+            baseURL: 'https://api.minimax.io/v1',
+            fetch: wrappedFetch,
+        });
+        return { model: mm.chat('MiniMax-M2.7'), label: 'minimax:MiniMax-M2.7' };
     }
     console.error('❌ Set one of OPENROUTER_API_KEY / OPENAI_API_KEY / GOOGLE_API_KEY / MINIMAX_API_KEY in .env.local');
     process.exit(1);

@@ -29,7 +29,7 @@ interface ChatRequest {
 
 const TAVILY_MAX_STEPS = 5;
 
-function createModel(provider: ProviderId, apiKey: string, modelId: string) {
+function createModel(provider: ProviderId, apiKey: string, modelId: string, extras?: { minimaxGroupId?: string }) {
     switch (provider) {
         case 'openrouter': {
             const or = createOpenRouter({ apiKey });
@@ -44,9 +44,31 @@ function createModel(provider: ProviderId, apiKey: string, modelId: string) {
             return google(modelId);
         }
         case 'minimax': {
-            // MiniMax exposes an OpenAI-compatible endpoint, so we reuse the OpenAI provider.
-            const mm = createOpenAI({ apiKey, baseURL: 'https://api.minimax.io/v1' });
-            return mm(modelId);
+            // MiniMax's native endpoint speaks the same JSON shape as OpenAI's chat
+            // completions, but lives at /v1/text/chatcompletion_v2 and requires
+            // GroupId as a query param. We reuse the OpenAI provider and rewrite
+            // the URL via a custom fetch.
+            //
+            // We call `mm.chat(modelId)` (not `mm(modelId)`) because v6's default
+            // routes to the new /responses endpoint, which MiniMax doesn't have.
+            const groupId = extras?.minimaxGroupId ?? process.env.MINIMAX_GROUP_ID ?? '';
+            const wrappedFetch: typeof fetch = (input, init) => {
+                let url = typeof input === 'string'
+                    ? input
+                    : input instanceof URL ? input.toString() : input.url;
+                url = url.replace('/v1/chat/completions', '/v1/text/chatcompletion_v2');
+                if (groupId) {
+                    url += (url.includes('?') ? '&' : '?') + `GroupId=${encodeURIComponent(groupId)}`;
+                }
+                console.log('[chat:minimax] →', url);
+                return fetch(url, init);
+            };
+            const mm = createOpenAI({
+                apiKey,
+                baseURL: 'https://api.minimax.io/v1',
+                fetch: wrappedFetch,
+            });
+            return mm.chat(modelId);
         }
     }
 }
@@ -133,9 +155,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         project: firstHeader(req.headers['x-phoenix-project']),
     });
 
+    const minimaxGroupId = firstHeader(req.headers['x-minimax-group-id']);
+
     try {
         console.log('[chat] creating model & streamText…');
-        const aiModel = createModel(provider, apiKey, model);
+        const aiModel = createModel(provider, apiKey, model, { minimaxGroupId });
 
         const logError = ({ error }: { error: unknown }) => {
             if ((error as { name?: string })?.name === 'AbortError') return;
