@@ -1,0 +1,8 @@
+services:
+  phoenix:
+    image: arizephoenix/phoenix:latest
+    container_name: canvas-ai-phoenix
+    ports:
+      - "6006:6006"   # Phoenix UI + OTLP/HTTP receiver
+      - "4317:4317"   # OTLP/gRPC receiver (unused by this project but exposed for flexibility)
+    restart: unless-stopped

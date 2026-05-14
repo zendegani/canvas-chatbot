@@ -1,10 +1,14 @@
+// MUST come first: registers OTel tracing before `ai` is imported.
+import './_lib/instrumentation';
+
 import { streamText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
-export const config = { runtime: 'edge' };
+// Node runtime (default). Edge runtime is incompatible with the OpenTelemetry
+// Node SDK we use for Phoenix tracing — see api/_lib/instrumentation.ts.
 
 type ProviderId = 'openrouter' | 'openai' | 'google';
 
@@ -113,6 +117,12 @@ export default async function handler(req: Request): Promise<Response> {
             capturedError = error instanceof Error ? error.message : String(error);
         };
 
+        const telemetry = {
+            isEnabled: !!process.env.PHOENIX_COLLECTOR_ENDPOINT,
+            functionId: `chat.${provider}`,
+            metadata: { provider, model },
+        };
+
         const result = useTools
             ? streamText({
                 model: aiModel,
@@ -121,12 +131,14 @@ export default async function handler(req: Request): Promise<Response> {
                 stopWhen: stepCountIs(TAVILY_MAX_STEPS),
                 abortSignal: req.signal,
                 onError: captureError,
+                experimental_telemetry: telemetry,
             })
             : streamText({
                 model: aiModel,
                 messages,
                 abortSignal: req.signal,
                 onError: captureError,
+                experimental_telemetry: telemetry,
             });
 
         const encoder = new TextEncoder();
