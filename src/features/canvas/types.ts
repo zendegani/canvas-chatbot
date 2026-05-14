@@ -27,7 +27,7 @@ export interface ChatSession {
     updatedAt: number;
 }
 
-export type ProviderId = 'openrouter' | 'openai' | 'google';
+export type ProviderId = 'openrouter' | 'openai' | 'google' | 'minimax';
 
 export interface ProviderConfig {
     id: ProviderId;

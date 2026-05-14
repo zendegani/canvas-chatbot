@@ -35,6 +35,16 @@ export const PROVIDERS: Record<ProviderId, ProviderConfig> = {
             name: 'Default',
         },
     },
+    minimax: {
+        id: 'minimax',
+        name: 'MiniMax',
+        baseUrl: 'https://api.minimax.io/v1',
+        keyPlaceholder: 'eyJ...',
+        defaultModel: {
+            id: envDefault('VITE_DEFAULT_MODEL_MINIMAX', 'MiniMax-M2.7'),
+            name: 'Default',
+        },
+    },
 };
 
 export const DEFAULT_PROVIDER: ProviderId = 'openrouter';

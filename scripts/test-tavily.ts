@@ -43,7 +43,12 @@ function pickModel() {
         const g = createGoogleGenerativeAI({ apiKey: process.env.GOOGLE_API_KEY });
         return { model: g('gemini-2.0-flash'), label: 'google:gemini-2.0-flash' };
     }
-    console.error('❌ Set one of OPENROUTER_API_KEY / OPENAI_API_KEY / GOOGLE_API_KEY in .env.local');
+    if (process.env.MINIMAX_API_KEY) {
+        // MiniMax exposes an OpenAI-compatible endpoint.
+        const mm = createOpenAI({ apiKey: process.env.MINIMAX_API_KEY, baseURL: 'https://api.minimax.io/v1' });
+        return { model: mm('MiniMax-M2.7'), label: 'minimax:MiniMax-M2.7' };
+    }
+    console.error('❌ Set one of OPENROUTER_API_KEY / OPENAI_API_KEY / GOOGLE_API_KEY / MINIMAX_API_KEY in .env.local');
     process.exit(1);
 }
 
