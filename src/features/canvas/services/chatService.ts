@@ -120,6 +120,21 @@ async function fetchGoogleModels(apiKey: string): Promise<LLMModel[]> {
         });
 }
 
+/**
+ * MiniMax doesn't publish a stable `/models` discovery endpoint, so we ship a
+ * curated catalog. Update this list when MiniMax adds new chat models.
+ */
+const MINIMAX_MODELS: LLMModel[] = [
+    { id: 'MiniMax-M2.7', name: 'MiniMax M2.7' },
+    { id: 'MiniMax-M2.7-highspeed', name: 'MiniMax M2.7 (high-speed)' },
+    { id: 'MiniMax-M2.5', name: 'MiniMax M2.5' },
+    { id: 'MiniMax-M2.5-highspeed', name: 'MiniMax M2.5 (high-speed)' },
+    { id: 'MiniMax-M2.1', name: 'MiniMax M2.1' },
+    { id: 'MiniMax-M2', name: 'MiniMax M2' },
+    { id: 'abab6.5s-chat', name: 'abab 6.5s' },
+    { id: 'abab6.5-chat', name: 'abab 6.5' },
+];
+
 // ── Public API ──
 
 /**
@@ -154,6 +169,9 @@ export async function fetchModels(
                 break;
             case 'google':
                 models = await fetchGoogleModels(apiKey);
+                break;
+            case 'minimax':
+                models = MINIMAX_MODELS;
                 break;
             default:
                 models = [];

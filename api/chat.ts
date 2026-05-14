@@ -15,7 +15,7 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 // Standard (Request → Response). `vercel dev` reliably parses bodies and
 // streams responses with this form; the Web form hangs on body read.
 
-type ProviderId = 'openrouter' | 'openai' | 'google';
+type ProviderId = 'openrouter' | 'openai' | 'google' | 'minimax';
 
 interface ChatRequest {
     provider: ProviderId;
@@ -42,6 +42,11 @@ function createModel(provider: ProviderId, apiKey: string, modelId: string) {
         case 'google': {
             const google = createGoogleGenerativeAI({ apiKey });
             return google(modelId);
+        }
+        case 'minimax': {
+            // MiniMax exposes an OpenAI-compatible endpoint, so we reuse the OpenAI provider.
+            const mm = createOpenAI({ apiKey, baseURL: 'https://api.minimax.io/v1' });
+            return mm(modelId);
         }
     }
 }
@@ -109,7 +114,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         return;
     }
 
-    if (!['openrouter', 'openai', 'google'].includes(provider)) {
+    if (!['openrouter', 'openai', 'google', 'minimax'].includes(provider)) {
         res.status(400).send(`Unknown provider: ${provider}`);
         return;
     }
