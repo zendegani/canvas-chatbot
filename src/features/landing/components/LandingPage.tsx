@@ -7,14 +7,24 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
+import type { ThemeMode } from "@/hooks/useTheme";
 
 const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
 
 interface LandingPageProps {
     isDarkMode: boolean;
-    setIsDarkMode: (isDark: boolean) => void;
+    themeMode: ThemeMode;
+    cycleTheme: () => void;
     onGetStarted: () => void;
 }
+
+const landingThemeIcon = (mode: ThemeMode) =>
+    mode === 'system' ? <Monitor size={20} /> : mode === 'dark' ? <Moon size={20} /> : <Sun size={20} />;
+
+const landingThemeLabel = (mode: ThemeMode) =>
+    mode === 'system' ? 'Theme: system (click for light)' :
+    mode === 'light' ? 'Theme: light (click for dark)' :
+    'Theme: dark (click for system)';
 
 const ContactForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,7 +108,7 @@ const ImageLightbox = ({ isOpen, onClose, src, alt }: { isOpen: boolean; onClose
     );
 };
 
-export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkMode, onGetStarted }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, themeMode, cycleTheme, onGetStarted }) => {
     const [lightboxImage, setLightboxImage] = useState<{ src: string; alt: string } | null>(null);
 
     const branchingImg = isDarkMode ? '/images/branching-dark.png' : '/images/branching-light.png';
@@ -126,8 +136,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, setIsDarkM
                     <a href="#contact" className="hover:opacity-100 transition-opacity">Contact</a>
                 </div>
                 <div className="flex items-center gap-4">
-                    <Button onClick={() => setIsDarkMode(!isDarkMode)} variant="ghost" size="icon" className="rounded-full hover:bg-zinc-500/10">
-                        {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                    <Button
+                        onClick={cycleTheme}
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full hover:bg-zinc-500/10"
+                        aria-label={landingThemeLabel(themeMode)}
+                        title={landingThemeLabel(themeMode)}
+                    >
+                        {landingThemeIcon(themeMode)}
                     </Button>
                     <Button
                         onClick={onGetStarted}

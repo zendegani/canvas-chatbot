@@ -10,8 +10,8 @@ describe("Auth", () => {
     onLogin: vi.fn().mockResolvedValue(undefined),
     onSignup: vi.fn().mockResolvedValue(undefined),
     onSocialLogin: vi.fn().mockResolvedValue(undefined),
-    isDarkMode: false,
-    setIsDarkMode: vi.fn(),
+    themeMode: 'system' as const,
+    cycleTheme: vi.fn(),
   };
 
   beforeEach(() => {
@@ -45,14 +45,14 @@ describe("Auth", () => {
     expect(defaultProps.setView).toHaveBeenCalledWith("landing");
   });
 
-  it("renders theme toggle button", async () => {
+  it("renders theme toggle button and cycles theme on click", async () => {
     const user = userEvent.setup();
-    render(<Auth {...defaultProps} isDarkMode={false} />);
+    render(<Auth {...defaultProps} themeMode="system" />);
 
-    const toggle = screen.getByRole("button", { name: /switch to dark mode/i });
+    const toggle = screen.getByRole("button", { name: /theme: system/i });
     await user.click(toggle);
 
-    expect(defaultProps.setIsDarkMode).toHaveBeenCalledWith(true);
+    expect(defaultProps.cycleTheme).toHaveBeenCalled();
   });
 
   it("renders Terms of Service and Privacy Policy links", () => {

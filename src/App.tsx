@@ -6,6 +6,7 @@ import { Auth, useAuth } from './features/auth';
 import { Canvas, useCanvas } from './features/canvas';
 import { SettingsModal } from './features/settings';
 import { Toaster } from "@/components/ui/sonner"
+import { useTheme } from './hooks/useTheme';
 
 // Extend window object to include umami
 declare global {
@@ -54,18 +55,7 @@ const App: React.FC = () => {
     stopNode,
   } = useCanvas(currentUser);
 
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      // First check localStorage for saved preference
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme !== null) {
-        return savedTheme === 'dark';
-      }
-      // Fall back to system preference
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return true; // Fallback
-  });
+  const { mode: themeMode, isDark: isDarkMode, cycleMode: cycleTheme } = useTheme();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -73,17 +63,6 @@ const App: React.FC = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Sync isDarkMode with DOM for Tailwind/CSS selector support and persist to localStorage
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode]);
 
   useEffect(() => {
     if (view === 'canvas') {
@@ -126,7 +105,8 @@ const App: React.FC = () => {
       {view === 'landing' && (
         <LandingPage
           isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
+          themeMode={themeMode}
+          cycleTheme={cycleTheme}
           onGetStarted={() => {
             if (isLoggedIn) {
               setView('canvas');
@@ -145,7 +125,8 @@ const App: React.FC = () => {
           onSignup={handleSignupSubmit}
           onSocialLogin={handleSocialLogin}
           isDarkMode={isDarkMode}
-          setIsDarkMode={setIsDarkMode}
+          themeMode={themeMode}
+          cycleTheme={cycleTheme}
         />
       )}
 
@@ -165,8 +146,8 @@ const App: React.FC = () => {
             handleCompareMessage={handleCompareMessage}
             handleMergeDuel={handleMergeDuel}
             isMobile={isMobile}
-            isDarkMode={isDarkMode}
-            setIsDarkMode={setIsDarkMode}
+            themeMode={themeMode}
+            cycleTheme={cycleTheme}
             updateNodeSize={updateNodeSize}
             currentUser={currentUser}
             sessions={sessions}

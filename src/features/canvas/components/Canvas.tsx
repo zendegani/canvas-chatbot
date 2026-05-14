@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { MessageSquare, Plus, Sun, Moon } from 'lucide-react';
+import { MessageSquare, Plus, Sun, Moon, Monitor } from 'lucide-react';
 import { ChatNode, ChatSession, LLMModel } from '../types';
+import type { ThemeMode } from '@/hooks/useTheme';
 import { Node } from './Node';
 import { ConnectionLine } from './ConnectionLine';
 import { AppSidebar } from './AppSidebar';
@@ -25,8 +26,8 @@ interface CanvasProps {
     handleMergeDuel: (parentId: string) => void;
     updateNodeSize: (id: string, width: number, height: number) => void;
     isMobile: boolean;
-    isDarkMode: boolean;
-    setIsDarkMode: (isDark: boolean) => void;
+    themeMode: ThemeMode;
+    cycleTheme: () => void;
     currentUser: string;
     sessions: Omit<ChatSession, 'nodes'>[];
     activeSessionId: string | null;
@@ -56,8 +57,8 @@ export const Canvas: React.FC<CanvasProps> = ({
     handleMergeDuel,
     updateNodeSize,
     isMobile,
-    isDarkMode,
-    setIsDarkMode,
+    themeMode,
+    cycleTheme,
     currentUser,
     sessions,
     activeSessionId,
@@ -340,13 +341,22 @@ export const Canvas: React.FC<CanvasProps> = ({
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => setIsDarkMode(!isDarkMode)}
+                                                onClick={cycleTheme}
                                                 className="rounded-xl h-9 w-9"
+                                                aria-label={
+                                                    themeMode === 'system' ? 'Theme: system (click for light)' :
+                                                    themeMode === 'light' ? 'Theme: light (click for dark)' :
+                                                    'Theme: dark (click for system)'
+                                                }
                                             >
-                                                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                                                {themeMode === 'system' ? <Monitor size={18} /> : themeMode === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
                                             </Button>
                                         </TooltipTrigger>
-                                        <TooltipContent>Switch to {isDarkMode ? 'light' : 'dark'} mode</TooltipContent>
+                                        <TooltipContent>
+                                            {themeMode === 'system' ? 'Theme: system — click for light' :
+                                             themeMode === 'light' ? 'Theme: light — click for dark' :
+                                             'Theme: dark — click for system'}
+                                        </TooltipContent>
                                     </Tooltip>
                                 </div>
                             </div>
