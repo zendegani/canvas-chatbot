@@ -18,7 +18,6 @@ declare global {
 const App: React.FC = () => {
   const {
     isLoggedIn,
-    isPending,
     currentUser,
     view,
     setView,
@@ -124,7 +123,6 @@ const App: React.FC = () => {
           onLogin={handleLoginSubmit}
           onSignup={handleSignupSubmit}
           onSocialLogin={handleSocialLogin}
-          isDarkMode={isDarkMode}
           themeMode={themeMode}
           cycleTheme={cycleTheme}
         />
