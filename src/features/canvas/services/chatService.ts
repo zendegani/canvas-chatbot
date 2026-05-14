@@ -183,6 +183,7 @@ export async function chatCompletion(
     messages: Message[],
     onChunk?: (accumulatedText: string) => void,
     tools?: ChatTools,
+    signal?: AbortSignal,
 ): Promise<string> {
     if (!apiKey) {
         throw new Error(`API Key is missing. Please add your ${provider.name} API Key in settings.`);
@@ -198,6 +199,7 @@ export async function chatCompletion(
             messages: messages.map(m => ({ role: m.role, content: m.content })),
             ...(tools ? { tools } : {}),
         }),
+        signal,
     });
 
     if (!response.ok) {

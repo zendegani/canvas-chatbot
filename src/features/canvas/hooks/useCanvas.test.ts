@@ -340,12 +340,13 @@ describe('useCanvas', () => {
                 await result.current.handleSendMessage(nodeId, 'Hello');
             });
 
-            expect(window.alert).toHaveBeenCalledWith('Error: Network error');
             const node = result.current.nodes.find(n => n.id === nodeId)!;
             expect(node.isThinking).toBe(false);
-            // User message remains, no assistant message added
-            expect(node.messages).toHaveLength(1);
+            // User message stays; assistant placeholder gets filled with the error text
+            expect(node.messages).toHaveLength(2);
             expect(node.messages[0].role).toBe('user');
+            expect(node.messages[1].role).toBe('assistant');
+            expect(node.messages[1].content).toContain('Network error');
         });
     });
 
@@ -460,7 +461,7 @@ describe('useCanvas', () => {
 
             // Child B got an error message
             const childB = children[1];
-            expect(childB.messages[childB.messages.length - 1].content).toBe('Error: Model B failed');
+            expect(childB.messages[childB.messages.length - 1].content).toContain('Model B failed');
             expect(childB.isThinking).toBe(false);
         });
     });

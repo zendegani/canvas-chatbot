@@ -51,6 +51,7 @@ const App: React.FC = () => {
     setSelectedProvider,
     hasTavilyKey,
     toggleNodeSearch,
+    stopNode,
   } = useCanvas(currentUser);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -175,6 +176,7 @@ const App: React.FC = () => {
             onDeleteSession={deleteSession}
             hasTavilyKey={hasTavilyKey}
             onToggleSearch={toggleNodeSearch}
+            onStopMessage={stopNode}
           />
           <SettingsModal
             isOpen={isSettingsOpen}

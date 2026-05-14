@@ -35,6 +35,7 @@ interface CanvasProps {
     onDeleteSession: (id: string) => void;
     hasTavilyKey: boolean;
     onToggleSearch: (id: string) => void;
+    onStopMessage: (id: string) => void;
 }
 
 const NODE_WIDTH = 576;
@@ -65,6 +66,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     onDeleteSession,
     hasTavilyKey,
     onToggleSearch,
+    onStopMessage,
 }) => {
     const canvasRef = useRef<HTMLDivElement>(null);
     const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -316,6 +318,7 @@ export const Canvas: React.FC<CanvasProps> = ({
                                                 siblingCount={siblingCount}
                                                 onToggleSearch={onToggleSearch}
                                                 hasTavilyKey={hasTavilyKey}
+                                                onStopMessage={onStopMessage}
                                             />
                                         </div>
                                     );
