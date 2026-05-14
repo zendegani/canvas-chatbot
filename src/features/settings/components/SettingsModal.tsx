@@ -131,6 +131,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <TabsTrigger value="llm">LLM Providers</TabsTrigger>
                         <TabsTrigger value="tools">Tools</TabsTrigger>
                         <TabsTrigger value="tracing">Tracing</TabsTrigger>
+                        <TabsTrigger value="danger" className="data-[state=active]:text-destructive">Danger</TabsTrigger>
                     </TabsList>
 
                     {/* ─── LLM Providers ─────────────────────────────────────────── */}
@@ -275,15 +276,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             )}
                         </div>
                     </TabsContent>
-                </Tabs>
 
-                <div className="pt-4 border-t space-y-3">
-                    <Button onClick={handleSave} className="w-full">
-                        Save Changes
-                    </Button>
-
-                    <div>
-                        <Label className="text-xs font-bold uppercase tracking-widest text-destructive mb-2 block">Danger Zone</Label>
+                    {/* ─── Danger ───────────────────────────────────────────────── */}
+                    <TabsContent value="danger" className="space-y-4 min-h-[420px]">
+                        <p className="text-xs text-muted-foreground">
+                            Irreversible actions. Clearing wipes all locally-stored API keys, Tavily key, Phoenix config,
+                            and canvas sessions for this account, then reloads the app.
+                        </p>
                         <Button
                             variant="destructive"
                             onClick={handleClearData}
@@ -291,7 +290,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         >
                             <Trash2 size={18} /> Clear All App Data
                         </Button>
-                    </div>
+                    </TabsContent>
+                </Tabs>
+
+                <div className="pt-4 border-t">
+                    <Button onClick={handleSave} className="w-full">
+                        Save Changes
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>

@@ -87,10 +87,16 @@ describe("SettingsModal", () => {
     expect(defaultProps.onProviderChange).toHaveBeenCalledWith("google");
   });
 
-  it("renders clear data button in danger zone", () => {
+  it("renders clear data button in the Danger tab", async () => {
+    const user = userEvent.setup();
     render(<SettingsModal {...defaultProps} />);
 
-    expect(screen.getByText("Danger Zone")).toBeInTheDocument();
+    // Danger tab trigger is always present
+    const dangerTab = screen.getByRole("tab", { name: /danger/i });
+    expect(dangerTab).toBeInTheDocument();
+
+    // Content only appears once the tab is active
+    await user.click(dangerTab);
     expect(screen.getByRole("button", { name: /clear all app data/i })).toBeInTheDocument();
   });
 });
