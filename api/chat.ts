@@ -52,7 +52,7 @@ function createModel(provider: ProviderId, apiKey: string, modelId: string, extr
             // We call `mm.chat(modelId)` (not `mm(modelId)`) because v6's default
             // routes to the new /responses endpoint, which MiniMax doesn't have.
             const groupId = extras?.minimaxGroupId ?? process.env.MINIMAX_GROUP_ID ?? '';
-            const wrappedFetch: typeof fetch = (input, init) => {
+            const wrappedFetch: typeof fetch = async (input, init) => {
                 let url = typeof input === 'string'
                     ? input
                     : input instanceof URL ? input.toString() : input.url;
@@ -61,7 +61,23 @@ function createModel(provider: ProviderId, apiKey: string, modelId: string, extr
                     url += (url.includes('?') ? '&' : '?') + `GroupId=${encodeURIComponent(groupId)}`;
                 }
                 console.log('[chat:minimax] →', url);
-                return fetch(url, init);
+
+                const response = await fetch(url, init);
+
+                // MiniMax streams reasoning into `delta.reasoning_content` rather
+                // than `delta.content`. The AI SDK's OpenAI provider doesn't know
+                // about that field, so reasoning is silently dropped. Transform
+                // the SSE stream to fold reasoning into content as
+                // <think>…</think> blocks so it surfaces in the UI and Phoenix.
+                const ct = response.headers.get('content-type') ?? '';
+                if (!response.body || !ct.includes('text/event-stream')) {
+                    return response;
+                }
+                return new Response(mergeMinimaxReasoning(response.body), {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: response.headers,
+                });
             };
             const mm = createOpenAI({
                 apiKey,
@@ -221,4 +237,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
 function firstHeader(value: string | string[] | undefined): string | undefined {
     if (Array.isArray(value)) return value[0];
     return value;
+}
+
+/**
+ * Rewrites a MiniMax SSE response so `delta.reasoning_content` is folded into
+ * `delta.content` wrapped in `<think>…</think>`. The AI SDK doesn't extract
+ * `reasoning_content`, so without this fold reasoning is invisible in both the
+ * chat UI and Phoenix traces (only the token count shows up).
+ */
+function mergeMinimaxReasoning(body: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    let buffer = '';
+    let inReasoning = false;
+
+    return body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
+        transform(chunk, controller) {
+            buffer += decoder.decode(chunk, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() ?? '';
+            const out: string[] = [];
+            for (const line of lines) {
+                if (!line.startsWith('data:')) { out.push(line); continue; }
+                const payload = line.slice(5).trimStart();
+                if (!payload || payload === '[DONE]') { out.push(line); continue; }
+                try {
+                    const obj = JSON.parse(payload);
+                    const delta = obj.choices?.[0]?.delta;
+                    const reasoning: string | undefined = delta?.reasoning_content;
+                    if (reasoning) {
+                        const prefix = inReasoning ? '' : '<think>';
+                        delta.content = prefix + reasoning + (delta.content ?? '');
+                        delete delta.reasoning_content;
+                        inReasoning = true;
+                    } else if (inReasoning && typeof delta?.content === 'string' && delta.content.length > 0) {
+                        delta.content = '</think>\n\n' + delta.content;
+                        inReasoning = false;
+                    }
+                    out.push(`data: ${JSON.stringify(obj)}`);
+                } catch {
+                    out.push(line);
+                }
+            }
+            if (out.length > 0) {
+                controller.enqueue(encoder.encode(out.join('\n') + '\n'));
+            }
+        },
+        flush(controller) {
+            if (inReasoning) {
+                // Reasoning was open when the stream ended — emit a closing tag
+                // so downstream parsers see balanced <think>…</think>.
+                const closing = `data: ${JSON.stringify({ choices: [{ delta: { content: '</think>' } }] })}\n\n`;
+                controller.enqueue(encoder.encode(closing));
+            }
+            if (buffer) controller.enqueue(encoder.encode(buffer));
+        },
+    }));
 }
