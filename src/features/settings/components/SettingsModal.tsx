@@ -134,7 +134,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </TabsList>
 
                     {/* ─── LLM Providers ─────────────────────────────────────────── */}
-                    <TabsContent value="llm" className="space-y-5">
+                    <TabsContent value="llm" className="space-y-5 min-h-[420px]">
                         <div className="space-y-2">
                             <Label>Active provider</Label>
                             <div className="flex gap-2">
@@ -180,7 +180,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </TabsContent>
 
                     {/* ─── Tools ────────────────────────────────────────────────── */}
-                    <TabsContent value="tools" className="space-y-5">
+                    <TabsContent value="tools" className="space-y-5 min-h-[420px]">
                         <div className="space-y-2">
                             <Label>Tavily API Key <span className="font-normal text-muted-foreground">(web search)</span></Label>
                             <div className="relative">
@@ -207,7 +207,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </TabsContent>
 
                     {/* ─── Tracing ──────────────────────────────────────────────── */}
-                    <TabsContent value="tracing" className="space-y-4">
+                    <TabsContent value="tracing" className="space-y-4 min-h-[420px]">
                         <p className="text-xs text-muted-foreground">
                             Send LLM traces to Arize Phoenix to inspect prompts, responses, tool calls, latency, and tokens.
                             Leave blank to disable. Falls back to <code className="px-1 py-0.5 bg-muted rounded">PHOENIX_COLLECTOR_ENDPOINT</code> from <code className="px-1 py-0.5 bg-muted rounded">.env.local</code> if set.
