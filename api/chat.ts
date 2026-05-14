@@ -180,7 +180,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         const logError = ({ error }: { error: unknown }) => {
             if ((error as { name?: string })?.name === 'AbortError') return;
             const msg = error instanceof Error ? error.message : String(error);
-            console.error(`[chat:${provider}/${model}]`, msg);
+            // Pass user-supplied `provider` and `model` as arguments rather
+            // than interpolating into the format string — `console.error`
+            // honors `%s`-style tokens, so an attacker-controlled body field
+            // could mangle log output.
+            console.error('[chat:%s/%s]', provider, model, msg);
         };
 
         const telemetry = phoenixConfig

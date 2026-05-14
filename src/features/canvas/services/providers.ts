@@ -107,9 +107,12 @@ export function loadPhoenixConfig(user: string): PhoenixConfig | null {
     try {
         const parsed = JSON.parse(raw);
         if (typeof parsed.endpoint === 'string' && parsed.endpoint.trim()) {
+            // apiKey is stored encoded (same pattern as provider API keys).
+            const storedApiKey = typeof parsed.apiKey === 'string' ? parsed.apiKey : '';
+            const decodedApiKey = decodeApiKey(storedApiKey);
             return {
                 endpoint: parsed.endpoint.trim(),
-                apiKey: typeof parsed.apiKey === 'string' ? parsed.apiKey : undefined,
+                apiKey: decodedApiKey || undefined,
                 project: typeof parsed.project === 'string' ? parsed.project : undefined,
             };
         }
@@ -124,9 +127,12 @@ export function savePhoenixConfig(user: string, config: PhoenixConfig | null): v
         localStorage.removeItem(key);
         return;
     }
+    const apiKey = config.apiKey?.trim() || '';
     localStorage.setItem(key, JSON.stringify({
         endpoint: config.endpoint.trim(),
-        apiKey: config.apiKey?.trim() || undefined,
+        // Encoded so the key isn't stored as obvious clear text (matches the
+        // pattern used by `apiKeyStorageKey` for provider keys).
+        apiKey: apiKey ? encodeApiKey(apiKey) : undefined,
         project: config.project?.trim() || undefined,
     }));
 }
