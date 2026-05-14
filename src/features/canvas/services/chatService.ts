@@ -100,8 +100,13 @@ async function fetchGoogleModels(apiKey: string): Promise<LLMModel[]> {
             const methods = m.supportedGenerationMethods as string[] | undefined;
             if (!methods?.includes('generateContent')) return false;
             const name = m.name as string;
-            // Exclude embedding, AQA, and image-generation models
-            return !name.includes('embedding') && !name.includes('aqa') && !name.includes('imagen');
+            // Exclude non-text-output models (embeddings, AQA, image gen, TTS, audio variants)
+            return !name.includes('embedding')
+                && !name.includes('aqa')
+                && !name.includes('imagen')
+                && !name.includes('tts')
+                && !name.includes('audio')
+                && !name.includes('image-generation');
         })
         .map((m: Record<string, unknown>) => {
             const rawName = m.name as string;

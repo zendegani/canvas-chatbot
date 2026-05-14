@@ -103,6 +103,16 @@ export default async function handler(req: Request): Promise<Response> {
 
     try {
         const aiModel = createModel(provider, apiKey, model);
+
+        // streamText may surface provider errors via the onError callback instead of
+        // throwing through textStream (e.g. Gemini 400, rate limits). Capture here so
+        // we can emit a visible error to the client.
+        let capturedError: string | null = null;
+        const captureError = ({ error }: { error: unknown }) => {
+            if ((error as { name?: string })?.name === 'AbortError') return;
+            capturedError = error instanceof Error ? error.message : String(error);
+        };
+
         const result = useTools
             ? streamText({
                 model: aiModel,
@@ -110,11 +120,15 @@ export default async function handler(req: Request): Promise<Response> {
                 tools: { tavilySearch: buildTavilyTool(tavilyKey!) },
                 stopWhen: stepCountIs(TAVILY_MAX_STEPS),
                 abortSignal: req.signal,
+                onError: captureError,
             })
-            : streamText({ model: aiModel, messages, abortSignal: req.signal });
+            : streamText({
+                model: aiModel,
+                messages,
+                abortSignal: req.signal,
+                onError: captureError,
+            });
 
-        // Wrap textStream to surface mid-stream errors (rate-limit, credit, etc.)
-        // back to the client as visible text instead of silently closing the body.
         const encoder = new TextEncoder();
         const stream = new ReadableStream<Uint8Array>({
             async start(controller) {
@@ -123,15 +137,14 @@ export default async function handler(req: Request): Promise<Response> {
                         controller.enqueue(encoder.encode(chunk));
                     }
                 } catch (err: unknown) {
-                    if ((err as { name?: string })?.name === 'AbortError') {
-                        // Client aborted — don't write an error message.
-                    } else {
-                        const msg = err instanceof Error ? err.message : 'Unknown error';
-                        controller.enqueue(encoder.encode(`\n\n**⚠️ Error:** ${msg}`));
+                    if ((err as { name?: string })?.name !== 'AbortError') {
+                        capturedError ??= err instanceof Error ? err.message : String(err);
                     }
-                } finally {
-                    controller.close();
                 }
+                if (capturedError) {
+                    controller.enqueue(encoder.encode(`\n\n**⚠️ Error:** ${capturedError}`));
+                }
+                controller.close();
             },
         });
 
