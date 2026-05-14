@@ -505,9 +505,17 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                     return { ...n, messages: msgs };
                 }));
             }, tools, controller.signal);
-            setNodes(prev => prev.map(n =>
-                n.id === nodeId ? { ...n, isThinking: false } : n
-            ));
+            // Safety net: if the stream closed without producing any text or error
+            // (provider returned 200 + empty body), surface that to the user.
+            setNodes(prev => prev.map(n => {
+                if (n.id !== nodeId) return n;
+                const msgs = [...n.messages];
+                const last = msgs[msgs.length - 1];
+                if (last?.role === 'assistant' && !last.content) {
+                    msgs[msgs.length - 1] = { role: 'assistant', content: '**⚠️ Error:** No response received from the provider.' };
+                }
+                return { ...n, messages: msgs, isThinking: false };
+            }));
         } catch (error: any) {
             const aborted = error?.name === 'AbortError';
             setNodes(prev => prev.map(n => {
@@ -515,7 +523,7 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                 const msgs = [...n.messages];
                 const last = msgs[msgs.length - 1];
                 if (last?.role === 'assistant' && !last.content) {
-                    // Nothing streamed yet
+                    // Nothing streamed yet — pop on abort, fill on real error
                     if (aborted) msgs.pop();
                     else msgs[msgs.length - 1] = { role: 'assistant', content: `**⚠️ Error:** ${error.message}` };
                 }
@@ -594,17 +602,24 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                         return { ...n, messages: msgs };
                     }));
                 }, tools, controller.signal);
-                setNodes(prev => prev.map(n =>
-                    n.id === childId ? { ...n, isThinking: false } : n
-                ));
+                setNodes(prev => prev.map(n => {
+                    if (n.id !== childId) return n;
+                    const msgs = [...n.messages];
+                    const last = msgs[msgs.length - 1];
+                    if (last?.role === 'assistant' && !last.content) {
+                        msgs[msgs.length - 1] = { role: 'assistant', content: '**⚠️ Error:** No response received from the provider.' };
+                    }
+                    return { ...n, messages: msgs, isThinking: false };
+                }));
             } catch (error: any) {
                 const aborted = error?.name === 'AbortError';
                 setNodes(prev => prev.map(n => {
                     if (n.id !== childId) return n;
                     const msgs = [...n.messages];
                     const last = msgs[msgs.length - 1];
-                    if (last?.role === 'assistant' && !last.content && !aborted) {
-                        msgs[msgs.length - 1] = { role: 'assistant', content: `**⚠️ Error:** ${error.message}` };
+                    if (last?.role === 'assistant' && !last.content) {
+                        if (aborted) msgs.pop();
+                        else msgs[msgs.length - 1] = { role: 'assistant', content: `**⚠️ Error:** ${error.message}` };
                     }
                     return { ...n, messages: msgs, isThinking: false };
                 }));
@@ -692,17 +707,24 @@ export const useCanvas = (currentUser: string): UseCanvasReturn => {
                     return { ...n, messages: msgs };
                 }));
             }, undefined, controller.signal);
-            setNodes(prev => prev.map(n =>
-                n.id === mergeId ? { ...n, isThinking: false } : n
-            ));
+            setNodes(prev => prev.map(n => {
+                if (n.id !== mergeId) return n;
+                const msgs = [...n.messages];
+                const last = msgs[msgs.length - 1];
+                if (last?.role === 'assistant' && !last.content) {
+                    msgs[msgs.length - 1] = { role: 'assistant', content: '**⚠️ Error:** No response received from the provider.' };
+                }
+                return { ...n, messages: msgs, isThinking: false };
+            }));
         } catch (error: any) {
             const aborted = error?.name === 'AbortError';
             setNodes(prev => prev.map(n => {
                 if (n.id !== mergeId) return n;
                 const msgs = [...n.messages];
                 const last = msgs[msgs.length - 1];
-                if (last?.role === 'assistant' && !last.content && !aborted) {
-                    msgs[msgs.length - 1] = { role: 'assistant', content: `**⚠️ Error:** ${error.message}` };
+                if (last?.role === 'assistant' && !last.content) {
+                    if (aborted) msgs.pop();
+                    else msgs[msgs.length - 1] = { role: 'assistant', content: `**⚠️ Error:** ${error.message}` };
                 }
                 return { ...n, messages: msgs, isThinking: false };
             }));
