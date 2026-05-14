@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0-beta] - 2026-05-14
+
+### Added
+
+- **Web search tool (Tavily)**: per-node Globe toggle in the composer enables real-time web search via Vercel AI SDK tool-calling. BYOK Tavily key configured in Settings → Tools. Multi-step tool loops capped at 5 hops; toggle propagates to branch nodes and duel children.
+- **Stop button**: replaces Send while a response is streaming. Aborts the in-flight request through an `AbortController` per node, propagates to the upstream LLM call, preserves partial output, and cleans up the empty-placeholder spinner.
+- **Arize Phoenix tracing**: end-to-end OpenTelemetry instrumentation for every `streamText` call. Per-session Phoenix endpoint, API key, and project name configured in Settings → Tracing (falls back to `PHOENIX_COLLECTOR_ENDPOINT` env var if unset). Per-endpoint `TracerProvider` cache + `forceFlush()` after each request guarantees spans reach Phoenix before the function returns. New scripts: `npm run phoenix:up / down / logs` + `docker-compose.phoenix.yml`.
+- **MiniMax provider**: fourth LLM option alongside OpenRouter, OpenAI, and Google. Requires a Group ID alongside the API key (also in Settings → LLM Providers). Uses `@ai-sdk/openai` with a `fetch` wrapper that rewrites `/v1/chat/completions` → `/v1/text/chatcompletion_v2?GroupId=…` and folds MiniMax's `reasoning_content` deltas into `<think>…</think>` blocks so reasoning is visible in both the chat UI and Phoenix traces.
+- **Theme: system / light / dark tri-state**: new `useTheme` hook defaults to OS preference, follows system changes live, and auto-reverts manual overrides to system after 5 hours so a one-off night-time dark flip doesn't outlast the morning.
+- **Tabbed Settings**: split into **LLM Providers**, **Tools**, **Tracing**, and **Data** tabs with a stable modal height.
+- **Granular data clearing**: sidebar action and Data tab both expose "Clear chat history" (sessions only). The Data tab additionally has "Clear all app data" which wipes keys + sessions + Phoenix config and reloads.
+- **Standalone Tavily pipeline test**: `scripts/test-tavily.ts` exercises the full LLM + tool loop against `.env.local` keys, useful for verifying the search pipeline outside the browser.
+
+### Changed
+
+- **`/api/chat` runtime: Edge → Node.** The OpenTelemetry Node SDK needs Node APIs (`async_hooks` etc.) that Edge doesn't expose. The trade-off is a slightly slower cold start (invisible against multi-second LLM latency) for full Phoenix observability.
+- **Chat handler**: switched to the legacy `(req: VercelRequest, res: VercelResponse)` signature so `vercel dev` parses the body reliably and streams responses cleanly — the Web-standard `Request → Response` form hangs body reads in `vercel dev` on Node runtime.
+- **Composer redesign**: transparent auto-growing textarea shares one rounded toolbar with the tool buttons; no more visible seam between message field and tool row. Default node height stabilised at `min-h-42 max-h-96`; the card stops shrinking after the first message.
+- **Sidebar**: top-level "Clear All Data" replaced with "Clear Chat History" (non-destructive styling). The full reset path lives in Settings → Data → "Clear all app data".
+
+### Fixed
+
+- **Forever-spinner on provider errors**: rate-limit / credit / 400 responses (e.g. Gemini-TTS) used to silently close the stream, leaving an empty assistant placeholder spinning indefinitely. The server now captures errors via `streamText({ onError })` plus a safety net in `useCanvas` that fills empty placeholders with a visible `⚠️ Error` message.
+- **Audio/TTS/image Gemini models** no longer leak into the model picker — added `tts`, `audio`, and `image-generation` to the Google model filter exclusions.
+
+### Removed
+
+- Top-level destructive "Clear All Data" action from the sidebar (moved to Settings → Data tab; the variant that wipes only sessions stays in the sidebar).
+
+---
+
 ## [0.3.0-beta] - 2026-04-18
 
 ### Added

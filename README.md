@@ -20,14 +20,18 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
 
   ![Duel Mode](./public/images/Duel-light.png)
 
+- **Web search (Tavily)**: Toggle the globe icon on any node to let the model search the web mid-conversation. Tool calls are visible in tracing and the model can chain multiple searches per turn.
+- **Stop generating**: Cancel an in-flight response from any node with the Stop button. Partial output is preserved.
+- **Observability via Arize Phoenix**: Optional one-click local tracing of every LLM call — prompts, completions, tool calls, latency, token counts, and reasoning. Configure the collector in Settings → Tracing; spin up Phoenix locally with `npm run phoenix:up`.
 - **Local & Secure**:
-  - **Bring Your Own Key**: You typically use your own OpenRouter, OpenAI, or Google API keys.
+  - **Bring Your Own Key**: You typically use your own OpenRouter, OpenAI, Google, or MiniMax API keys.
 
     ![Settings BYOK](./public/images/Setting-light.png)
 
   - **Local Storage**: Your chat history is stored **only** in your browser's local storage.
   - **Authentication**: Powered by **Better Auth**, featuring robust local session management backed by PostgreSQL/Prisma, and rigorous NIST 800-63B password validation.
   - **Session Isolation**: Multiple users can share a device safely; data and chat histories are scoped to your login session.
+- **System-aware theme**: Light / dark / system tri-state toggle. Manual overrides auto-revert to system preference after 5 hours so an evening dark mode doesn't outlast the morning.
 
 ## Getting Started
 
@@ -36,7 +40,9 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
 - Node.js (v16 or higher)
 - npm or yarn
 - Vercel CLI (install via `npm i -g vercel`)
-- An API Key from OpenRouter, OpenAI, or Google
+- An API Key from OpenRouter, OpenAI, Google, or MiniMax
+- *(Optional)* A Tavily API key for web-search tool calls — get one at [tavily.com](https://tavily.com)
+- *(Optional)* Docker, to run Arize Phoenix locally for tracing
 
 ### Installation
 
@@ -63,11 +69,13 @@ Canvas AI allows you to break free from linear chat threads. Visualize your thou
 
 ### Usage Guide
 
-1. **Sign Up**: Create a local account (this is a mock auth system for demo purposes).
-2. **Add API Key**: Click on the **Settings** (gear icon) and configure your API keys for OpenRouter, OpenAI, or Google.
-3. **Start Chatting**:
+1. **Sign Up**: Create a local account.
+2. **Configure providers**: Open **Settings → LLM Providers** and paste API keys for any of OpenRouter, OpenAI, Google, or MiniMax. MiniMax also needs a Group ID (found on `platform.minimax.io` → basic information).
+3. **(Optional) Enable web search**: Paste a Tavily key in **Settings → Tools**, then click the globe icon on a node to let that conversation use web search.
+4. **(Optional) Enable tracing**: Run `npm run phoenix:up` to start Phoenix in Docker, then point **Settings → Tracing** at `http://localhost:6006`. Each chat call streams a trace into the Phoenix UI.
+5. **Start Chatting**:
     - Click the **"New Chat"** button in the sidebar or the **"+"** button to start a fresh canvas.
-    - Type your message and hit send.
+    - Type your message and hit send. The **Stop** button replaces Send while a response streams — click to cancel.
     - Drag nodes to organize them.
     - Click the **"+"** next to the model dropdown to add a second model and compare responses side-by-side.
     - Click the **Branch** icon on a node to split the conversation.
