@@ -1,6 +1,7 @@
 // MUST come first: registers OTel tracing before `ai` is imported.
 import './_lib/instrumentation';
 
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { streamText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -9,6 +10,10 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
 // Node runtime (default). Edge runtime is incompatible with the OpenTelemetry
 // Node SDK we use for Phoenix tracing — see api/_lib/instrumentation.ts.
+//
+// We use the legacy (req, res) Vercel function signature rather than Web
+// Standard (Request → Response). `vercel dev` reliably parses bodies and
+// streams responses with this form; the Web form hangs on body read.
 
 type ProviderId = 'openrouter' | 'openai' | 'google';
 
@@ -81,40 +86,49 @@ function buildTavilyTool(tavilyKey: string) {
     });
 }
 
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+    console.log('[chat] →', req.method, req.url);
+
     if (req.method !== 'POST') {
-        return new Response('Method not allowed', { status: 405 });
+        res.status(405).send('Method not allowed');
+        return;
     }
 
-    let body: ChatRequest;
-    try {
-        body = await req.json();
-    } catch {
-        return new Response('Invalid JSON', { status: 400 });
+    // Vercel auto-parses JSON bodies for Node functions when Content-Type is application/json.
+    const body = req.body as ChatRequest | undefined;
+    if (!body || typeof body !== 'object') {
+        res.status(400).send('Invalid or missing JSON body');
+        return;
     }
 
     const { provider, apiKey, model, messages, tools: requestedTools } = body;
+    console.log('[chat] body', { provider, model, msgCount: messages?.length, hasTools: !!requestedTools });
+
     if (!provider || !apiKey || !model || !Array.isArray(messages)) {
-        return new Response('Missing required fields: provider, apiKey, model, messages', { status: 400 });
+        res.status(400).send('Missing required fields: provider, apiKey, model, messages');
+        return;
     }
 
     if (!['openrouter', 'openai', 'google'].includes(provider)) {
-        return new Response(`Unknown provider: ${provider}`, { status: 400 });
+        res.status(400).send(`Unknown provider: ${provider}`);
+        return;
     }
 
     const tavilyKey = requestedTools?.tavily?.apiKey;
     const useTools = typeof tavilyKey === 'string' && tavilyKey.length > 0;
 
+    // Propagate client disconnects to the LLM call.
+    const controller = new AbortController();
+    req.on('close', () => controller.abort());
+
     try {
+        console.log('[chat] creating model & streamText…');
         const aiModel = createModel(provider, apiKey, model);
 
-        // streamText may surface provider errors via the onError callback instead of
-        // throwing through textStream (e.g. Gemini 400, rate limits). Capture here so
-        // we can emit a visible error to the client.
-        let capturedError: string | null = null;
-        const captureError = ({ error }: { error: unknown }) => {
+        const logError = ({ error }: { error: unknown }) => {
             if ((error as { name?: string })?.name === 'AbortError') return;
-            capturedError = error instanceof Error ? error.message : String(error);
+            const msg = error instanceof Error ? error.message : String(error);
+            console.error(`[chat:${provider}/${model}]`, msg);
         };
 
         const telemetry = {
@@ -129,42 +143,36 @@ export default async function handler(req: Request): Promise<Response> {
                 messages,
                 tools: { tavilySearch: buildTavilyTool(tavilyKey!) },
                 stopWhen: stepCountIs(TAVILY_MAX_STEPS),
-                abortSignal: req.signal,
-                onError: captureError,
+                abortSignal: controller.signal,
+                onError: logError,
                 experimental_telemetry: telemetry,
             })
             : streamText({
                 model: aiModel,
                 messages,
-                abortSignal: req.signal,
-                onError: captureError,
+                abortSignal: controller.signal,
+                onError: logError,
                 experimental_telemetry: telemetry,
             });
 
-        const encoder = new TextEncoder();
-        const stream = new ReadableStream<Uint8Array>({
-            async start(controller) {
-                try {
-                    for await (const chunk of result.textStream) {
-                        controller.enqueue(encoder.encode(chunk));
-                    }
-                } catch (err: unknown) {
-                    if ((err as { name?: string })?.name !== 'AbortError') {
-                        capturedError ??= err instanceof Error ? err.message : String(err);
-                    }
-                }
-                if (capturedError) {
-                    controller.enqueue(encoder.encode(`\n\n**⚠️ Error:** ${capturedError}`));
-                }
-                controller.close();
-            },
-        });
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-cache, no-transform');
+        res.status(200);
+        res.flushHeaders?.();
 
-        return new Response(stream, {
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-        });
+        console.log('[chat] streaming…');
+        for await (const chunk of result.textStream) {
+            res.write(chunk);
+        }
+        console.log('[chat] stream done');
+        res.end();
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : 'Unknown error';
-        return new Response(message, { status: 502 });
+        console.error('[chat] sync error:', message);
+        if (!res.headersSent) {
+            res.status(502).send(message);
+        } else {
+            res.end();
+        }
     }
 }
