@@ -84,6 +84,11 @@ export function tavilyKeyStorageKey(user: string): string {
     return `tavilyKey_${user}`;
 }
 
+/** localStorage key for the MiniMax Group ID (required alongside the API key) */
+export function minimaxGroupIdStorageKey(user: string): string {
+    return `minimaxGroupId_${user}`;
+}
+
 export interface PhoenixConfig {
     endpoint: string;
     apiKey?: string;

@@ -15,6 +15,7 @@ import {
     tavilyKeyStorageKey,
     loadPhoenixConfig,
     savePhoenixConfig,
+    minimaxGroupIdStorageKey,
     type PhoenixConfig,
 } from '../../canvas/services/providers';
 
@@ -37,6 +38,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         openrouter: '', openai: '', google: '',
     });
     const [tavilyKey, setTavilyKey] = useState('');
+    const [minimaxGroupId, setMinimaxGroupId] = useState('');
     const [phoenix, setPhoenix] = useState<PhoenixConfig>({ endpoint: '', apiKey: '', project: '' });
     const [phoenixStatus, setPhoenixStatus] = useState<PhoenixStatus>('idle');
     const [phoenixStatusMsg, setPhoenixStatusMsg] = useState<string>('');
@@ -50,6 +52,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }
             setApiKeys(loaded);
             setTavilyKey(decodeApiKey(localStorage.getItem(tavilyKeyStorageKey(currentUser))));
+            setMinimaxGroupId(localStorage.getItem(minimaxGroupIdStorageKey(currentUser)) || '');
             const ph = loadPhoenixConfig(currentUser);
             setPhoenix(ph ?? { endpoint: '', apiKey: '', project: '' });
             setPhoenixStatus('idle');
@@ -74,6 +77,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         } else {
             localStorage.removeItem(tavilyKeyStorageKey(currentUser));
         }
+        const mmGid = minimaxGroupId.trim();
+        if (mmGid) {
+            localStorage.setItem(minimaxGroupIdStorageKey(currentUser), mmGid);
+        } else {
+            localStorage.removeItem(minimaxGroupIdStorageKey(currentUser));
+        }
         savePhoenixConfig(currentUser, phoenix.endpoint.trim() ? phoenix : null);
         refreshModels();
         onClose();
@@ -92,6 +101,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             localStorage.removeItem(apiKeyStorageKey(p.id, currentUser));
         }
         localStorage.removeItem(tavilyKeyStorageKey(currentUser));
+        localStorage.removeItem(minimaxGroupIdStorageKey(currentUser));
         savePhoenixConfig(currentUser, null);
         window.location.reload();
     };
@@ -178,6 +188,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                         {showKey === p.id ? <EyeOff size={16} /> : <Eye size={16} />}
                                     </button>
                                 </div>
+                                {p.id === 'minimax' && (
+                                    <>
+                                        <Label className="text-xs text-muted-foreground">Group ID <span className="font-normal">(required by MiniMax)</span></Label>
+                                        <Input
+                                            value={minimaxGroupId}
+                                            onChange={(e) => setMinimaxGroupId(e.target.value)}
+                                            placeholder="From platform.minimax.io → basic information"
+                                        />
+                                    </>
+                                )}
                             </div>
                         ))}
 

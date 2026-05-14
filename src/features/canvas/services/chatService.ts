@@ -205,6 +205,10 @@ export interface PhoenixHeaders {
     project?: string;
 }
 
+export interface ProviderExtras {
+    minimaxGroupId?: string;
+}
+
 export async function chatCompletion(
     provider: ProviderConfig,
     apiKey: string,
@@ -214,9 +218,13 @@ export async function chatCompletion(
     tools?: ChatTools,
     signal?: AbortSignal,
     phoenix?: PhoenixHeaders,
+    extras?: ProviderExtras,
 ): Promise<string> {
     if (!apiKey) {
         throw new Error(`API Key is missing. Please add your ${provider.name} API Key in settings.`);
+    }
+    if (provider.id === 'minimax' && !extras?.minimaxGroupId) {
+        throw new Error(`MiniMax requires a Group ID. Please add it under Settings → LLM Providers.`);
     }
 
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -224,6 +232,9 @@ export async function chatCompletion(
         headers['X-Phoenix-Endpoint'] = phoenix.endpoint;
         if (phoenix.apiKey) headers['X-Phoenix-Api-Key'] = phoenix.apiKey;
         if (phoenix.project) headers['X-Phoenix-Project'] = phoenix.project;
+    }
+    if (extras?.minimaxGroupId) {
+        headers['X-Minimax-Group-Id'] = extras.minimaxGroupId;
     }
 
     const response = await fetch('/api/chat', {
