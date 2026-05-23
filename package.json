@@ -15,7 +15,7 @@
     "phoenix:logs": "docker compose -f docker-compose.phoenix.yml logs -f"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.64",
+    "@ai-sdk/google": "^3.0.79",
     "@ai-sdk/openai": "^3.0.53",
     "@arizeai/openinference-semantic-conventions": "^2.3.0",
     "@arizeai/openinference-vercel": "^2.7.6",
