@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.79",
-    "@ai-sdk/openai": "^3.0.65",
+    "@ai-sdk/openai": "^3.0.68",
     "@arizeai/openinference-semantic-conventions": "^2.5.0",
     "@arizeai/openinference-vercel": "^2.7.6",
     "@better-auth/infra": "^0.2.8",
