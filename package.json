@@ -22,7 +22,7 @@
     "@better-auth/infra": "^0.2.13",
     "@openrouter/ai-sdk-provider": "^2.8.1",
     "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/exporter-trace-otlp-proto": "^0.218.0",
+    "@opentelemetry/exporter-trace-otlp-proto": "^0.219.0",
     "@opentelemetry/resources": "^2.7.1",
     "@opentelemetry/sdk-trace-node": "^2.7.1",
     "@opentelemetry/semantic-conventions": "^1.41.1",
