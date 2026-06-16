@@ -39,9 +39,17 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: ['react', 'react-dom'],
-            utils: ['lucide-react', 'react-markdown', 'react-syntax-highlighter', 'katex']
+          // Vite 8 uses Rolldown, which requires manualChunks to be a function
+          // (the object form is no longer accepted).
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) return 'vendor';
+            if (
+              id.includes('node_modules/lucide-react/') ||
+              id.includes('node_modules/react-markdown/') ||
+              id.includes('node_modules/react-syntax-highlighter/') ||
+              id.includes('node_modules/katex/')
+            ) return 'utils';
           }
         }
       }
