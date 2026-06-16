@@ -1,5 +1,5 @@
 // MUST come first: sets up the OTel module-load order before `ai` is imported.
-import { flushTraces, getTracerFor, resolvePhoenixConfig } from './_lib/instrumentation';
+import { flushTraces, getTracerFor, resolvePhoenixConfig } from './_lib/instrumentation.js';
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { streamText, tool, stepCountIs } from 'ai';
