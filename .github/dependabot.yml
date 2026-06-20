@@ -7,8 +7,19 @@ updates:
     allow:
       - dependency-type: production
     open-pull-requests-limit: 10
+    groups:
+      # Collapse all production minor/patch bumps into a single PR
+      production-dependencies:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - "*"
