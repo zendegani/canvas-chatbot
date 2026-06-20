@@ -57,7 +57,7 @@
     "remark-math": "^6.0.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
-    "vercel": "^54.14.0",
+    "vercel": "^54.14.2",
     "zod": "^4.3.2"
   },
   "devDependencies": {
