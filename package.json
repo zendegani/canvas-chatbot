@@ -19,7 +19,7 @@
     "@ai-sdk/openai": "^3.0.68",
     "@arizeai/openinference-semantic-conventions": "^2.5.0",
     "@arizeai/openinference-vercel": "^2.7.7",
-    "@better-auth/infra": "^0.2.13",
+    "@better-auth/infra": "^0.2.14",
     "@openrouter/ai-sdk-provider": "^2.9.1",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.219.0",
