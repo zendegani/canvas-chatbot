@@ -19,7 +19,7 @@
     "@ai-sdk/openai": "^3.0.73",
     "@arizeai/openinference-semantic-conventions": "^2.5.0",
     "@arizeai/openinference-vercel": "^2.7.8",
-    "@better-auth/infra": "^0.2.14",
+    "@better-auth/infra": "^0.3.4",
     "@openrouter/ai-sdk-provider": "^2.9.1",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/exporter-trace-otlp-proto": "^0.219.0",
@@ -37,7 +37,7 @@
     "@radix-ui/react-tabs": "^1.1.14",
     "@radix-ui/react-tooltip": "^1.2.8",
     "ai": "^6.0.208",
-    "better-auth": "^1.6.20",
+    "better-auth": "^1.6.23",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -92,9 +92,13 @@
     "hono": "^4.12.3",
     "lodash": "^4.17.23",
     "@hono/node-server": "^1.19.11",
-    "@better-auth/sso": "^1.6.2",
+    "@better-auth/sso": "^1.6.23",
     "samlify": {
       "camelcase": "6.3.0"
-    }
+    },
+    "@opentelemetry/core@<2.8.0": "^2.8.0",
+    "undici@<6.27.0": "^6.27.0",
+    "tar@<7.5.16": "^7.5.16",
+    "@tootallnate/once@<2.0.1": "^2.0.1"
   }
 }
