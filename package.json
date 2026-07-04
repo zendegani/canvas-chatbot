@@ -18,7 +18,7 @@
     "@ai-sdk/google": "^3.0.83",
     "@ai-sdk/openai": "^3.0.73",
     "@arizeai/openinference-semantic-conventions": "^2.5.0",
-    "@arizeai/openinference-vercel": "^2.7.8",
+    "@arizeai/openinference-vercel": "^3.1.0",
     "@better-auth/infra": "^0.3.4",
     "@openrouter/ai-sdk-provider": "^2.9.1",
     "@opentelemetry/api": "^1.9.1",
