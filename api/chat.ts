@@ -1,7 +1,10 @@
 // MUST come first: sets up the OTel module-load order before `ai` is imported.
 import { flushTraces, getTracerFor, resolvePhoenixConfig } from './_lib/instrumentation.js';
+import { isAllowedPhoenixEndpoint } from './_lib/phoenixEndpoint.js';
+import { auth } from './_lib/auth.js';
 
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { fromNodeHeaders } from 'better-auth/node';
 import { streamText, tool, stepCountIs } from 'ai';
 import { z } from 'zod';
 import { createOpenAI } from '@ai-sdk/openai';
@@ -137,6 +140,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
         return;
     }
 
+    const session = await auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+    if (!session) {
+        res.status(401).send('Not signed in');
+        return;
+    }
+
     // Vercel auto-parses JSON bodies for Node functions when Content-Type is application/json.
     const body = req.body as ChatRequest | undefined;
     if (!body || typeof body !== 'object') {
@@ -165,8 +174,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     req.on('close', () => controller.abort());
 
     // Phoenix tracing — headers from client win, env vars are the fallback.
+    const phoenixEndpoint = firstHeader(req.headers['x-phoenix-endpoint']);
+    if (phoenixEndpoint && !isAllowedPhoenixEndpoint(phoenixEndpoint)) {
+        res.status(400).send('Phoenix endpoint must be an https URL on a public hostname');
+        return;
+    }
     const phoenixConfig = resolvePhoenixConfig({
-        endpoint: firstHeader(req.headers['x-phoenix-endpoint']),
+        endpoint: phoenixEndpoint,
         apiKey: firstHeader(req.headers['x-phoenix-api-key']),
         project: firstHeader(req.headers['x-phoenix-project']),
     });
